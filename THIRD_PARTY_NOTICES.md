@@ -3,6 +3,8 @@
 The website runs file conversions on the visitor's device. The following libraries and font are distributed with its browser build:
 
 - **pdf-lib 1.17.1**, MIT: https://github.com/Hopding/pdf-lib/tree/v1.17.1
+- **PDF.js / pdfjs-dist 6.4.299**, Apache 2.0: https://github.com/mozilla/pdf.js . Its bundled CMaps, standard fonts and WebAssembly resources retain the notices included in `/vendor/pdfjs/`.
+- **fflate 0.8.3**, MIT: https://github.com/101arrowz/fflate . Creates image ZIP downloads locally.
 - **@pdf-lib/fontkit 1.1.1**, MIT: https://github.com/Hopding/fontkit
 - **SheetJS Community Edition 0.20.3**, Apache 2.0: https://git.sheetjs.com/sheetjs/sheetjs and https://cdn.sheetjs.com/xlsx-0.20.3/
 - **@ffmpeg/ffmpeg 0.12.15**, MIT: https://github.com/ffmpegwasm/ffmpeg.wasm/tree/v12.15

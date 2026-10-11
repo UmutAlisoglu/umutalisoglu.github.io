@@ -8,7 +8,7 @@ The website includes only public project information and browser tool source.
 
 ## Develop and preview
 
-Requires Node.js 22.12+ (Node.js 24 recommended).
+Requires Node.js 22.13+ (Node.js 24 recommended).
 
     npm ci
     npm run dev
@@ -30,8 +30,19 @@ With preview running, create a short test video using FFmpeg:
     mkdir .local/fixtures
     ffmpeg -f lavfi -i testsrc2=size=640x360:rate=24 -f lavfi -i sine=frequency=440:sample_rate=44100 -t 6 -c:v libx264 -preset ultrafast -crf 18 -c:a aac -y .local/fixtures/video.mp4
     npm run test:browser
+    npm run test:enhancements
 
 The browser test uses installed Google Chrome. BROWSER_CHANNEL can select another Playwright channel. It checks real downloads, PDF ordering, spreadsheet pagination, cancellation, video encoding, responsive pages and that requests contain no uploads or external runtime requests. Its output is ignored under .local/.
+
+The enhancement checks generate their own image/PDF fixtures. They verify batch ZIP contents and dimensions, duplicate filenames, images-to-PDF order, PDF thumbnails, existing plus new page rotations, drag-and-drop, excluded pages, cancellation/recovery, local preference consent and mobile layout. PDF previews are lazy-loaded through the locally bundled PDF.js renderer. Image batches run in a separate browser worker.
+
+## FileForge features
+
+- Image studio: up to 50 images; resize, convert, strip source metadata, download a batch ZIP or combine images into one A4 PDF. Email/web/document presets; optional local image settings.
+- PDF organizer: preview up to 200 pages across multiple PDFs, reorder by dragging or buttons, rotate, select/exclude pages and export a new copy. Original files are unchanged. Interactive forms, bookmarks and signatures may not survive page copying.
+- Existing Excel/CSV-to-PDF, quick PDF merging and MP4 compression remain available.
+
+No files or filenames are persisted. When a visitor opts in, only the image format, quality, width and settings-version number are saved in localStorage. Unchecking the option removes that preference record.
 
 ## Publishing
 

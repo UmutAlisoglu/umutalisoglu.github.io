@@ -9,6 +9,25 @@ export function resultName(name, extension) {
   return `${safe || 'file'}-fileforge.${extension}`;
 }
 
+// ZIP entries must stay distinct, including on case-insensitive filesystems.
+export function batchNames(files, extension) {
+  const used = new Set();
+  return files.map(file => {
+    const base = resultName(file.name, extension);
+    let name = base, suffix = 2;
+    while (used.has(name.toLowerCase())) name = base.replace(/\.[^.]+$/, `-${suffix++}.${extension}`);
+    used.add(name.toLowerCase());
+    return name;
+  });
+}
+
+export function imageSettings(value) {
+  if (!value || !['jpg', 'png', 'webp', 'pdf'].includes(value.format)) return null;
+  const quality = Number(value.quality), width = Number(value.width);
+  if (!Number.isInteger(quality) || quality < 10 || quality > 100 || !Number.isInteger(width) || width < 0 || width > 12000) return null;
+  return { format: value.format, quality, width };
+}
+
 // Leave space for the MP4 container; audio is part of the total target, too.
 export function videoBudget(targetBytes, duration, keepAudio) {
   if (!Number.isFinite(duration) || duration <= 0) throw new Error('Could not read this video’s duration.');

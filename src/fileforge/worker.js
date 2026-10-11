@@ -1,4 +1,4 @@
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument, degrees, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import * as XLSX from 'xlsx';
 import { columnGroups, resultName } from './shared.js';
@@ -21,6 +21,27 @@ async function merge(files) {
   if (!output.getPageCount()) throw new Error('These PDFs have no pages to merge.');
   status('Preparing your merged PDF…', 95);
   return { bytes: await output.save(), name: 'merged-fileforge.pdf', type: 'application/pdf', detail: `${output.getPageCount()} pages, in your selected order.` };
+}
+
+async function organize(files, options) {
+  const plan = options.pages;
+  if (!Array.isArray(plan) || !plan.length || plan.length > 200) throw new Error('Select between 1 and 200 pages to export.');
+  const output = await PDFDocument.create(), sources = new Map();
+  for (let index = 0; index < plan.length; index++) {
+    const { fileIndex, pageIndex, rotation } = plan[index];
+    if (!Number.isInteger(fileIndex) || !files[fileIndex] || !Number.isInteger(pageIndex) || ![0, 90, 180, 270].includes(rotation)) throw new Error('The page selection is invalid. Reload your PDFs and try again.');
+    if (!sources.has(fileIndex)) {
+      try { sources.set(fileIndex, await PDFDocument.load(files[fileIndex].bytes)); }
+      catch { throw new Error(`“${files[fileIndex].name}” could not be opened. Use an unlocked, valid PDF.`); }
+    }
+    const source = sources.get(fileIndex);
+    if (pageIndex < 0 || pageIndex >= source.getPageCount()) throw new Error('A selected page is missing. Reload your PDFs.');
+    const [page] = await output.copyPages(source, [pageIndex]);
+    page.setRotation(degrees((page.getRotation().angle + rotation) % 360));
+    output.addPage(page);
+    status(`Preparing page ${index + 1} of ${plan.length}…`, 10 + (index + 1) / plan.length * 80);
+  }
+  return { bytes: await output.save(), name: 'organized-fileforge.pdf', type: 'application/pdf', detail: `${plan.length} page(s), in your chosen order and rotation. Check the exported copy before sharing.` };
 }
 
 function wrap(text, font, size, width, maxLines = 24) {
@@ -119,7 +140,7 @@ async function spreadsheet(files, options) {
 
 self.onmessage = async ({ data }) => {
   try {
-    const result = data.tool === 'merge' ? await merge(data.files) : await spreadsheet(data.files, data.options);
+    const result = data.tool === 'merge' ? await merge(data.files) : data.tool === 'organize' ? await organize(data.files, data.options) : await spreadsheet(data.files, data.options);
     const bytes = new Uint8Array(result.bytes);
     postMessage({ type: 'result', result: { ...result, bytes: bytes.buffer } }, [bytes.buffer]);
   } catch (error) { postMessage({ type: 'error', message: error.message || 'This file could not be converted.' }); }
