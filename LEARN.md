@@ -22,7 +22,14 @@ Open http://127.0.0.1:8780. This local server serves website files for preview. 
 
 - `index.html`: home page and project introductions.
 - `hub.css` / `styles.css`: layout, colours, responsive design.
-- `tools/fileforge/index.html`: FileForge controls and explanatory text.
+- `tools/fileforge/index.html`: the original FileForge workspace; old bookmarks still work.
+- `tools/*/index.html`: dedicated working tools with their own descriptions, steps, limits and FAQs.
+- `src/site/fileforge-workspace.html`: shared FileForge controls, used by all six tool pages.
+- `src/site/templates.js`: shared navigation/footer, tool links and the list of pages Vite builds.
+- `site.css`: homepage shortcuts, project pages, guides, contact and privacy layouts.
+- `projects/*/index.html`: project descriptions, visuals, releases and setup instructions.
+- `contact/index.html` / `src/site/contact.js`: email/GitHub contact and a local feedback-draft form.
+- `privacy/index.html`: how local files, optional settings, hosting and contact data work.
 - `src/fileforge/app.js`: file selection, PDF page controls, image presets, progress, cancellation and downloads.
 - `src/fileforge/image.worker.js`: sequential image conversion, batch ZIP downloads and combined image PDFs in a background browser task.
 - `src/fileforge/pdf-preview.js`: lazy-loaded PDF.js thumbnails; keeps all preview resources on this website.
@@ -46,6 +53,7 @@ The optional browser smoke test uses installed Google Chrome:
 
     npm run test:browser
     npm run test:enhancements
+    npm run test:pages
 
 Keep the preview server running in another terminal. The test expects `.local/fixtures/video.mp4`; create a small fixture with FFmpeg as described in README.md. Screenshots and generated test outputs go to `.local/browser-check/`, which Git ignores.
 
@@ -81,3 +89,23 @@ No new paid platform is introduced. Hosting still serves static website files. G
 ## Adding a game later
 
 Skate Scape's public release is deferred. It can get a Play button once its browser build and distributable assets are ready. Keep its source repository separate; copy or automatically build a selected release into a site subfolder. Asset URLs must use that subfolder as the base. Source collaboration happens through issues, forks and pull requests, with you deciding what to merge.
+
+## The new pages: how to make your own edits
+
+The site now has 16 pages. They are still ordinary HTML, CSS and JavaScript hosted by GitHub Pages. No server, paid service or account system was added.
+
+1. **Edit page content.** Open the relevant `index.html`, for example `projects/fileforge/index.html` for the FileForge project story or `tools/pdf-organizer/index.html` for the organizer guide. Change its headings, paragraphs or links. Keep release claims matched to the actual GitHub release and update the “checked” date when you verify them.
+2. **Edit shared parts once.** Each source page contains `<site-header></site-header>` and `<site-footer></site-footer>`. The small Vite plugin in `src/site/templates.js` replaces these with complete navigation and footer HTML during preview/build. This is a build step, not a service on the internet. Even visitors with JavaScript disabled get the navigation and project content.
+3. **Reuse the working tool.** Tool pages contain `<fileforge-workspace></fileforge-workspace>`. Vite fills this with the shared controls from `src/site/fileforge-workspace.html`. The `data-fileforge-tool` value on the page’s `<body>` chooses its tool. `app.js` uses that value to initialise the existing converter. Dedicated pages use real links between tools, so their URL and guide stay in sync. Leaving a page discards the current selection; download your result first.
+4. **Keep old links useful.** `/tools/fileforge/#organize`, `#image`, `#spreadsheet`, `#merge` and `#video` still open the original tabbed workspace. Direct task links now use `/tools/pdf-organizer/`, `/tools/image-converter/`, `/tools/excel-to-pdf/`, `/tools/merge-pdf/` and `/tools/video-compressor/`.
+5. **Add a page.** Create a folder and `index.html`, copy the standard head/header/footer from another page, and give it a unique title, description and canonical URL. Add the route to `sitePaths` in `src/site/templates.js` and to `sitemap.xml`. Vite then builds it into `dist/`. A sitemap helps search engines discover pages; it does not guarantee indexing or ranking.
+6. **Preview and check.** Run `npm run dev` for editing. Before publishing, run `npm test`, `npm run build`, then `npm run preview` and `npm run test:pages` in separate terminals. The page checks cover links, anchors, all dedicated tools’ initial state, sample conversions, contact drafts, privacy requests, no-JavaScript navigation and screen widths from 320 to 1440 px.
+7. **Publish.** Review the diff, commit and push to `main`. The existing GitHub Actions workflow publishes the built `dist/` folder. Neither the shared templates nor the `.local/` development helpers need to run for visitors.
+
+The contact page links to **umu@alisoglu.com**, the address you supplied. A `mailto:` link opens the visitor’s email application; it does not create or configure the mailbox. GitHub links remain available too. The feedback form uses local JavaScript to prepare an issue URL, then the visitor explicitly opens GitHub to review and submit. It does not send a report automatically. With JavaScript disabled, direct email and project links still work, and the draft form stays hidden to prevent a normal form submission.
+
+The social sharing image is drawn in `assets/social-card.svg`. To regenerate its PNG after editing the SVG, run `node scripts/render-social-card.mjs` with Google Chrome installed. Then build again. This image is used by the pages’ Open Graph metadata.
+
+Design changes use the existing cream background, purple accent, colourful task cards and robot illustration. `site.css` adds responsive layouts; `prefers-reduced-motion` disables decorative transitions for visitors who request less motion. Skate Scape’s illustration is explicitly a project illustration, not a screenshot of a playable release.
+
+Checks for this update: all 16 destinations and internal anchors, real image/PDF/spreadsheet exports, the existing video encoder, PDF page operations and image batches. Runtime requests were checked for same-site GETs only. No selected files or feedback drafts were uploaded during testing.

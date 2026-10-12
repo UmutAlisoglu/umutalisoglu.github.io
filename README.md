@@ -1,6 +1,6 @@
 # Alisoglu project hub
 
-Live at [alisoglu.com](https://alisoglu.com/), hosted on GitHub Pages. Home, Games, FileForge browser tools and Windows downloads. Skate Scape's release is deferred; its assets and source are not added to this repository.
+Live at [alisoglu.com](https://alisoglu.com/), hosted on GitHub Pages. A homepage with task shortcuts, five dedicated FileForge tool pages, the original FileForge workspace, project pages, Games, Windows downloads, privacy notes and email/GitHub contact. Skate Scape's release is deferred; its assets and source are not added to this repository.
 
 All FileForge conversions run on the visitor's device. There is no upload/conversion API, database or runtime third-party service. Dependency code, the font and FFmpeg WebAssembly are served from this website. Browser tools have smaller limits than the desktop app; see [LEARN.md](LEARN.md) for their scope and the step-by-step learning guide.
 
@@ -31,10 +31,13 @@ With preview running, create a short test video using FFmpeg:
     ffmpeg -f lavfi -i testsrc2=size=640x360:rate=24 -f lavfi -i sine=frequency=440:sample_rate=44100 -t 6 -c:v libx264 -preset ultrafast -crf 18 -c:a aac -y .local/fixtures/video.mp4
     npm run test:browser
     npm run test:enhancements
+    npm run test:pages
 
 The browser test uses installed Google Chrome. BROWSER_CHANNEL can select another Playwright channel. It checks real downloads, PDF ordering, spreadsheet pagination, cancellation, video encoding, responsive pages and that requests contain no uploads or external runtime requests. Its output is ignored under .local/.
 
 The enhancement checks generate their own image/PDF fixtures. They verify batch ZIP contents and dimensions, duplicate filenames, images-to-PDF order, PDF thumbnails, existing plus new page rotations, drag-and-drop, excluded pages, cancellation/recovery, local preference consent and mobile layout. PDF previews are lazy-loaded through the locally bundled PDF.js renderer. Image batches run in a separate browser worker.
+
+Page checks exercise all 16 routes, navigation, canonical URLs, internal links and anchors, sitemap coverage, dedicated tool selection and real conversions, feedback drafts and screen widths of 320/390/768/1440 px. Feedback is previewed locally; the tests never submit a GitHub issue. Shared headers, footers and tool controls are expanded into ordinary HTML by `src/site/templates.js` during Vite's build. See LEARN.md for editing instructions.
 
 ## FileForge features
 

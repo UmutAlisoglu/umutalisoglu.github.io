@@ -1,0 +1,36 @@
+    <div class="tool-layout">
+      <aside class="tool-sidebar"><div class="tool-tabs" role="tablist" aria-label="Choose a FileForge tool" aria-orientation="vertical">
+        <button id="tab-image" role="tab" aria-controls="tool-panel" data-tool="image" aria-selected="true"><span class="tool-symbol" aria-hidden="true">▧</span><span>Image studio<small>One image or a whole batch.</small></span></button>
+        <button id="tab-organize" role="tab" aria-controls="tool-panel" data-tool="organize" aria-selected="false" tabindex="-1"><span class="tool-symbol" aria-hidden="true">▦</span><span>PDF organizer<small>Preview. Rotate. Rearrange.</small></span></button>
+        <button id="tab-spreadsheet" role="tab" aria-controls="tool-panel" data-tool="spreadsheet" aria-selected="false" tabindex="-1"><span class="tool-symbol" aria-hidden="true">▤</span><span>Excel → PDF<small>Tables worth sharing.</small></span></button>
+        <button id="tab-merge" role="tab" aria-controls="tool-panel" data-tool="merge" aria-selected="false" tabindex="-1"><span class="tool-symbol" aria-hidden="true">⊕</span><span>Merge PDFs<small>Bring the pages together.</small></span></button>
+        <button id="tab-video" role="tab" aria-controls="tool-panel" data-tool="video" aria-selected="false" tabindex="-1"><span class="tool-symbol" aria-hidden="true">▷</span><span>Video compressor<small>A smaller MP4.</small></span></button>
+      </div><div class="desktop-tip"><img src="/assets/fileforge.svg" width="32" height="32" alt=""><h2>Working with bigger files?</h2><p>The Windows app runs locally too, and handles larger jobs.</p><a href="/projects/fileforge/#desktop">Download FileForge ↗</a></div></aside>
+      <section id="tool-panel" class="tool-panel" role="tabpanel" aria-labelledby="tab-image">
+        <p class="eyebrow">A SMALL TOOL. A LITTLE LESS CHAOS.</p><h2 id="tool-title">Make your images fit.</h2><p id="tool-hint" class="tool-hint"></p>
+        <form id="conversion-form">
+          <label class="drop-zone" id="drop-zone" for="files"><span class="drop-icon" aria-hidden="true">↥</span><strong>Choose files or drop them here</strong><span>They stay on your device.</span><input id="files" type="file" aria-label="Choose files to convert"></label>
+          <div class="selection-bar"><span id="selection-summary">No files selected</span><button class="text-button" id="clear-files" type="button" hidden>Clear files &amp; result</button></div><ol id="file-list" class="file-list" aria-label="Selected files"></ol>
+          <div data-options="image">
+            <div class="preset-bar" aria-label="Image presets"><span>Start with a shortcut</span><div><button type="button" data-preset="email">Email-ready photos</button><button type="button" data-preset="web">Website images</button><button type="button" data-preset="document">Images → one PDF</button></div></div>
+            <div class="tool-options"><label>Output format<select name="format"><option value="webp">WebP</option><option value="jpg">JPG</option><option value="png">PNG</option><option value="pdf">PDF (one A4 document)</option></select></label><label>Quality (%)<input name="quality" type="number" min="10" max="100" value="85" required><small>JPG, WebP and PDF; PNG is lossless</small></label><label>Maximum width (px)<input name="width" type="number" min="0" max="12000" value="0" required><small>0 keeps the original size; never enlarges</small></label></div>
+            <p class="option-note" id="image-output-hint">Multiple images download together as a ZIP. Transparent areas stay transparent in PNG and WebP.</p>
+            <label class="remember-option"><input id="remember-image" type="checkbox"> Remember my image settings on this device</label><p class="option-note" id="settings-note">Optional. Saves settings only, never files or filenames.</p>
+          </div>
+          <div data-options="organize" hidden>
+            <p class="inline-note">Load pages, then drag cards or use their arrow buttons to change the order. Uncheck pages to leave them out of your exported copy. Forms, bookmarks and digital signatures may not be preserved.</p>
+            <section id="pdf-workspace" class="pdf-workspace" aria-label="PDF pages" hidden>
+              <div class="pdf-toolbar"><strong id="page-summary" role="status"></strong><div><button type="button" id="select-all-pages">Select all</button><button type="button" id="select-no-pages">Select none</button><button type="button" id="reset-pages">Reset pages</button></div></div>
+              <ol id="page-grid" class="page-grid" aria-label="Pages in export order"></ol>
+            </section>
+          </div>
+          <div class="tool-options" data-options="spreadsheet" hidden><label>Page orientation<select name="orientation"><option value="landscape">Landscape</option><option value="portrait">Portrait</option></select></label><p>Wide sheets split into column groups. The first row repeats on each page. Formulas use saved results when available.</p></div>
+          <div class="tool-options" data-options="video" hidden><label>Maximum output size (MB)<input name="target" type="number" min="1" max="1000" step="0.1" value="10" required></label><label>Maximum height<select name="height"><option value="720">720p</option><option value="480">480p</option><option value="1080">1080p</option><option value="0">Original</option></select></label><label class="checkbox-label"><input id="remove-audio" name="removeAudio" type="checkbox">Remove audio</label></div>
+          <p id="video-note" class="inline-note" hidden>The video engine downloads about 32 MB the first time you use it. Your video is processed locally. Keep this tab open; speed depends on your device.</p>
+          <div class="conversion-actions"><button class="button primary" type="submit"><span id="submit-label">Convert image</span><span aria-hidden="true">↗</span></button><button id="cancel-job" class="button secondary" type="button" hidden>Cancel</button></div>
+        </form>
+        <div class="job-status"><p id="job-status" role="status" aria-live="polite">Ready when you are.</p><progress id="job-progress" max="100" value="0" aria-label="Conversion progress" hidden></progress></div>
+        <div id="result" class="tool-result" hidden><span class="result-check" aria-hidden="true">✓</span><div><h3 id="result-name"></h3><p id="result-detail"></p></div><a id="download-result" class="button primary">Download ↓</a><img id="image-preview" class="image-preview" alt="Converted image preview" hidden></div>
+        <noscript><p>Enable JavaScript to use the browser tools, or download FileForge for Windows.</p></noscript>
+      </section>
+    </div>

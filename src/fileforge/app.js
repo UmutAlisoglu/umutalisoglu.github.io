@@ -10,6 +10,8 @@ const tools = {
 };
 const $ = selector => document.querySelector(selector);
 const form = $('#conversion-form'), input = $('#files'), list = $('#file-list');
+// Dedicated URLs stay on their selected tool; the original studio retains its tabs.
+const dedicatedTool = document.body.dataset.fileforgeTool;
 let selected = [], pages = [], currentTool = 'image', outputURL = null, active = null, draggedPage = null;
 
 function clearOutput() {
@@ -85,11 +87,11 @@ function chooseTool(tool, focus = false) {
   currentTool = tool; selected = []; input.value = ''; clearOutput(); resetPages();
   input.accept = tools[tool].accept; input.multiple = tools[tool].count > 1;
   $('#tool-title').textContent = tools[tool].title; $('#tool-hint').textContent = tools[tool].hint;
-  $('#tool-panel').setAttribute('aria-labelledby', `tab-${tool}`);
+  $('#tool-panel').setAttribute('aria-labelledby', dedicatedTool ? 'tool-title' : `tab-${tool}`);
   document.querySelectorAll('[data-tool]').forEach(button => { const chosen = button.dataset.tool === tool; button.setAttribute('aria-selected', String(chosen)); button.tabIndex = chosen ? 0 : -1; if (chosen && focus) button.focus(); });
   document.querySelectorAll('[data-options]').forEach(panel => { panel.hidden = panel.dataset.options !== tool; });
   $('#video-note').hidden = tool !== 'video'; setBusy(false); renderFiles(); report('Ready when you are.');
-  history.replaceState(null, '', `#${tool}`);
+  if (!dedicatedTool) history.replaceState(null, '', `#${tool}`);
 }
 
 function renderPages(focusId, focusAction) {
@@ -262,6 +264,6 @@ form.addEventListener('submit', async event => {
   finally { active = null; setBusy(false); renderFiles(); if (currentTool === 'organize') renderPages(); }
 });
 window.addEventListener('beforeunload', () => { active?.abort(); clearOutput(); resetPages(); });
-window.addEventListener('hashchange', () => { if (active) history.replaceState(null, '', `#${currentTool}`); else chooseTool(location.hash.slice(1)); });
+window.addEventListener('hashchange', () => { if (dedicatedTool) return; if (active) history.replaceState(null, '', `#${currentTool}`); else chooseTool(location.hash.slice(1)); });
 updateImageHint();
-chooseTool(tools[location.hash.slice(1)] ? location.hash.slice(1) : 'image');
+chooseTool(tools[dedicatedTool] ? dedicatedTool : tools[location.hash.slice(1)] ? location.hash.slice(1) : 'image');
