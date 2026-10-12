@@ -22,7 +22,7 @@ function header(path) {
   <nav aria-label="Main navigation">${navigation.map(([href, label]) => `<a href="${href}"${(href === '/' ? path === '/' : path.startsWith(href)) ? ` aria-current="${path === href ? 'page' : 'true'}"` : ''}>${label}</a>`).join('')}<a href="/contact/" class="nav-contact"${path === '/contact/' ? ' aria-current="page"' : ''}>Say hello <span aria-hidden="true">↗</span></a></nav>
 </header>`;
 }
-const footer = `<footer class="site-footer wrap new-footer"><a class="footer-brand" href="/">alisoglu<span>.</span><small>Human ideas. Useful experiments.</small></a><div><a href="/#about">About Umut</a><a href="/contact/">Contact & feedback</a><a href="/privacy/">Privacy</a><a href="https://github.com/UmutAlisoglu/umutalisoglu.github.io">Website source ↗</a><a href="/THIRD_PARTY_NOTICES.md">Credits</a></div><p class="footer-note">Made with curiosity, a little AI help, and probably one more button.</p></footer>`;
+const footer = `<footer class="site-footer wrap new-footer"><a class="footer-brand" href="/">alisoglu<span>.</span><small>Human ideas. Useful experiments.</small></a><div><a href="/#about">About Umut</a><a href="/contact/">Contact & feedback</a><a href="/privacy/">Privacy</a><a href="https://github.com/UmutAlisoglu/umutalisoglu.github.io">Website source ↗</a><a href="/THIRD_PARTY_NOTICES.md">Credits</a></div><p class="footer-note">Personal projects by Umut Alisoglu. Built with AI assistance.</p></footer>`;
 
 // Vite expands these fragments into ordinary HTML, before bundling scripts and styles.
 // Visitors receive the complete page; shared navigation needs no JavaScript.
