@@ -21,7 +21,7 @@ Open http://127.0.0.1:8780. For the production output:
 
 The playground turns a visitor's task into a starting prompt, suggests example ideas, and copies the result when requested. It runs entirely in the browser and does not call an AI service or upload the visitor's input. Future ideas are labeled as brainstorms; only the featured apps are available to download.
 
-The Repodock dashboard screenshot comes from that project's public docs/dashboard.png. FileForge's icon comes from its assets/fileforge.svg. The cheerful robot is an editable SVG illustration. No external fonts, trackers, or analytics are used.
+The Repodock dashboard screenshot comes from that project's public docs/dashboard.png. FileForge's icon comes from its assets/fileforge.svg. The homepage features a simple panel of project links. No external fonts, trackers, or analytics are used.
 
 ## Browser checks
 

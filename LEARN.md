@@ -106,7 +106,7 @@ The contact page links to **umu@alisoglu.com**, the address you supplied. A `mai
 
 The social sharing image is drawn in `assets/social-card.svg`. To regenerate its PNG after editing the SVG, run `node scripts/render-social-card.mjs` with Google Chrome installed. Then build again. This image is used by the pages’ Open Graph metadata.
 
-Design changes use an off-white background, purple accent, colourful tool icons and the original robot illustration. `site.css` adds responsive layouts; `prefers-reduced-motion` disables decorative transitions for visitors who request less motion. Skate Scape’s illustration is explicitly a project illustration, not a gameplay screenshot.
+Design changes use an off-white background, purple accent and colourful tool icons. `site.css` adds responsive layouts; `prefers-reduced-motion` disables decorative transitions for visitors who request less motion. Skate Scape’s illustration is explicitly a project illustration, not a gameplay screenshot.
 
 Checks for this update: all 16 destinations and internal anchors, real image/PDF/spreadsheet exports, the existing video encoder, PDF page operations and image batches. Hub and FileForge runtime requests were checked for same-site GETs only; the separately deployed game is outside those conversion tests. No selected files or feedback drafts were uploaded during testing.
 
@@ -114,6 +114,6 @@ A newer commit from Claude published the Skate Scape launch link while this rede
 
 ## Making the design a little more professional
 
-The visual polish lives mainly in `site.css`. The variables at the top set the shared background, text, border and purple accent colours. White cards with thin borders make the colourful icons easier to pick out; consistent sans-serif headings, spacing and buttons make the pages feel related. The homepage illustration in `index.html` now sits in an aligned panel with direct project links, while keeping the friendly robot.
+The visual polish lives mainly in `site.css`. The variables at the top set the shared background, text, border and purple accent colours. White cards with thin borders make the colourful icons easier to pick out; consistent sans-serif headings, spacing and buttons make the pages feel related. The homepage's `collection-panel` in `index.html` links directly to the three projects. The robot was removed from the homepage, Projects, Games and social sharing image for a more understated presentation.
 
 To experiment, change one colour or spacing value, run `npm run dev`, and compare the homepage, a tool page and a project page at desktop and phone widths. Use the browser's responsive device view to check narrow screens. CSS changes presentation; the conversion workers still run the existing tools locally in the visitor's browser. Shared footer wording is in `src/site/templates.js`, and the matching link-preview image is in `assets/social-card.svg`.

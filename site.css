@@ -146,7 +146,6 @@ input:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px 
 .skate-orbit { position: absolute; right: 21%; top: 20%; font-size: 40px; color: #9274bc; }
 .skate-illustration .art-bottom { position: absolute; bottom: 18px; left: 27px; right: 25px; font-size: 7px; color: #363c32; }
 .workshop-note { display: flex; align-items: center; gap: 45px; border-top: 1px solid var(--line); padding: 45px 0; margin-top: 40px; }
-.workshop-note>img { flex-shrink: 0; }
 .workshop-note h2 { font-size: 28px; }
 .workshop-note p:not(.eyebrow) { color: var(--muted); font-size: 14px; max-width: 690px; }
 .games-feature { display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; gap: 55px; }
@@ -257,19 +256,18 @@ h1 em { font-family: inherit; font-style: normal; font-weight: 600; letter-spaci
 .new-footer>div { font-size: 12px; color: var(--muted); }
 .new-footer .footer-note { font-size: 11px; border-top-style: solid; }
 
-/* The original mascot stays, now inside a quieter, aligned illustration. */
-.studio-visual { min-width: 0; background: #f0edf8; border: 1px solid #dbd5e6; border-radius: 16px; overflow: hidden; box-shadow: 0 16px 42px #30264e09; }
-.studio-toolbar { display: flex; align-items: center; gap: 15px; padding: 14px 20px; background: #fff; border-bottom: 1px solid #e1dce9; font-size: 11px; color: #746780; }
-.studio-mark { font: 23px/1 Georgia, serif; color: var(--accent); margin-left: auto; }
-.studio-canvas { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 12px; padding: 32px 25px; min-height: 245px; }
-.studio-canvas img { width: 210px; justify-self: center; }
-.studio-note { display: flex; align-items: baseline; gap: 9px; background: #ffffffab; border: 1px solid #e2d9ed; border-radius: 10px; padding: 16px 14px; font-size: 13px; line-height: 1.7; color: #756a83; }
-.studio-note strong { color: #41354e; font-weight: 600; }
-.studio-projects { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); padding: 16px 8px; border-top: 1px solid #e1dce9; background: #faf9fd; }
-.studio-projects a { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 11px; color: #655b75; border-right: 1px solid #e1dce9; }
-.studio-projects a:last-child { border: 0; }
-.studio-projects a:hover { color: var(--accent); }
-.studio-projects a span { color: #9384a9; }
+/* A compact, useful introduction to the three projects. */
+.collection-panel { display: block; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 16px 42px #30264e09; }
+.collection-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 23px 26px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: 1.3px; }
+.collection-heading span:last-child { font-family: var(--mono); color: #81778e; }
+.collection-item { display: grid; grid-template-columns: 46px minmax(0, 1fr) 20px; align-items: center; gap: 17px; padding: 23px 26px; border-bottom: 1px solid var(--line); transition: background .16s; }
+.collection-item:hover { background: #f8f6fc; }
+.collection-icon { display: grid; place-items: center; width: 46px; height: 46px; border: 1px solid #28273508; border-radius: 10px; font-size: 22px; font-weight: 600; letter-spacing: -1px; color: #554769; }
+.collection-item strong { display: block; font-size: 19px; font-weight: 600; letter-spacing: -.4px; }
+.collection-item small { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.collection-arrow { color: var(--accent); font-size: 20px; }
+.collection-footer { display: flex; justify-content: space-between; align-items: center; padding: 18px 26px; border-radius: 0 0 16px 16px; background: #faf9fc; color: var(--accent); font-size: 12px; }
+.collection-footer:hover { background: #f1edf8; }
 @media (min-width: 901px) { .compact .task-card { padding: 22px; } .compact .task-card h3 { font-size: 20px; } }
 @media (max-width: 1050px) {
   .hub-header nav { gap: 17px; }
@@ -304,11 +302,12 @@ h1 em { font-family: inherit; font-style: normal; font-weight: 600; letter-spaci
   .home-hero h1 { font-size: clamp(38px, 11vw, 52px); letter-spacing: -1.9px; }
   .home-hero .hero-description { font-size: 14px; }
   .home-hero .hero-footnote { font-size: 11px; }
-  .home-hero .studio-visual { width: 100%; max-width: 440px; margin: 8px auto 0; }
-  .studio-canvas { padding: 24px 17px; min-height: 205px; gap: 6px; }
-  .studio-canvas img { width: 170px; }
-  .studio-note { padding: 12px 10px; font-size: 11px; gap: 6px; }
-  .studio-projects a { gap: 7px; font-size: 10px; }
+  .home-hero .collection-panel { width: 100%; max-width: 440px; margin: 8px auto 0; }
+  .collection-heading { padding: 19px 20px; }
+  .collection-item { grid-template-columns: 40px minmax(0, 1fr) 18px; padding: 20px; gap: 13px; }
+  .collection-icon { width: 40px; height: 40px; font-size: 20px; }
+  .collection-item strong { font-size: 17px; }
+  .collection-footer { padding: 17px 20px; }
   .playground-copy h2 { font-size: 29px; }
   .playground-copy>p:not(.eyebrow) { font-size: 13px; }
   .machine-actions .button { font-size: 11px; }
@@ -358,7 +357,6 @@ h1 em { font-family: inherit; font-style: normal; font-weight: 600; letter-spaci
   .comparison-table caption { padding: 12px; }
   .release-panel { padding: 25px; gap: 30px; }
   .workshop-note { gap: 20px; align-items: start; }
-  .workshop-note>img { width: 70px; height: auto; }
   .workshop-note h2 { font-size: 25px; }
   .workshop-note p:not(.eyebrow) { font-size: 13px; }
   .games-feature { gap: 28px; }
