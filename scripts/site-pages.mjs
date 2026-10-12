@@ -43,7 +43,9 @@ try {
   await check('internal destinations, fragments and sitemap entries resolve', async () => {
     for (const href of links) {
       const [path, fragment] = href.split('#');
-      const response = await context.request.get(base + path); assert.equal(response.status(), 200, href);
+      // GitHub serves the game from a separate repository; it isn't in local dist.
+      const destination = path.startsWith('/skate-scape/') ? `https://alisoglu.com${path}` : base + path;
+      const response = await context.request.get(destination); assert.equal(response.status(), 200, href);
       if (fragment) assert.ok((await response.text()).includes(`id="${fragment}"`), `Missing fragment: ${href}`);
     }
     const sitemap = await (await context.request.get(base + '/sitemap.xml')).text();
@@ -83,7 +85,7 @@ try {
     await page.goto(base + '/contact/');
     assert.equal(await page.locator('a[href="mailto:umu@alisoglu.com"]').count(), 1);
     await page.locator('#feedback-title-input').fill('A test & an idea'); await page.locator('#feedback-details').fill('<script>alert("test")</script>\nSteps: open a tool.');
-    for (const [project, repo] of [['website', 'umutalisoglu.github.io'], ['fileforge', 'fileforge'], ['repodock', 'repodock']]) {
+    for (const [project, repo] of [['website', 'umutalisoglu.github.io'], ['fileforge', 'fileforge'], ['repodock', 'repodock'], ['skate-scape', 'skate-scape']]) {
       await page.locator('#feedback-project').selectOption(project);
       assert.equal(await page.locator('#feedback-preview').isVisible(), false);
     await page.getByRole('button', { name: 'Preview my report' }).click();

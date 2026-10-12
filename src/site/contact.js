@@ -6,6 +6,7 @@ const repositories = {
   website: 'umutalisoglu.github.io',
   fileforge: 'fileforge',
   repodock: 'repodock',
+  'skate-scape': 'skate-scape',
 };
 
 form.addEventListener('submit', event => {

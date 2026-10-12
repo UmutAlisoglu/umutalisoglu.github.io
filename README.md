@@ -1,6 +1,6 @@
 # Alisoglu project hub
 
-Live at [alisoglu.com](https://alisoglu.com/), hosted on GitHub Pages. A homepage with task shortcuts, five dedicated FileForge tool pages, the original FileForge workspace, project pages, Games, Windows downloads, privacy notes and email/GitHub contact. Skate Scape's release is deferred; its assets and source are not added to this repository.
+Live at [alisoglu.com](https://alisoglu.com/), hosted on GitHub Pages. A homepage with task shortcuts, five dedicated FileForge tool pages, the original FileForge workspace, project pages, Games, Windows downloads, privacy notes and email/GitHub contact. Skate Scape’s early-access build is linked at [alisoglu.com/skate-scape](https://alisoglu.com/skate-scape/) and served from its own [UmutAlisoglu/skate-scape](https://github.com/UmutAlisoglu/skate-scape) repository. The game’s source and assets are not copied into this hub.
 
 All FileForge conversions run on the visitor's device. There is no upload/conversion API, database or runtime third-party service. Dependency code, the font and FFmpeg WebAssembly are served from this website. Browser tools have smaller limits than the desktop app; see [LEARN.md](LEARN.md) for their scope and the step-by-step learning guide.
 

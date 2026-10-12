@@ -36,7 +36,7 @@ Open http://127.0.0.1:8780. This local server serves website files for preview. 
 - `src/fileforge/fileforge.css`: FileForge-specific presets, page cards and mobile layout.
 - `src/fileforge/worker.js`: PDF page export, merging and spreadsheet export in a background browser task.
 - `src/fileforge/video.js`: FFmpeg WebAssembly, running in a browser worker.
-- `games/index.html`: Games catalogue; Skate Scape remains deferred.
+- `games/index.html`: Games catalogue, with a link to Skate Scape’s separate early-access browser build.
 - `downloads/index.html`: links to your existing GitHub Releases.
 
 A Web Worker is a background JavaScript task inside the visitor's browser. It keeps longer conversions off the page's main thread. WebAssembly lets the browser run compiled FFmpeg code. We use the single-thread core so GitHub Pages does not need custom cross-origin isolation headers.
@@ -86,9 +86,9 @@ No new paid platform is introduced. Hosting still serves static website files. G
 3. **Presets:** buttons fill ordinary image settings. You can adjust them before conversion. Saving settings is optional and separate from selecting files.
 4. **Publishing:** these are static JavaScript/CSS changes. The existing GitHub Actions workflow builds them after a push; neither a conversion server nor a paid hosting product is involved.
 
-## Adding a game later
+## Connecting the game
 
-Skate Scape's public release is deferred. It can get a Play button once its browser build and distributable assets are ready. Keep its source repository separate; copy or automatically build a selected release into a site subfolder. Asset URLs must use that subfolder as the base. Source collaboration happens through issues, forks and pull requests, with you deciding what to merge.
+Skate Scape is now served at `/skate-scape/` from its own GitHub Pages project repository. The Games page and Skate Scape project page link to it; the hub does not embed it or preload its game data. Development and deployment of the game stay separate from this repository. Its own README documents the first download, browser caching, controls and local setup. The FileForge privacy promise concerns selected files in the tools; the game downloads data from GitLab and persists game state locally, as described on the privacy page.
 
 ## The new pages: how to make your own edits
 
@@ -106,6 +106,8 @@ The contact page links to **umu@alisoglu.com**, the address you supplied. A `mai
 
 The social sharing image is drawn in `assets/social-card.svg`. To regenerate its PNG after editing the SVG, run `node scripts/render-social-card.mjs` with Google Chrome installed. Then build again. This image is used by the pages’ Open Graph metadata.
 
-Design changes use the existing cream background, purple accent, colourful task cards and robot illustration. `site.css` adds responsive layouts; `prefers-reduced-motion` disables decorative transitions for visitors who request less motion. Skate Scape’s illustration is explicitly a project illustration, not a screenshot of a playable release.
+Design changes use the existing cream background, purple accent, colourful task cards and robot illustration. `site.css` adds responsive layouts; `prefers-reduced-motion` disables decorative transitions for visitors who request less motion. Skate Scape’s illustration is explicitly a project illustration, not a gameplay screenshot.
 
-Checks for this update: all 16 destinations and internal anchors, real image/PDF/spreadsheet exports, the existing video encoder, PDF page operations and image batches. Runtime requests were checked for same-site GETs only. No selected files or feedback drafts were uploaded during testing.
+Checks for this update: all 16 destinations and internal anchors, real image/PDF/spreadsheet exports, the existing video encoder, PDF page operations and image batches. Hub and FileForge runtime requests were checked for same-site GETs only; the separately deployed game is outside those conversion tests. No selected files or feedback drafts were uploaded during testing.
+
+A newer commit from Claude published the Skate Scape launch link while this redesign was being prepared. Git refused to overwrite that remote history. We fetched and merged it, kept the Play link, and updated the new project page, privacy notes and status labels to match. This preserves both sets of work without a force push.
