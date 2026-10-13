@@ -132,3 +132,9 @@ This release adds four tools: background removal, image → SVG tracing, image c
 For your next tool, first decide its accepted inputs, output, practical limits and error messages. Add its catalogue entry and HTML guide, then connect an engine that runs on the visitor's device. Use a worker for long CPU tasks. Vite needs a literal `new Worker(new URL('./engine.worker.js', import.meta.url), { type: 'module' })` expression to bundle worker dependencies correctly.
 
 To check this release: `npm test`, `npm run build`, start `npm run preview`, then run `npm run test:pages` and `npm run test:next` in another terminal. The focused new checks inspect actual exported pixels/paths/ZIP entries and the real model's foreground mask, rather than merely checking that a success message appeared. Publish with the existing commit/push → GitHub Actions workflow.
+
+## Keeping the Windows release and website in sync
+
+FileForge for Windows 0.2.0 now includes the same nine main tasks, with native conversion libraries, image batches and a bundled background model. It is maintained in the separate `UmutAlisoglu/fileforge` repository. A website edit changes browser code; a desktop update needs a new tested executable and GitHub Release. Its own LEARN.md explains that build.
+
+For this release, the Windows source passed Python checks and browser interface checks. The built executable ran actual crop, SVG, PDF-image and background jobs, and the installer was checked in an isolated folder without changing installed applications. The release ZIP was checked for required files and a SHA-256 checksum. The website download links, version, package size and feature comparison were then updated together. Installed desktop copies get new features after downloading and installing the new package. No automatic updater or paid processing service was added.
