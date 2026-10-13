@@ -4,9 +4,9 @@
   <rect x="73" y="49" width="43" height="43" rx="12" fill="#624bc5" transform="rotate(-3 95 70)"/>
   <text x="82" y="79" font-family="Georgia,serif" font-size="34" fill="white">u.</text>
   <text x="134" y="82" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#242329">alisoglu<tspan fill="#6045e9">.</tspan></text>
-  <text x="72" y="254" font-family="Arial,sans-serif" font-size="78" font-weight="700" letter-spacing="-3" fill="#242329">Useful tools.</text>
-  <text x="72" y="351" font-family="Arial,sans-serif" font-weight="600" font-size="78" letter-spacing="-3" fill="#624bc5">Playful projects.</text>
-  <text x="77" y="414" font-family="Arial,sans-serif" font-size="24" fill="#625e69">A little less file frustration. A little more fun.</text>
+  <text x="72" y="254" font-family="Arial,sans-serif" font-size="78" font-weight="700" letter-spacing="-3" fill="#242329">Everyday files.</text>
+  <text x="72" y="351" font-family="Arial,sans-serif" font-weight="600" font-size="78" letter-spacing="-3" fill="#624bc5">Made simpler.</text>
+  <text x="77" y="414" font-family="Arial,sans-serif" font-size="24" fill="#625e69">Convert, compress and edit in your browser.</text>
   <g font-family="Arial,sans-serif" font-size="17" fill="#242329">
     <rect x="76" y="459" width="140" height="44" rx="12" fill="#ebe4fb" stroke="#d0c6df"/><text x="104" y="487">PDF tools</text>
     <rect x="229" y="459" width="140" height="44" rx="12" fill="#f8e1e6" stroke="#e0c6cd"/><text x="269" y="487">Images</text>

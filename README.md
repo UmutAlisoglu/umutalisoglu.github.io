@@ -1,8 +1,8 @@
 # Alisoglu project hub
 
-Live at [alisoglu.com](https://alisoglu.com/), hosted on GitHub Pages. A homepage with task shortcuts, five dedicated FileForge tool pages, the original FileForge workspace, project pages, Games, Windows downloads, privacy notes and email/GitHub contact. Skate Scape’s early-access build is linked at [alisoglu.com/skate-scape](https://alisoglu.com/skate-scape/) and served from its own [UmutAlisoglu/skate-scape](https://github.com/UmutAlisoglu/skate-scape) repository. The game’s source and assets are not copied into this hub.
+Live at [alisoglu.com](https://alisoglu.com/), hosted on GitHub Pages. A searchable homepage and tool directory, nine dedicated FileForge tool pages, the original five-tool workspace, project pages, Games, Windows downloads, privacy notes and email/GitHub contact. The directory has ten task shortcuts because Images → PDF shares the Image studio engine. Skate Scape’s early-access build is linked at [alisoglu.com/skate-scape](https://alisoglu.com/skate-scape/) and served from its own [UmutAlisoglu/skate-scape](https://github.com/UmutAlisoglu/skate-scape) repository. The game’s source and assets are not copied into this hub.
 
-All FileForge conversions run on the visitor's device. There is no upload/conversion API, database or runtime third-party service. Dependency code, the font and FFmpeg WebAssembly are served from this website. Browser tools have smaller limits than the desktop app; see [LEARN.md](LEARN.md) for their scope and the step-by-step learning guide.
+All FileForge conversions run on the visitor's device. There is no upload/conversion API, database or runtime third-party service. Dependency code, the font, FFmpeg WebAssembly and the background-removal model/runtime are served from this website. The background engine loads only after starting that tool (about 19 MB on first use); its small U2NETP model is 4.6 MB. Browser tools have smaller limits than the desktop app; see [LEARN.md](LEARN.md) for their scope and the step-by-step learning guide.
 
 The website includes only public project information and browser tool source.
 
@@ -32,12 +32,15 @@ With preview running, create a short test video using FFmpeg:
     npm run test:browser
     npm run test:enhancements
     npm run test:pages
+    npm run test:next
 
 The browser test uses installed Google Chrome. BROWSER_CHANNEL can select another Playwright channel. It checks real downloads, PDF ordering, spreadsheet pagination, cancellation, video encoding, responsive pages and that requests contain no uploads or external runtime requests. Its output is ignored under .local/.
 
 The enhancement checks generate their own image/PDF fixtures. They verify batch ZIP contents and dimensions, duplicate filenames, images-to-PDF order, PDF thumbnails, existing plus new page rotations, drag-and-drop, excluded pages, cancellation/recovery, local preference consent and mobile layout. PDF previews are lazy-loaded through the locally bundled PDF.js renderer. Image batches run in a separate browser worker.
 
-Page checks exercise all 16 routes, navigation, canonical URLs, internal links and anchors, sitemap coverage, dedicated tool selection and real conversions, feedback drafts and screen widths of 320/390/768/1440 px. Feedback is previewed locally; the tests never submit a GitHub issue. Shared headers, footers and tool controls are expanded into ordinary HTML by `src/site/templates.js` during Vite's build. See LEARN.md for editing instructions.
+Page checks exercise all 20 routes, navigation, canonical URLs, internal links and anchors, sitemap coverage, dedicated tool selection and real conversions, feedback drafts and screen widths of 320/390/768/1440 px. Feedback is previewed locally; the tests never submit a GitHub issue. Shared headers, footers, catalogue and tool controls are expanded into ordinary HTML by `src/site/templates.js` during Vite's build. See LEARN.md for editing instructions.
+
+The next-release checks verify task search, exact crop pixels and dimensions, SVG vector paths, PDF page-image ZIP contents and actual foreground segmentation through the shipped U2NETP model. They cover cancellations, bad inputs, narrow screens and same-origin GET-only runtime requests. The model fixture is a checksum-pinned public example downloaded into ignored `.local/`; it is never shipped with the website.
 
 ## FileForge features
 

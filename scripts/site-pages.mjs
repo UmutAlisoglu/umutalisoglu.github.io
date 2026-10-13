@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { sitePaths, toolPages } from '../src/site/templates.js';
+import { advancedTools } from '../src/site/tool-catalog.js';
 
 const base = process.env.TEST_URL || 'http://127.0.0.1:8780';
 const output = resolve('.local/browser-check'); await mkdir(output, { recursive: true });
@@ -122,7 +123,7 @@ try {
   }
   await check('navigation and page content remain available without JavaScript', async () => {
     const staticContext = await browser.newContext({ javaScriptEnabled: false }); const staticPage = await staticContext.newPage();
-    await staticPage.goto(base + '/tools/pdf-organizer/'); assert.equal(await staticPage.locator('.tool-nav a').count(), 5); assert.equal(await staticPage.locator('noscript').isVisible(), true);
+    await staticPage.goto(base + '/tools/pdf-organizer/'); assert.equal(await staticPage.locator('.tool-nav a').count(), toolPages.length + advancedTools.length); assert.equal(await staticPage.locator('noscript').isVisible(), true);
     await staticPage.getByRole('navigation').getByRole('link', { name: 'Projects', exact: true }).click(); assert.equal(await staticPage.locator('.project-row').count(), 3);
     await staticPage.goto(base + '/contact/'); assert.equal(await staticPage.locator('#feedback-form').isVisible(), false); assert.equal(await staticPage.locator('a[href="mailto:umu@alisoglu.com"]').isVisible(), true); await staticContext.close();
   });

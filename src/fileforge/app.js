@@ -267,3 +267,7 @@ window.addEventListener('beforeunload', () => { active?.abort(); clearOutput(); 
 window.addEventListener('hashchange', () => { if (dedicatedTool) return; if (active) history.replaceState(null, '', `#${currentTool}`); else chooseTool(location.hash.slice(1)); });
 updateImageHint();
 chooseTool(tools[dedicatedTool] ? dedicatedTool : tools[location.hash.slice(1)] ? location.hash.slice(1) : 'image');
+// A task link can open Image studio with PDF selected, without changing saved settings.
+if (currentTool === 'image' && new URLSearchParams(location.search).get('format') === 'pdf') {
+  $('[name=format]').value = 'pdf'; updateImageHint(); updateAction();
+}

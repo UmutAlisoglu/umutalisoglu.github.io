@@ -15,3 +15,9 @@ for (const directory of ['cmaps', 'standard_fonts', 'wasm', 'iccs']) {
 }
 await cp('node_modules/pdfjs-dist/LICENSE', 'public/licenses/pdfjs-Apache-2.0.txt');
 await cp('node_modules/fflate/LICENSE', 'public/licenses/fflate-MIT.txt');
+// The model runner's JS/WASM are served here; no third-party runtime requests.
+await mkdir('public/vendor/ort', { recursive: true });
+for (const file of ['ort-wasm-simd-threaded.mjs', 'ort-wasm-simd-threaded.wasm']) {
+  await cp(`node_modules/onnxruntime-web/dist/${file}`, `public/vendor/ort/${file}`);
+}
+await cp('node_modules/imagetracerjs/LICENSE', 'public/licenses/imagetracer-Unlicense.txt');

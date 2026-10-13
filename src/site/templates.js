@@ -1,15 +1,10 @@
 import { readFileSync } from 'node:fs';
 
-export const toolPages = [
-  { id: 'image', slug: 'image-converter', name: 'Image studio', symbol: '▧', short: 'Convert, resize & batch', description: 'JPG, PNG, WebP or one PDF. A single image or a whole batch.', color: 'pink' },
-  { id: 'organize', slug: 'pdf-organizer', name: 'PDF organizer', symbol: '▦', short: 'Preview, reorder & rotate', description: 'Get your pages in order. Keep the ones you need and export a fresh PDF.', color: 'purple' },
-  { id: 'spreadsheet', slug: 'excel-to-pdf', name: 'Excel → PDF', symbol: '▤', short: 'Tables ready to share', description: 'Turn visible XLSX sheets or CSV data into readable PDF tables.', color: 'mint' },
-  { id: 'merge', slug: 'merge-pdf', name: 'Merge PDFs', symbol: '⊕', short: 'One tidy document', description: 'Combine separate PDFs in the order you choose.', color: 'yellow' },
-  { id: 'video', slug: 'video-compressor', name: 'Video compressor', symbol: '▷', short: 'A smaller MP4', description: 'Choose a size target and compress a short video on your device.', color: 'blue' },
-];
+import { toolPages, advancedTools, renderToolDirectory } from './tool-catalog.js';
+export { toolPages } from './tool-catalog.js';
 
 export const sitePaths = [
-  '/', '/tools/', '/tools/fileforge/', ...toolPages.map(tool => `/tools/${tool.slug}/`),
+  '/', '/tools/', '/tools/fileforge/', ...toolPages.map(tool => `/tools/${tool.slug}/`), ...advancedTools.map(tool => `/tools/${tool.slug}/`),
   '/projects/', '/projects/fileforge/', '/projects/repodock/', '/projects/skate-scape/',
   '/games/', '/downloads/', '/privacy/', '/contact/',
 ];
@@ -33,15 +28,19 @@ export function siteTemplates() {
       order: 'pre',
       handler(html, context) {
         const path = context.path.replace(/index\.html$/, '');
-        let result = html.replace('<site-header></site-header>', header(path)).replace('<site-footer></site-footer>', footer);
+        let result = html.replace('<site-header></site-header>', header(path)).replace('<site-footer></site-footer>', footer)
+          .replace('<tool-directory></tool-directory>', renderToolDirectory())
+          .replace('<tool-directory data-variant="home"></tool-directory>', renderToolDirectory({ compact: true, id: 'home-tools' }))
+          .replace('<advanced-tool-links></advanced-tool-links>', `<p>More FileForge tools</p><div class="tool-nav" aria-label="FileForge tools">${[...toolPages, ...advancedTools].map(tool => `<a href="/tools/${tool.slug}/"${path === `/tools/${tool.slug}/` ? ' aria-current="page"' : ''}><span class="tool-symbol" aria-hidden="true">${tool.symbol}</span><span>${tool.name}<small>${tool.short}</small></span></a>`).join('')}</div>`);
         if (result.includes('<fileforge-workspace></fileforge-workspace>')) {
           let workspace = readFileSync(new URL('./fileforge-workspace.html', import.meta.url), 'utf8');
           const dedicated = result.match(/data-fileforge-tool="([a-z]+)"/)?.[1];
           if (dedicated) {
-            const links = toolPages.map(tool => `<a href="/tools/${tool.slug}/"${tool.id === dedicated ? ' aria-current="page"' : ''}><span class="tool-symbol" aria-hidden="true">${tool.symbol}</span><span>${tool.name}<small>${tool.short}</small></span></a>`).join('');
+            const links = [...toolPages, ...advancedTools].map(tool => `<a href="/tools/${tool.slug}/"${tool.id === dedicated ? ' aria-current="page"' : ''}><span class="tool-symbol" aria-hidden="true">${tool.symbol}</span><span>${tool.name}<small>${tool.short}</small></span></a>`).join('');
             workspace = workspace.replace(/<div class="tool-tabs"[\s\S]*?<\/div>/, `<div class="tool-nav" aria-label="More FileForge tools">${links}</div>`)
               .replace('role="tabpanel" aria-labelledby="tab-image"', 'aria-labelledby="tool-title"');
           }
+          if (!dedicated) workspace = workspace.replace('<div class="desktop-tip">', `<section class="additional-tool-list"><p>More FileForge tools</p>${advancedTools.map(tool => `<a href="/tools/${tool.slug}/">${tool.name} ↗</a>`).join('')}</section><div class="desktop-tip">`);
           result = result.replace('<fileforge-workspace></fileforge-workspace>', workspace);
         }
         return result;
