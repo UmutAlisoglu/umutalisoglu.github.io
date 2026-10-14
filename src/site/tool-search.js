@@ -1,4 +1,4 @@
-import { featuredTools, findTools, renderToolCards } from './tool-catalog.js';
+import { featuredTools, findTools, renderToolCards, engineCount } from './tool-catalog.js';
 import './tool-search.css';
 
 for (const directory of document.querySelectorAll('[data-tool-directory]')) {
@@ -21,7 +21,7 @@ for (const directory of document.querySelectorAll('[data-tool-directory]')) {
     grid.hidden = tools.length === 0;
     empty.hidden = tools.length !== 0;
     clear.hidden = !search.value;
-    count.textContent = initial ? 'Popular tools to get started' : `${tools.length} ${tools.length === 1 ? 'task' : 'tasks'}${query ? ' matching your search' : category === 'All tools' ? ' · 9 browser tools' : ` in ${category.toLowerCase()}`}`;
+    count.textContent = initial ? 'Popular tools to get started' : `${tools.length} ${tools.length === 1 ? 'task' : 'tasks'}${query ? ' matching your search' : category === 'All tools' ? ` · ${engineCount} browser tools` : ` in ${category.toLowerCase()}`}`;
     categories.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.toolCategory === category)));
   }
 

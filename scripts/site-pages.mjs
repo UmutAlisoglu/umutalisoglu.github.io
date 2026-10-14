@@ -28,7 +28,7 @@ try {
   await check('all pages render complete HTML with unique titles, canonical URLs and navigation', async () => {
     for (const path of sitePaths) {
       const response = await page.goto(base + path); assert.equal(response.status(), 200, path);
-      const source = await response.text(); assert.doesNotMatch(source, /<site-header|<site-footer|<fileforge-workspace/, path);
+      const source = await response.text(); assert.doesNotMatch(source, /<site-header|<site-footer|<fileforge-workspace|<fileforge-launcher|<fileforge-workbench/, path);
       assert.equal(await page.locator('h1').count(), 1, path);
       const title = await page.title(); assert.ok(!titles.has(title), title); titles.add(title);
       assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), `https://alisoglu.com${path}`);
@@ -72,6 +72,27 @@ try {
     assert.equal((await resultPDF()).getPageCount(), 1);
     await page.goto(base + '/tools/fileforge/#organize'); assert.equal(await page.locator('#tab-organize').getAttribute('aria-selected'), 'true');
     await page.locator('#tab-organize').press('ArrowRight'); assert.equal(await page.locator('#tab-spreadsheet').getAttribute('aria-selected'), 'true');
+  });
+  await check('all advanced tool URLs initialize the right workspace and navigation', async () => {
+    const advancedIds = { background: 'background', svg: 'trace', crop: 'crop', 'pdf-images': 'pdfimages' };
+    for (const tool of advancedTools) {
+      await page.goto(`${base}/tools/${tool.slug}/`);
+      assert.equal(await page.locator('.tool-nav a[aria-current]').getAttribute('href'), `/tools/${tool.slug}/`);
+      assert.equal(await page.locator('.tool-nav a').count(), toolPages.length + advancedTools.length);
+      if (tool.id === 'text') {
+        assert.equal(await page.locator('body').getAttribute('data-ocr-tool'), 'text');
+        assert.equal(await page.locator('#ocr-run').isDisabled(), true);
+        assert.deepEqual(await page.locator('#ocr-language option').evaluateAll(options => options.map(option => option.value)), ['eng', 'deu', 'tur']);
+        assert.equal(await page.locator('#ocr-sample').isVisible(), true);
+      } else {
+        assert.equal(await page.locator('body').getAttribute('data-advanced-tool'), advancedIds[tool.id]);
+        assert.equal(await page.locator('#advanced-run').isDisabled(), true);
+        assert.equal(await page.locator('#advanced-input').isVisible(), true);
+        if (tool.id === 'background') assert.equal(await page.locator('#background-editor').isVisible(), false);
+      }
+      await page.reload();
+      assert.equal(await page.locator('.tool-nav a[aria-current]').getAttribute('href'), `/tools/${tool.slug}/`);
+    }
   });
   await check('dedicated organizer and spreadsheet routes export valid documents', async () => {
     const pdf = await PDFDocument.create(); pdf.addPage([300, 400]); pdf.addPage([500, 600]);
@@ -124,6 +145,12 @@ try {
   await check('navigation and page content remain available without JavaScript', async () => {
     const staticContext = await browser.newContext({ javaScriptEnabled: false }); const staticPage = await staticContext.newPage();
     await staticPage.goto(base + '/tools/pdf-organizer/'); assert.equal(await staticPage.locator('.tool-nav a').count(), toolPages.length + advancedTools.length); assert.equal(await staticPage.locator('noscript').isVisible(), true);
+    for (const tool of advancedTools) {
+      await staticPage.goto(`${base}/tools/${tool.slug}/`);
+      assert.equal(await staticPage.locator('.tool-nav a').count(), toolPages.length + advancedTools.length);
+      assert.equal(await staticPage.locator('noscript').isVisible(), true);
+      assert.equal(await staticPage.locator('h1').count(), 1);
+    }
     await staticPage.getByRole('navigation').getByRole('link', { name: 'Projects', exact: true }).click(); assert.equal(await staticPage.locator('.project-row').count(), 3);
     await staticPage.goto(base + '/contact/'); assert.equal(await staticPage.locator('#feedback-form').isVisible(), false); assert.equal(await staticPage.locator('a[href="mailto:umu@alisoglu.com"]').isVisible(), true); await staticContext.close();
   });

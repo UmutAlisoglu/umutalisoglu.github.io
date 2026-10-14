@@ -1,5 +1,6 @@
 import { formatBytes, imageSettings } from './shared.js';
 import './fileforge.css';
+import { configureToolBridge, publishToolResult, publishToolSelection, publishToolBusy, invalidateToolResult } from './workspace-bridge.js';
 
 const tools = {
   image: { title: 'Make your images fit.', action: 'Convert images', accept: '.jpg,.jpeg,.png,.webp,.gif,.bmp', extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'], limit: 20_000_000, count: 50, total: 100_000_000, hint: 'Up to 50 JPG, PNG, WebP, GIF or BMP images · 20 MB each, 100 MB total. Animated images use the first frame. Add more files to your batch at any time.' },
@@ -15,6 +16,7 @@ const dedicatedTool = document.body.dataset.fileforgeTool;
 let selected = [], pages = [], currentTool = 'image', outputURL = null, active = null, draggedPage = null;
 
 function clearOutput() {
+  invalidateToolResult();
   $('#image-preview').removeAttribute('src'); $('#image-preview').hidden = true;
   if (outputURL) URL.revokeObjectURL(outputURL);
   outputURL = null; $('#result').hidden = true; $('#download-result').removeAttribute('href');
@@ -32,6 +34,7 @@ function updateAction() {
   $('#submit-label').textContent = currentTool === 'organize' && pages.length ? 'Export selected pages' : currentTool === 'image' && $('[name=format]').value === 'pdf' ? 'Create PDF' : tools[currentTool].action;
 }
 function setBusy(busy) {
+  publishToolBusy(busy);
   form.querySelectorAll('input,select,button').forEach(element => { element.disabled = busy; });
   form.querySelectorAll('[data-options]').forEach(panel => panel.querySelectorAll('input,select,button').forEach(element => { element.disabled = busy || panel.hidden; }));
   document.querySelectorAll('[data-tool]').forEach(element => { element.disabled = busy; });
@@ -41,6 +44,7 @@ function setBusy(busy) {
 }
 function selectionChanged() {
   input.value = ''; clearOutput(); resetPages(); renderFiles();
+  publishToolSelection(selected);
 }
 function renderFiles() {
   list.replaceChildren();
@@ -260,6 +264,7 @@ form.addEventListener('submit', async event => {
     $('#result-detail').textContent = detail;
     if (result.type.startsWith('image/')) { $('#image-preview').src = outputURL; $('#image-preview').hidden = false; }
     $('#result').hidden = false; report('Done. Your download is ready.', 100);
+    publishToolResult({ blob, name: result.name, detail });
   } catch (error) { report(job.signal.aborted ? 'Cancelled. You can choose another file or try again.' : error.message || 'The conversion could not finish. Try the desktop app.'); }
   finally { active = null; setBusy(false); renderFiles(); if (currentTool === 'organize') renderPages(); }
 });
@@ -271,3 +276,6 @@ chooseTool(tools[dedicatedTool] ? dedicatedTool : tools[location.hash.slice(1)] 
 if (currentTool === 'image' && new URLSearchParams(location.search).get('format') === 'pdf') {
   $('[name=format]').value = 'pdf'; updateImageHint(); updateAction();
 }
+configureToolBridge({ selectFiles: addFiles, busy: () => Boolean(active), clear: () => {
+  if (active) return; selected = []; selectionChanged(); report('Choose a file to start.');
+} });

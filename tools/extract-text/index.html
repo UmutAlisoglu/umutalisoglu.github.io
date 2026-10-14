@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Extract text — FileForge by Alisoglu</title>
+  <meta name="description" content="Turn screenshots, images and scanned PDFs into editable text. English, German and Turkish OCR runs on your device.">
+  <meta name="theme-color" content="#f9f8f5"><link rel="canonical" href="https://alisoglu.com/tools/extract-text/">
+  <meta property="og:type" content="website"><meta property="og:title" content="Extract text — FileForge by Alisoglu">
+  <meta property="og:description" content="Your screenshot. Your words. Extract editable text locally from images and scanned PDFs.">
+  <meta property="og:url" content="https://alisoglu.com/tools/extract-text/"><meta property="og:image" content="https://alisoglu.com/assets/social-card.png">
+  <link rel="icon" href="/assets/monogram.svg" type="image/svg+xml"><link rel="stylesheet" href="/hub.css"><link rel="stylesheet" href="/site.css">
+  <script type="module" src="/src/fileforge/ocr.js"></script>
+</head>
+<body data-ocr-tool="text">
+<site-header></site-header>
+<main id="main" class="wrap tool-page dedicated-tool">
+  <div class="breadcrumbs"><a href="/tools/">Tools</a><span aria-hidden="true">/</span><span>Extract text</span></div>
+  <div class="page-intro"><p class="eyebrow">FILEFORGE / READ IT. EDIT IT. USE IT.</p><h1>Your screenshot.<br><em>Your words.</em></h1><p>Turn a photo, screenshot or scanned PDF into text you can copy, edit and take with you.</p><span class="local-badge"><span class="status-dot"></span> Files stay on your device</span></div>
+  <div class="advanced-layout">
+    <section id="ocr-workspace" class="tool-panel ocr-workspace" aria-labelledby="ocr-title">
+      <div class="ocr-panel-heading"><div><p class="eyebrow">FROM PIXELS TO PARAGRAPHS</p><h2 id="ocr-title">Extract text</h2></div><span class="ocr-tool-mark" aria-hidden="true">Aa</span></div>
+      <p class="tool-hint">One JPG, PNG, WebP, GIF or BMP up to 20 MB / 12 megapixels. PDF up to 25 MB, with up to 10 pages per run. Animated images use the first frame.</p>
+      <label id="ocr-drop" class="drop-zone ocr-drop" for="ocr-input"><span class="drop-icon" aria-hidden="true">↥</span><strong>Choose a file or drop it here</strong><span>Images, screenshots and PDFs. Processed locally.</span><input id="ocr-input" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,.pdf" aria-label="Choose an image or PDF"></label>
+      <div class="selection-bar ocr-selection"><span id="ocr-filename">No file selected</span><button id="ocr-clear" type="button" class="text-button" hidden>Clear file &amp; text</button></div>
+      <button id="ocr-sample" type="button" class="ocr-sample-button"><span aria-hidden="true">✦</span> Try a sample screenshot <span aria-hidden="true">→</span></button>
+      <div id="ocr-source-card" class="ocr-source-card" hidden><img id="ocr-source-preview" alt="Selected image preview" hidden><span id="ocr-source-pdf" class="ocr-pdf-mark" aria-hidden="true" hidden>PDF</span><div><strong id="ocr-source-label"></strong><p>Best results come from sharp, upright printed text.</p></div></div>
+      <fieldset id="ocr-options" class="ocr-options"><legend>Reading settings</legend>
+        <label>Text language<select id="ocr-language"><option value="eng">English</option><option value="deu">Deutsch / German</option><option value="tur">Türkçe / Turkish</option></select><small>Choose the main language of your document.</small></label>
+        <label>Text layout<select id="ocr-layout"><option value="3">Automatic · documents</option><option value="11">Scattered text · screenshots</option><option value="6">Single block · paragraphs</option></select><small>Try another layout if text is missing.</small></label>
+        <label id="ocr-pdf-pages-label" class="ocr-page-selection" hidden>PDF pages<input id="ocr-pdf-pages" type="text" placeholder="All pages, or 1, 3-5" maxlength="150" autocomplete="off"><small>Choose up to 10 pages. Blank reads all if the PDF has 10 pages or fewer.</small></label>
+      </fieldset>
+      <p id="ocr-engine-note" class="inline-note">Extract text downloads the local engine and chosen language on first use: about 7 MB for English. Your file is never uploaded.</p>
+      <div class="conversion-actions ocr-actions"><button id="ocr-run" type="button" class="button primary" disabled>Extract text ↗</button><button id="ocr-cancel" type="button" class="button secondary" hidden>Cancel</button></div>
+      <div class="ocr-job-status"><p id="ocr-status" role="status" aria-live="polite">Choose a file, or try the sample.</p><progress id="ocr-progress" max="1" value="0" aria-label="Text extraction progress" hidden></progress></div>
+      <section id="ocr-result" class="ocr-result" aria-labelledby="ocr-result-title" hidden>
+        <div class="ocr-editor-heading"><div><span class="ocr-ready-dot" aria-hidden="true"></span><h3 id="ocr-result-title">Your text, ready to use.</h3></div><span id="ocr-count" class="ocr-count"></span></div>
+        <label for="ocr-text" class="ocr-editor-label">Review and edit the extracted text</label>
+        <textarea id="ocr-text" rows="14" maxlength="2000000" spellcheck="true" placeholder="No readable text was found. Try a sharper image or another language."></textarea>
+        <div class="ocr-result-actions"><button id="ocr-copy" type="button" class="button secondary">Copy text</button><button id="ocr-download" type="button" class="button primary">Download current text ↓</button><button id="ocr-prepare" type="button" class="text-button" hidden>Use edited text in workspace →</button></div>
+        <p id="ocr-result-detail" class="ocr-result-detail"></p><p class="ocr-review-note">Check names, numbers and punctuation before using the result. OCR can make mistakes and does not preserve the original page layout.</p>
+      </section>
+      <noscript><p>Enable JavaScript to extract text locally. You can browse all tool guides without it.</p></noscript>
+    </section>
+    <aside class="advanced-sidebar"><advanced-tool-links></advanced-tool-links></aside>
+  </div>
+  <section class="tool-guide" aria-labelledby="guide-title"><div><p class="eyebrow">THREE SIMPLE STEPS</p><h2 id="guide-title">From image to editable.</h2><ol class="steps-list"><li><h3>Choose your source</h3><p>Drop in a screenshot, photographed page or scanned PDF.</p></li><li><h3>Read it on your device</h3><p>Pick English, German or Turkish, then let the browser read the pixels locally.</p></li><li><h3>Make it yours</h3><p>Correct anything the engine missed. Copy the text or download the current version as a TXT file.</p></li></ol></div><aside class="limit-note"><h3>A good scan goes a long way</h3><p>Use upright, well-lit printed text. Small letters, handwriting, complex tables and curved pages can be difficult. PDF pages are rendered one at a time at a 2400px longest edge; large images are scaled to a 3000px longest edge.</p><a class="text-link" href="/contact/">Found a bug? →</a></aside></section>
+  <section class="faq-section" aria-labelledby="faq-title"><div><p class="eyebrow">GOOD TO KNOW</p><h2 id="faq-title">A few answers.</h2></div><div class="faq-list"><details><summary>Does this upload my documents?</summary><p>No. The engine and chosen language download from this website. Your image or PDF is read on your device and is not sent to a conversion or AI service.</p></details><details><summary>Can it read scanned PDFs?</summary><p>Yes. It renders the selected PDF pages locally, then reads their images with OCR. The result is editable plain text, with page separators for multiple pages.</p></details><details><summary>Will it reproduce my document exactly?</summary><p>No. OCR is an approximation. It can miss or misread letters and will not recreate columns, tables or the original layout. Review the editable output before using it.</p></details><details><summary>What happens when I clear the tool?</summary><p>The selected file, previews and text are removed from this page and the OCR worker is stopped. The browser may keep public engine downloads in its HTTP or optional offline cache.</p></details></div></section>
+  <aside class="privacy-strip"><div><h2>Your files stay with you.</h2><p>No file upload, account or saved conversion history. Download your result before leaving the page.</p></div><a href="/privacy/">How privacy works →</a></aside>
+</main><site-footer></site-footer>
+</body></html>

@@ -13,11 +13,13 @@ export const advancedTools = [
   { id: 'svg', slug: 'image-to-svg', name: 'Image → SVG', symbol: '◇', short: 'Pixels into vector shapes', description: 'Trace logos, icons and drawings into an editable SVG.', color: 'purple', category: 'Images', keywords: 'image photo picture png jpg jpeg svg vector vectorize vectorise trace tracing logo icon drawing illustration convert converter' },
   { id: 'crop', slug: 'crop-image', name: 'Crop an image', symbol: '⌗', short: 'Keep the part you need', description: 'Crop a photo or screenshot with a free selection or a fixed ratio.', color: 'pink', category: 'Images', keywords: 'image photo picture crop cropping screenshot cut frame ratio aspect square portrait landscape' },
   { id: 'pdf-images', slug: 'pdf-to-images', name: 'PDF → images', symbol: '▥', short: 'Pages as PNG or JPG', description: 'Export selected PDF pages as images or download them together in a ZIP.', color: 'yellow', category: 'PDFs', keywords: 'pdf image images png jpg jpeg export render convert converter document page photo picture zip' },
+  { id: 'text', slug: 'extract-text', name: 'Extract text', symbol: 'T', short: 'Screenshots & scans into words', description: 'Read text from images or scanned PDF pages, edit it and download a TXT file.', color: 'blue', category: 'Documents', keywords: 'ocr text txt extract read recognize recognise recognition screenshot photo image png jpg jpeg webp pdf scan scanned document copy words english german turkish' },
 ];
 
 const imagePdf = { id: 'image-pdf', slug: 'image-converter', name: 'Images → PDF', symbol: '▧', short: 'One image or a whole document', description: 'Turn PNG, JPG or WebP images into one PDF, in the order you choose.', color: 'purple', category: 'PDFs', keywords: 'image images photo picture png jpg jpeg webp bmp gif pdf convert converter conversion scan document combine', href: '/tools/image-converter/?format=pdf' };
 
-export const toolCatalog = [imagePdf, advancedTools[0], toolPages[4], toolPages[0], advancedTools[1], advancedTools[2], advancedTools[3], toolPages[3], toolPages[1], toolPages[2]];
+export const toolCatalog = [imagePdf, advancedTools[0], toolPages[4], toolPages[0], advancedTools[1], advancedTools[2], advancedTools[3], toolPages[3], toolPages[1], toolPages[2], advancedTools[4]];
+export const engineCount = toolPages.length + advancedTools.length;
 export const toolCategories = ['All tools', 'Images', 'PDFs', 'Video', 'Documents'];
 export const featuredTools = [toolPages[1], toolPages[0], toolPages[4], toolPages[2]];
 
@@ -31,11 +33,12 @@ const rasterOutputs = new Set(['png', 'jpg', 'jpeg', 'webp', 'image', 'images', 
 const pdfImageOutputs = new Set(['png', 'jpg', 'jpeg', 'image', 'images', 'photo', 'photos', 'picture', 'pictures']);
 // Recognize unsupported format names too: "SVG to PNG" must not accidentally
 // match the raster-to-SVG tool just because both words appear in its description.
-const formatWords = 'png|jpg|jpeg|webp|gif|bmp|images?|photos?|pictures?|pdf|svg|tif|tiff|heic|heif|avif|eps|psd|raw|xlsx|xls|csv|excel|doc|docx|mp4|mov|mkv|webm|avi|mp3|wav';
+const formatWords = 'png|jpg|jpeg|webp|gif|bmp|images?|photos?|pictures?|pdf|svg|tif|tiff|heic|heif|avif|eps|psd|raw|xlsx|xls|csv|excel|doc|docx|mp4|mov|mkv|webm|avi|mp3|wav|text|txt';
 const conversionPattern = new RegExp(`\\b(${formatWords}) (?:to|into) (?:an? )?(${formatWords})\\b`);
 const ignoredWords = new Set(['a', 'an', 'the', 'my', 'i', 'want', 'need', 'please', 'to', 'into', 'and', 'or', 'with', 'make', 'this', 'file', 'files', 'any', 'can', 'you', 'it', 'me', 'convert', 'conversion', 'from', 'for']);
 
 function conversionTool(source, target) {
+  if ((rasterInputs.has(source) || source === 'pdf') && ['text', 'txt'].includes(target)) return 'text';
   if (rasterInputs.has(source)) {
     if (target === 'pdf') return 'image-pdf';
     if (target === 'svg') return 'svg';
@@ -83,7 +86,7 @@ export function renderToolDirectory({ compact = false, id = 'fileforge-directory
       <p id="${prefix}-hint" class="tool-search-hint">Search by task or file type. Everything runs in your browser.</p>
     </form>
     <div class="tool-category-filters" role="group" aria-label="Filter tools by category">${toolCategories.map((category, index) => `<button type="button" data-tool-category="${escapeHtml(category)}" aria-pressed="${index === 0}">${escapeHtml(category)}</button>`).join('')}</div>
-    <p class="tool-search-count" role="status" aria-live="polite" aria-atomic="true">${compact ? 'Popular tools to get started' : '10 tasks · 9 browser tools'}</p>
+    <p class="tool-search-count" role="status" aria-live="polite" aria-atomic="true">${compact ? 'Popular tools to get started' : `${toolCatalog.length} tasks · ${engineCount} browser tools`}</p>
   </div>
   <div class="task-grid${compact ? ' compact' : ''}" id="${prefix}-results" data-tool-results>${renderToolCards(initialTools, compact)}</div>
   <div class="tool-search-empty" hidden><h3>No matching tools yet</h3><p>Try a file type such as PNG, PDF or MP4, or choose another category.</p><button type="button" class="button secondary" data-tool-reset>${compact ? 'Show popular tools' : 'Show all tools'}</button><a href="/contact/">Suggest a tool →</a></div>

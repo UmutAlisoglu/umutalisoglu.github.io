@@ -1,0 +1,20 @@
+{
+  "id": "/tools/fileforge-app",
+  "name": "FileForge · Alisoglu",
+  "short_name": "FileForge",
+  "description": "Private file tools, on your device. Convert, crop, organize and create.",
+  "start_url": "/tools/workspace/",
+  "scope": "/tools/",
+  "display": "standalone",
+  "background_color": "#f7f7fb",
+  "theme_color": "#6650c8",
+  "icons": [
+    { "src": "/icons/fileforge-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/fileforge-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "FileForge workspace", "url": "/tools/workspace/" },
+    { "name": "Image tools", "url": "/tools/image-converter/" },
+    { "name": "Extract text", "url": "/tools/extract-text/" }
+  ]
+}

@@ -68,6 +68,7 @@ async function imageInfo(bytes, fractions = [[.1, .1], [.5, .5], [.9, .9]]) {
 }
 function closeColour(actual, expected, tolerance = 3) { expected.forEach((value, index) => assert.ok(Math.abs(actual[index] - value) <= tolerance, `${actual} should match ${expected}`)); }
 async function observeCancel(prefix) {
+  await page.waitForFunction(() => !document.querySelector('#advanced-run').disabled);
   await page.evaluate(prefix => {
     const node = document.querySelector('#advanced-status');
     const observer = new MutationObserver(() => {
@@ -105,13 +106,13 @@ try {
     }
     await search.fill('png to pdf'); assert.equal(await directory.locator('[data-tool-id=image-pdf]').getAttribute('href'), '/tools/image-converter/?format=pdf');
     await directory.locator('.tool-search-clear').click();
-    for (const [category, count] of [['Images', 4], ['PDFs', 4], ['Video', 1], ['Documents', 1], ['All tools', 10]]) {
+    for (const [category, count] of [['Images', 4], ['PDFs', 4], ['Video', 1], ['Documents', 2], ['All tools', 11]]) {
       await directory.locator(`[data-tool-category="${category}"]`).click();
       assert.equal(await directory.locator('[data-tool-results] .task-card').count(), count, category);
       assert.equal(await directory.locator(`[data-tool-category="${category}"]`).getAttribute('aria-pressed'), 'true');
     }
     await search.fill('not-a-supported-task'); assert.equal(await directory.locator('.tool-search-empty').isVisible(), true);
-    await directory.locator('[data-tool-reset]').click(); assert.equal(await directory.locator('[data-tool-results] .task-card').count(), 10);
+    await directory.locator('[data-tool-reset]').click(); assert.equal(await directory.locator('[data-tool-results] .task-card').count(), 11);
     await page.goto(base + '/tools/?q=remove%20bg'); assert.equal(await page.locator('[data-tool-id=background]').isVisible(), true);
     await page.screenshot({ path: resolve(output, 'fileforge-search.png'), fullPage: true });
   });
@@ -176,6 +177,9 @@ try {
     await page.screenshot({ path: resolve(output, 'fileforge-background.png'), fullPage: true });
   });
   await check('background inference cancels, restarts and supports an opaque white result', async () => {
+    // A completed cutout keeps its editable mask; Run then exports those edits.
+    // Selecting a fresh source is the operation that starts model inference.
+    await open('remove-background', horsePath);
     await observeCancel('Finding the subject');
     await page.locator('#background-fill').selectOption('white'); await run(); const result = await download(), info = await imageInfo(result.bytes, [[.1, .05], [.5, .5]]);
     closeColour(info.samples[0], [255, 255, 255, 255], 8); assert.equal(info.clear, 0); assert.ok(info.opaque > .999);
@@ -192,7 +196,7 @@ try {
     }
     await page.goto(base + '/tools/'); await page.screenshot({ path: resolve(output, 'fileforge-directory-mobile.png'), fullPage: true });
     const staticContext = await browser.newContext({ javaScriptEnabled: false }); const staticPage = await staticContext.newPage();
-    await staticPage.goto(base + '/tools/'); assert.equal(await staticPage.locator('[data-tool-results] .task-card').count(), 10);
+    await staticPage.goto(base + '/tools/'); assert.equal(await staticPage.locator('[data-tool-results] .task-card').count(), 11);
     for (const slug of ['remove-background', 'image-to-svg', 'crop-image', 'pdf-to-images']) {
       const link = staticPage.locator(`[data-tool-results] a[href="/tools/${slug}/"]`); assert.equal(await link.isVisible(), true);
     }

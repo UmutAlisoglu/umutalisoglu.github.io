@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>FileForge — Your everyday file toolbox | Alisoglu</title>
   <meta name="description" content="Convert, compress and edit your files in your browser. Search FileForge tools for images, PDFs, video and spreadsheets. Free to use, with files kept on your device.">
-  <meta name="theme-color" content="#f8f4e9">
+  <meta name="theme-color" content="#f9f8fb">
   <link rel="canonical" href="https://alisoglu.com/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="FileForge — Your everyday file toolbox | Alisoglu">
@@ -18,23 +18,20 @@
   <script type="module" src="/script.js"></script>
   <script type="module" src="/src/site/tool-search.js"></script>
   <link rel="stylesheet" href="/src/site/tool-search.css">
+  <script type="module" src="/src/site/workspace.js"></script>
 </head>
 <body>
   <site-header></site-header>
   <main id="main">
     <section class="hero wrap home-hero" aria-labelledby="hero-title">
-      <div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> FILEFORGE / YOUR EVERYDAY FILE TOOLBOX</p><h1 id="hero-title">Everyday files.<br><em>Made simpler.</em></h1><p class="hero-description">Convert a picture. Shrink an MP4. Remove a background.<br>Find the tool you need, work in your browser and download your result.</p><div class="hero-actions"><a class="button primary" href="#quick-tools">Find your tool <span aria-hidden="true">↓</span></a><a class="quiet-link" href="/projects/">Explore the projects <span aria-hidden="true">↗</span></a></div><p class="hero-footnote"><span class="status-dot" aria-hidden="true"></span> Free to use. No account. Files processed locally.</p></div>
-      <nav class="collection-panel" aria-label="Featured projects">
-        <div class="collection-heading"><span>IN THE COLLECTION</span><span>01—03</span></div>
-        <a class="collection-item" href="/projects/fileforge/"><span class="collection-icon tone-purple" aria-hidden="true">F.</span><span><strong>FileForge</strong><small>Everyday files, sorted.</small></span><span class="collection-arrow" aria-hidden="true">↗</span></a>
-        <a class="collection-item" href="/projects/repodock/"><span class="collection-icon tone-blue" aria-hidden="true">R.</span><span><strong>Repodock</strong><small>A home for your local projects.</small></span><span class="collection-arrow" aria-hidden="true">↗</span></a>
-        <a class="collection-item" href="/projects/skate-scape/"><span class="collection-icon tone-mint" aria-hidden="true">S.</span><span><strong>Skate Scape</strong><small>A skating game in your browser.</small></span><span class="collection-arrow" aria-hidden="true">↗</span></a>
-        <a class="collection-footer" href="/projects/">Explore the collection <span aria-hidden="true">→</span></a>
-      </nav>
+      <div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> FILEFORGE / BUILT BY UMUT</p><h1 id="hero-title">Your files.<br><em>More possibilities.</em></h1><p class="hero-description">A photo into a clean cutout. A screenshot into words. A pile of pages into one tidy PDF.<br>Make something useful, right here.</p><div class="hero-actions"><a class="button primary" href="/tools/workspace/">Open the workspace <span aria-hidden="true">↗</span></a><a class="quiet-link" href="#quick-tools">Explore the tools <span aria-hidden="true">↓</span></a></div><p class="hero-footnote"><span class="status-dot" aria-hidden="true"></span> Free to use. No account. Files stay on your device.</p></div>
+      <fileforge-launcher></fileforge-launcher>
     </section>
+    <div class="wrap"><fileforge-workbench></fileforge-workbench><div class="forge-proof-strip"><p><strong>Convert. Refine. Keep going.</strong> Pass results straight into your next tool.</p><a href="/tools/workspace/">Meet your connected toolbox ↗</a></div></div>
     <section class="quick-tools wrap" id="quick-tools" aria-labelledby="quick-title"><div class="section-heading"><div><p class="eyebrow">CONVERT / COMPRESS / EDIT</p><h2 id="quick-title">Find your next useful tool.</h2></div><a class="text-link" href="/tools/">Browse all tools <span aria-hidden="true">→</span></a></div>
 <tool-directory data-variant="home"></tool-directory>
     <p class="tools-footnote"><span class="status-dot"></span> Powered by FileForge. Processing happens on your device. <a href="/privacy/">See how →</a></p></section>
+    <section class="forge-demo-story wrap" aria-labelledby="demo-title"><div class="forge-demo-art"><img src="/assets/demos/headphones.png" width="1254" height="1254" loading="lazy" alt="Violet headphones on a pale mint studio backdrop"><span>ORIGINAL AI-GENERATED SAMPLE</span></div><div class="forge-demo-copy"><p class="eyebrow">FROM A FILE TO SOMETHING FINISHED</p><h2 id="demo-title">A little photo.<br>A lot of possibility.</h2><p>Remove the background, brush the edges, crop it to fit and export a picture ready for your next project. Try the actual tools with our sample.</p><div class="forge-recipe" aria-label="Example workflow"><span>01 · Remove background</span><span>02 · Crop & refine</span><span>03 · Resize & export</span></div><button type="button" class="button primary" data-workspace-demo="photo">Try this photo <span aria-hidden="true">↗</span></button><p class="forge-demo-small">Real local processing. Download the result you make.</p></div></section>
     <section class="wrap projects-feature" aria-labelledby="projects-title"><div class="section-heading"><div><p class="eyebrow">SELECTED PROJECTS</p><h2 id="projects-title">Small ideas. Real projects.</h2></div><a class="text-link" href="/projects/">Behind the builds →</a></div><div class="project-rows">
 <a class="project-row" href="/projects/fileforge/"><span class="project-mini tone-purple"><img src="/assets/fileforge.svg" width="38" height="38" alt=""></span><span><span class="project-label">BROWSER TOOLS + WINDOWS APP</span><h3>FileForge</h3><p>Less file frustration. More getting things done.</p></span><span class="row-status">Available</span><span class="row-arrow" aria-hidden="true">↗</span></a>
 <a class="project-row" href="/projects/repodock/"><span class="project-mini tone-blue" aria-hidden="true">r.</span><span><span class="project-label">LOCAL PROJECT LAUNCHER</span><h3>Repodock</h3><p>A home for the GitHub projects you actually want to run.</p></span><span class="row-status">Windows app</span><span class="row-arrow" aria-hidden="true">↗</span></a>

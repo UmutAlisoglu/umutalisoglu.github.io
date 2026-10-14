@@ -4,6 +4,8 @@ Thumbs.db
 node_modules/
 dist/
 .local/
+.qa/
 test-results/
 public/vendor/
+public/tools/engines/
 public/licenses/fontkit-source.js

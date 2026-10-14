@@ -1,4 +1,5 @@
 import { cp, mkdir } from 'node:fs/promises';
+import { prepareOCR } from './prepare-ocr.mjs';
 
 await mkdir('public/vendor/ffmpeg', { recursive: true });
 for (const file of ['ffmpeg-core.js', 'ffmpeg-core.wasm']) {
@@ -21,3 +22,4 @@ for (const file of ['ort-wasm-simd-threaded.mjs', 'ort-wasm-simd-threaded.wasm']
   await cp(`node_modules/onnxruntime-web/dist/${file}`, `public/vendor/ort/${file}`);
 }
 await cp('node_modules/imagetracerjs/LICENSE', 'public/licenses/imagetracer-Unlicense.txt');
+await prepareOCR();

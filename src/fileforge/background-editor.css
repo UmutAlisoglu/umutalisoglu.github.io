@@ -1,0 +1,51 @@
+.background-editor { margin-top: 26px; border: 1px solid #d9d1eb; border-radius: 14px; background: #fff; overflow: hidden; }
+.background-editor-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 20px 0; }
+.background-editor-heading h3 { margin: 0 0 6px; font-size: 18px; }
+.background-editor-heading p { color: var(--muted); font-size: 12px; margin: 0; }
+.background-editor-tag { padding: 5px 8px; border-radius: 5px; color: var(--accent); background: #f2edfc; font-size: 10px; font-weight: 650; letter-spacing: .04em; white-space: nowrap; }
+.advanced-workspace .background-editor fieldset { padding: 18px 20px 0; margin: 0; }
+.background-editor legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.background-editor-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.background-brush-modes, .background-history-actions { display: flex; gap: 6px; }
+.background-editor button { min-height: 40px; border: 1px solid #dad4e6; border-radius: 7px; padding: 8px 12px; color: var(--ink); background: #fff; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; }
+.background-editor button:hover { border-color: var(--accent); background: #f8f5ff; }
+.background-editor button[aria-pressed=true] { border-color: var(--accent); background: #eee7fc; color: #5b36a0; }
+.background-editor button:disabled { opacity: .45; cursor: default; }
+.background-editor-controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+.background-editor-controls label, .background-position label, .background-compare-control { display: flex; flex-direction: column; gap: 6px; color: var(--ink); font-size: 11px; font-weight: 600; }
+.advanced-workspace .background-editor input, .advanced-workspace .background-editor select { padding: 9px; font-size: 12px; }
+.background-viewport { overflow: auto; max-height: 560px; min-height: 140px; padding: 12px; border-block: 1px solid #e8e3f0; background: #f3f1f7; overscroll-behavior: contain; }
+.background-stage { position: relative; width: 100%; margin: 0 auto; cursor: crosshair; touch-action: none; background: repeating-conic-gradient(#e3e0e9 0% 25%, #fff 0% 50%) 50% / 18px 18px; }
+.background-stage canvas { display: block; width: 100%; height: auto; }
+.background-stage:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.background-stage[aria-disabled=true] { cursor: wait; }
+.background-stage.is-inspecting { cursor: default; touch-action: pan-x pan-y; }
+.background-cursor { position: absolute; border: 1px solid #fff; outline: 1px solid #312443; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; min-width: 2px; min-height: 2px; }
+.background-cursor[data-mode=restore] { outline-color: #2b9350; box-shadow: 0 0 0 1px #2b9350; }
+.background-compare-label { display: none; position: absolute; top: 12px; padding: 5px 8px; border-radius: 5px; background: #221b35bf; color: #fff; font-size: 10px; font-weight: 600; pointer-events: none; }
+.is-comparing .background-compare-label { display: block; }
+.background-compare-label.original { left: 12px; }
+.background-compare-label.edited { right: 12px; }
+.background-position { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: end; gap: 10px; margin: 0 0 16px; }
+.background-position button { min-height: 36px; margin-bottom: 1px; }
+.background-compare-control { padding: 16px 20px 0; }
+.background-compare-control > span { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.advanced-workspace .background-compare-control input { padding: 0; accent-color: var(--accent); }
+.background-editor-help { padding: 12px 20px 18px; }
+.background-editor-help p { margin: 0 0 6px; color: var(--muted); font-size: 11px; line-height: 1.65; }
+.background-editor-help .button.primary { margin-top: 12px; background: var(--accent); color: #fff; padding-inline: 18px; border-color: var(--accent); }
+.background-export-settings input[type=color] { min-height: 42px; padding: 5px; }
+.background-export-settings { align-items: start; }
+@media (max-width: 600px) {
+  .background-editor-heading { padding: 16px 14px 0; }
+  .background-editor-tag { display: none; }
+  .advanced-workspace .background-editor fieldset { padding: 16px 14px 0; }
+  .background-editor-toolbar { align-items: stretch; flex-direction: column; }
+  .background-brush-modes, .background-history-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .background-editor-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .background-position { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .background-position button { grid-column: 1 / -1; }
+  .background-viewport { max-height: 440px; padding: 10px; }
+  .background-compare-control { padding: 14px 14px 0; }
+  .background-editor-help { padding: 12px 14px 16px; }
+}

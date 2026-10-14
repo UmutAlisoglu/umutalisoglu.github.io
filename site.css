@@ -1,5 +1,6 @@
 /* Shared editorial layer. Tool controls live in src/fileforge/fileforge.css. */
-:root { --paper: #f9f8f5; --ink: #282735; --muted: #656471; --line: #e3e1e8; --accent: #624bc5; --surface: #fff; }
+.footer-offline{font:inherit;font-size:12px;color:inherit;background:none;border:0;padding:0;text-align:left}.footer-offline:hover{color:var(--accent)}.forge-tool-entry{margin:20px 0 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:11px;color:#867391}.forge-tool-entry a{font-weight:600;color:var(--accent)}.forge-toolkit-banner{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:28px;border:1px solid #ddd5ea;background:#f5efff;border-radius:15px;margin:0 0 35px}.forge-toolkit-banner h2{font-size:21px;letter-spacing:-.5px;margin:0 0 7px}.forge-toolkit-banner p{font-size:12px;color:#887291;margin:0}.forge-toolkit-banner .button{font-size:12px;white-space:nowrap}@media(max-width:600px){.forge-toolkit-banner{flex-direction:column;align-items:flex-start;padding:23px}}
+:root { --paper: #f9f8f5; --ink: #282735; --muted: #656471; --line: #e3e1e8; --accent: #624bc5; --surface: #fff; --sans: 'Segoe UI', Arial, sans-serif; }
 body { text-wrap: pretty; }
 input:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
 .hub-header nav { gap: 25px; }

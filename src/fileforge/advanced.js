@@ -1,5 +1,7 @@
 import { formatBytes, resultName } from './shared.js';
 import { cropBounds, scaledSize } from './advanced-shared.js';
+import { createBackgroundEditor } from './background-editor.js';
+import { configureToolBridge, publishToolResult, publishToolSelection, invalidateToolResult } from './workspace-bridge.js';
 import './advanced.css';
 
 const $ = selector => document.querySelector(selector);
@@ -11,6 +13,7 @@ const limits = { background: 12_000_000, trace: 40_000_000, crop: 40_000_000 };
 const imageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'];
 let selected = null, bitmap = null, sourceURL = null, outputURLs = [], active = null, loading = false, revision = 0;
 let crop = null, drag = null;
+let backgroundEditor = null;
 
 function report(message, error = false) {
   const status = $('#advanced-status');
@@ -18,6 +21,7 @@ function report(message, error = false) {
 }
 
 function clearOutput() {
+  invalidateToolResult();
   $('#advanced-output-preview').removeAttribute('src');
   $('#advanced-result').hidden = true;
   $('#advanced-download').removeAttribute('href');
@@ -25,6 +29,7 @@ function clearOutput() {
 }
 
 function releaseSource() {
+  backgroundEditor?.dispose(); backgroundEditor = null;
   bitmap?.close(); bitmap = null;
   if (sourceURL) URL.revokeObjectURL(sourceURL); sourceURL = null;
   $('#advanced-original-preview')?.removeAttribute('src');
@@ -44,6 +49,11 @@ function setBusy() {
   if (drop.tagName === 'BUTTON') drop.disabled = busy;
   drop.setAttribute('aria-disabled', String(busy));
   $('#crop-stage')?.classList.toggle('is-busy', busy);
+  backgroundEditor?.setBusy(busy);
+  if (kind === 'background') {
+    run.textContent = backgroundEditor ? 'Export PNG ↗' : 'Remove background ↗';
+    $('#background-export').disabled = busy || !backgroundEditor;
+  }
 }
 
 function encode(canvas, type, quality = 0.92) {
@@ -90,6 +100,7 @@ async function selectFiles(files) {
     }
     if (current !== revision) return;
     clearOutput(); releaseSource(); selected = file;
+    publishToolSelection([file]);
     bitmap = nextBitmap; nextBitmap = null;
     $('#advanced-filename').textContent = `${file.name} · ${formatBytes(file.size)}${bitmap ? ` · ${bitmap.width} × ${bitmap.height}px` : ''}`;
     $('#advanced-clear').hidden = false;
@@ -146,8 +157,8 @@ async function traceImage(job) {
 }
 
 async function removeBackground(job) {
+  if (backgroundEditor) return exportBackground(job);
   const { canvas: modelCanvas, context: modelContext } = canvasOf(320, 320);
-  let output, maskCanvas;
   try {
     // Transparent source areas are white during inference; source alpha is preserved in the result.
     modelContext.fillStyle = '#ffffff'; modelContext.fillRect(0, 0, 320, 320);
@@ -156,21 +167,16 @@ async function removeBackground(job) {
     const worker = new Worker(new URL('./background.worker.js', import.meta.url), { type: 'module' });
     const result = await workerResult(worker, { pixels }, job);
     job.controller.signal.throwIfAborted();
-    const mask = canvasOf(320, 320); maskCanvas = mask.canvas;
-    mask.context.putImageData(new ImageData(new Uint8ClampedArray(result.mask), 320, 320), 0, 0);
-    const image = canvasOf(bitmap.width, bitmap.height); output = image.canvas;
-    image.context.drawImage(bitmap, 0, 0);
-    image.context.globalCompositeOperation = 'destination-in';
-    image.context.imageSmoothingEnabled = true; image.context.imageSmoothingQuality = 'high';
-    image.context.drawImage(maskCanvas, 0, 0, bitmap.width, bitmap.height);
-    if ($('#background-fill').value === 'white') {
-      image.context.globalCompositeOperation = 'destination-over'; image.context.fillStyle = '#ffffff';
-      image.context.fillRect(0, 0, bitmap.width, bitmap.height);
-    }
-    report('Preparing your PNG download…');
-    const blob = await encode(output, 'image/png'); job.controller.signal.throwIfAborted();
-    return { blob, preview: blob, name: resultName(selected.name, 'png'), detail: `${bitmap.width} × ${bitmap.height}px · ${$('#background-fill').value === 'white' ? 'white background' : 'transparent background'} · check fine hair and edges before using the result.` };
-  } finally { releaseCanvas(modelCanvas); if (maskCanvas) releaseCanvas(maskCanvas); if (output) releaseCanvas(output); }
+    backgroundEditor = createBackgroundEditor({ bitmap, mask: result.mask, onDirty: clearOutput, report });
+    backgroundEditor.setBusy(true);
+    return exportBackground(job);
+  } finally { releaseCanvas(modelCanvas); }
+}
+
+async function exportBackground(job) {
+  report('Preparing your full-resolution PNG download…');
+  const blob = await backgroundEditor.exportPNG(job.controller.signal);
+  return { blob, preview: blob, name: resultName(selected.name, 'png'), detail: `${bitmap.width} × ${bitmap.height}px · ${backgroundEditor.background ? `${backgroundEditor.background} background` : 'transparent background'} · original image unchanged` };
 }
 
 async function cropImage(job) {
@@ -211,7 +217,8 @@ async function convert() {
     link.textContent = `Download ${result.blob.type === 'application/zip' ? 'ZIP' : result.name.split('.').pop().toUpperCase()}`;
     $('#advanced-result-detail').textContent = `${result.detail} · ${formatBytes(result.blob.size)}`;
     $('#advanced-result').hidden = false;
-    report('Done. Preview your result, then download it.');
+    publishToolResult(result);
+    report(kind === 'background' ? 'Cutout ready. Refine the edges with erase or restore, then export your changes.' : 'Done. Preview your result, then download it.');
   } catch (error) {
     report(job.controller.signal.aborted ? 'Cancelled. Your file is ready to try again.' : error.message || 'This file could not be processed. Try a smaller file.', !job.controller.signal.aborted);
   } finally { job.worker?.terminate(); if (active === job) active = null; setBusy(); }
@@ -276,12 +283,15 @@ if (drop.tagName === 'BUTTON') drop.addEventListener('click', () => { if (!activ
 for (const event of ['dragenter', 'dragover']) drop.addEventListener(event, e => { e.preventDefault(); if (!active && !loading) drop.classList.add('dragging'); });
 for (const event of ['dragleave', 'drop']) drop.addEventListener(event, e => { e.preventDefault(); drop.classList.remove('dragging'); });
 drop.addEventListener('drop', event => void selectFiles(Array.from(event.dataTransfer.files)));
-$('#advanced-clear').addEventListener('click', () => {
+function clearSelection() {
   if (active || loading) return;
   revision++; selected = null; input.value = ''; clearOutput(); releaseSource();
   $('#advanced-filename').textContent = 'No file selected'; $('#advanced-clear').hidden = true;
   report('Choose a file to begin.'); setBusy();
-});
+  publishToolSelection([]);
+}
+$('#advanced-clear').addEventListener('click', clearSelection);
+configureToolBridge({ selectFiles, busy: () => Boolean(active) || loading, clear: clearSelection });
 run.addEventListener('click', event => { event.preventDefault(); void convert(); });
 cancel.addEventListener('click', () => { if (active) { report('Cancelling…'); cancel.disabled = true; active.controller.abort(); } });
 settings.addEventListener('change', event => {
@@ -297,6 +307,11 @@ settings.addEventListener('change', event => {
     catch (error) { report(error.message, true); }
   }
 });
+if (kind === 'background') {
+  const updateColourControl = () => { $('#background-colour-control').hidden = $('#background-fill').value !== 'custom'; };
+  $('#background-fill').addEventListener('change', updateColourControl); updateColourControl();
+  $('#background-export').addEventListener('click', () => void convert());
+}
 if (kind === 'crop') {
   $('#crop-aspect').addEventListener('change', resetCrop);
   $('#crop-reset').addEventListener('click', () => { if (!active && !loading) { $('#crop-aspect').value = 'free'; resetCrop(); report('Full image restored.'); } });

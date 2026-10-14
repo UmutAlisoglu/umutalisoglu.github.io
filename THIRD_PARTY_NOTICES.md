@@ -15,3 +15,8 @@ The website runs file conversions on the visitor's device. The following librari
 - **U²-Net small / U2NETP model**, Apache 2.0, Xuebin Qin and contributors: https://github.com/xuebinqin/U-2-Net . Unmodified ONNX weights from https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx . License, provenance and checksum are included at `/assets/models/LICENSE.txt` and `/assets/models/README.md`.
 
 Dependency licenses and the fontkit README/source notices are included under `/licenses/` in the built website. Vite is a development/build dependency and is not a service used by visitors.
+
+- **Tesseract.js 7.0.0** and **tesseract.js-core 7.0.0**, Apache 2.0: https://github.com/naptha/tesseract.js/tree/v7.0.0 and https://github.com/naptha/tesseract.js-core/tree/v7.0.0 . Executes OCR locally. Worker dependencies and native OCR/image-codec component notices are included at `/licenses/tesseract-THIRD-PARTY.txt`; project licenses are at `/licenses/tesseract.js-Apache-2.0.txt` and `/licenses/tesseract-core-Apache-2.0.txt`.
+- **English/German/Turkish Tesseract traineddata**, Apache 2.0, pinned `@tesseract.js-data/{eng,deu,tur}` 1.0.0 packages: https://github.com/naptha/tessdata . Source attribution is included at `/licenses/tesseract-traineddata-NOTICE.txt`. Exact input versions, byte sizes and SHA-256 checksums are recorded by `scripts/prepare-ocr.mjs` and distributed in `/vendor/tesseract/manifest.json`.
+
+The demo product image is an original AI-generated illustration/photo, labeled in the website. It represents no real product or endorsement. Its generation prompt and provenance are documented at `/assets/demos/README.md`. Example text and PDF documents are generated locally from original sample content.

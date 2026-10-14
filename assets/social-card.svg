@@ -4,30 +4,30 @@
   <rect x="73" y="49" width="43" height="43" rx="12" fill="#624bc5" transform="rotate(-3 95 70)"/>
   <text x="82" y="79" font-family="Georgia,serif" font-size="34" fill="white">u.</text>
   <text x="134" y="82" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#242329">alisoglu<tspan fill="#6045e9">.</tspan></text>
-  <text x="72" y="254" font-family="Arial,sans-serif" font-size="78" font-weight="700" letter-spacing="-3" fill="#242329">Everyday files.</text>
-  <text x="72" y="351" font-family="Arial,sans-serif" font-weight="600" font-size="78" letter-spacing="-3" fill="#624bc5">Made simpler.</text>
-  <text x="77" y="414" font-family="Arial,sans-serif" font-size="24" fill="#625e69">Convert, compress and edit in your browser.</text>
+  <text x="72" y="254" font-family="Arial,sans-serif" font-size="70" font-weight="700" letter-spacing="-3" fill="#242329">Your files.</text>
+  <text x="72" y="351" font-family="Arial,sans-serif" font-weight="600" font-size="70" letter-spacing="-3" fill="#624bc5">More possibilities.</text>
+  <text x="77" y="414" font-family="Arial,sans-serif" font-size="24" fill="#625e69">Convert. Refine. Keep going. On your device.</text>
   <g font-family="Arial,sans-serif" font-size="17" fill="#242329">
     <rect x="76" y="459" width="140" height="44" rx="12" fill="#ebe4fb" stroke="#d0c6df"/><text x="104" y="487">PDF tools</text>
     <rect x="229" y="459" width="140" height="44" rx="12" fill="#f8e1e6" stroke="#e0c6cd"/><text x="269" y="487">Images</text>
-    <rect x="382" y="459" width="140" height="44" rx="12" fill="#e3edd5" stroke="#c6d4b6"/><text x="452" y="487" text-anchor="middle">Excel → PDF</text>
+    <rect x="382" y="459" width="140" height="44" rx="12" fill="#e3edd5" stroke="#c6d4b6"/><text x="452" y="487" text-anchor="middle">Text / OCR</text>
     <rect x="535" y="459" width="140" height="44" rx="12" fill="#deebf1" stroke="#c6d7df"/><text x="580" y="487">Video</text>
   </g>
   <g transform="translate(806 181)" font-family="Arial,sans-serif">
     <rect x="0" y="7" width="290" height="273" rx="16" fill="#eeebf2"/>
     <rect width="290" height="273" rx="16" fill="white" stroke="#e3e1e8"/>
-    <text x="22" y="33" font-size="10" font-weight="600" letter-spacing="1.3" fill="#656471">IN THE COLLECTION</text>
+    <text x="22" y="33" font-size="10" font-weight="600" letter-spacing="1.3" fill="#656471">YOUR NEXT THREE STEPS</text>
     <path d="M0 51h290M0 125h290M0 199h290" stroke="#e3e1e8"/>
     <g font-size="20" font-weight="600" fill="#554769">
-      <rect x="22" y="70" width="38" height="38" rx="8" fill="#eee9f8"/><text x="32" y="96">F.</text>
-      <rect x="22" y="144" width="38" height="38" rx="8" fill="#e7eff4"/><text x="31" y="170">R.</text>
-      <rect x="22" y="218" width="38" height="38" rx="8" fill="#eaf0e3"/><text x="32" y="244">S.</text>
+      <rect x="22" y="70" width="38" height="38" rx="8" fill="#eee9f8"/><text x="32" y="96">01</text>
+      <rect x="22" y="144" width="38" height="38" rx="8" fill="#e7eff4"/><text x="31" y="170">02</text>
+      <rect x="22" y="218" width="38" height="38" rx="8" fill="#eaf0e3"/><text x="32" y="244">03</text>
     </g>
-    <g font-size="18" font-weight="600" fill="#282735">
-      <text x="76" y="95">FileForge</text><text x="76" y="169">Repodock</text><text x="76" y="243">Skate Scape</text>
+    <g font-size="15" font-weight="600" fill="#282735">
+      <text x="76" y="95">Remove background</text><text x="76" y="169">Crop &amp; refine</text><text x="76" y="243">Resize &amp; export</text>
     </g>
     <g font-size="18" fill="#624bc5"><text x="249" y="95">↗</text><text x="249" y="169">↗</text><text x="249" y="243">↗</text></g>
   </g>
   <text x="76" y="594" font-family="Arial,sans-serif" font-size="20" fill="#625e69">alisoglu.com</text>
-  <text x="1128" y="594" text-anchor="end" font-family="Arial,sans-serif" font-size="18" fill="#625e69">Human ideas. Useful experiments.</text>
+  <text x="1128" y="594" text-anchor="end" font-family="Arial,sans-serif" font-size="18" fill="#625e69">Free. Private. Built by Umut.</text>
 </svg>
