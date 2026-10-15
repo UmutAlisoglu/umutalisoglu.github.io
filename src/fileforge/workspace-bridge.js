@@ -1,5 +1,6 @@
 import './workspace-embed.css';
 import { compatibleTools } from '../site/workspace-tools.js';
+import { isTextEditingTarget } from './shared.js';
 
 // Structured-cloned Files travel between same-origin documents in memory only.
 // No localStorage, IndexedDB, network request or cross-origin window receives them.
@@ -82,5 +83,12 @@ export function configureToolBridge(config) {
   new MutationObserver(update).observe(document.querySelector('#tool-panel, #advanced-workspace, #ocr-workspace') || document.body, { attributes: true, attributeFilter: ['aria-busy'] });
   update(); notify('ready');
 }
+
+document.addEventListener('paste', async event => {
+  if (!hooks || hooks.busy?.() || isTextEditingTarget(event.target)) return;
+  const files = [...(event.clipboardData?.files || [])];
+  if (!files.length) return;
+  event.preventDefault(); await hooks.selectFiles(files);
+});
 
 window.addEventListener('pagehide', () => { resizeObserver?.disconnect(); dialog?.close(); result = null; });

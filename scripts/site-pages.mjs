@@ -84,6 +84,16 @@ try {
         assert.equal(await page.locator('#ocr-run').isDisabled(), true);
         assert.deepEqual(await page.locator('#ocr-language option').evaluateAll(options => options.map(option => option.value)), ['eng', 'deu', 'tur']);
         assert.equal(await page.locator('#ocr-sample').isVisible(), true);
+      } else if (tool.id === 'screenshot') {
+        assert.equal(await page.locator('body').getAttribute('data-advanced-tool'), 'screenshot');
+        assert.equal(await page.locator('#screenshot-export').isDisabled(), true);
+        assert.equal(await page.locator('#screenshot-input').isVisible(), true);
+        assert.equal(await page.locator('#screenshot-sample').isVisible(), true);
+      } else if (tool.id === 'scanner') {
+        assert.equal(await page.locator('body').getAttribute('data-scanner-tool'), 'scanner');
+        assert.equal(await page.locator('#scanner-run').isDisabled(), true);
+        assert.equal(await page.locator('#scanner-input').isVisible(), true);
+        assert.equal(await page.locator('#scanner-sample').isVisible(), true);
       } else {
         assert.equal(await page.locator('body').getAttribute('data-advanced-tool'), advancedIds[tool.id]);
         assert.equal(await page.locator('#advanced-run').isDisabled(), true);

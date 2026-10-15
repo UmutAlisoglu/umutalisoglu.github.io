@@ -16,7 +16,7 @@ async function walk(directory) {
 }
 await walk(root);
 const definitions = [
-  { id: 'core', label: 'Everyday image & PDF tools', description: 'Workspace, conversion, cropping, SVG tracing, PDF pages and spreadsheet exports. Required for every pack.' },
+  { id: 'core', label: 'Everyday image & PDF tools', description: 'Workspace, screenshot studio, document scanner, conversion, cropping, SVG tracing, PDF pages and spreadsheet exports. Required for every pack.' },
   { id: 'background', label: 'Background removal', description: 'The local AI model and its WebAssembly engine.' },
   { id: 'video', label: 'Video compression', description: 'The FFmpeg engine. Larger download; compression uses your device.' },
   { id: 'ocr', label: 'Text extraction engine', description: 'Local OCR engine. Choose at least one language below.' },

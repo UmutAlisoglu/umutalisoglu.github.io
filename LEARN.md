@@ -2,6 +2,17 @@
 
 Your Cloudflare domain points at GitHub Pages. GitHub Pages sends website files to visitors. Their browser runs all tool code; selected files are never uploaded. This guide records the steps taken to build the project hub.
 
+## Latest workshop additions — 15 October 2026
+
+Two tools turn their processing into something you can see and control:
+
+1. **Screenshot studio:** `src/fileforge/screenshot-renderer.js` draws the background, frame, shadow, chosen screenshot and caption onto a canvas. The preview and export use the same painter, so the preview represents the composition you download. Preview zoom is only a viewing control. The sample is original artwork drawn on your device. Styling lives in `screenshot-studio.css`; controls and export live in `screenshot-studio.js`.
+2. **Document scanner:** select four corners of a flat photographed page. `scanner-math.js` calculates a perspective mapping; `scanner.worker.js` uses it to sample the source pixels into a rectangle, then applies the selected paper treatment. Manual corners are adjustable by dragging, arrow keys or number inputs. The sample knows its generated corners; this is not automatic document detection. PDF export places the corrected image on a page. To get editable text, export an image and continue to Extract text.
+3. **Connected results:** the workspace uses the latest result for the next action. Its source picker lets you deliberately start again with the original. The export-name field retains the actual file extension. Ctrl/Cmd+K opens a local tool finder, and an explicit paste outside a text field can select a clipboard image file. Nothing monitors or reads your clipboard in the background.
+4. **The visual identity:** `index.html` and `src/site/showcase.css` contain the homepage's strong typography, folded-file detail and two illustrated tool introductions. The illustrations are labelled; opening each sample produces real output you can edit and export. The rest of the site keeps its shared navigation and purple/off-white palette.
+
+To add another engine, create its page and module, add its entry to `src/site/tool-catalog.js`, set accepted files in `src/site/workspace-tools.js`, and add its URL to `sitemap.xml`. The advanced-tool catalogue supplies its build route and directory links. Configure `workspace-bridge.js` for file handoffs, explicit busy status, result invalidation and published exports. Worker URLs must use Vite's `new URL('./worker-file.js', import.meta.url)` pattern so they remain under `/tools/_assets/` and work with the optional offline pack. Check a real export, cancellation, invalid input, narrow screens and continuing to another tool before publishing.
+
 ## 1. Get a local copy
 
     git clone https://github.com/UmutAlisoglu/umutalisoglu.github.io.git .
@@ -92,7 +103,7 @@ Skate Scape is now served at `/skate-scape/` from its own GitHub Pages project r
 
 ## The new pages: how to make your own edits
 
-The site now has 20 pages. They are still ordinary HTML, CSS and JavaScript hosted by GitHub Pages. No server, paid service or account system was added.
+The site now has 24 pages. They are still ordinary HTML, CSS and JavaScript hosted by GitHub Pages. No server, paid service or account system was added.
 
 1. **Edit page content.** Open the relevant `index.html`, for example `projects/fileforge/index.html` for the FileForge project story or `tools/pdf-organizer/index.html` for the organizer guide. Change its headings, paragraphs or links. Keep release claims matched to the actual GitHub release and update the “checked” date when you verify them.
 2. **Edit shared parts once.** Each source page contains `<site-header></site-header>` and `<site-footer></site-footer>`. The small Vite plugin in `src/site/templates.js` replaces these with complete navigation and footer HTML during preview/build. This is a build step, not a service on the internet. Even visitors with JavaScript disabled get the navigation and project content.

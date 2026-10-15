@@ -13,6 +13,8 @@ const inputs = {
   spreadsheet: { extensions: ['xlsx', 'csv'], count: 1, each: 10e6 },
   video: { extensions: ['mp4', 'mov', 'mkv', 'webm', 'avi', 'm4v'], count: 1, each: 100e6 },
   text: { extensions: [...raster, 'pdf'], count: 1, each: 20e6 },
+  screenshot: { extensions: ['jpg', 'jpeg', 'png', 'webp'], count: 1, each: 20e6 },
+  scanner: { extensions: raster, count: 1, each: 20e6 },
 };
 
 export const workspaceTools = toolCatalog.map(tool => ({ ...tool, ...inputs[tool.id], url: tool.href || `/tools/${tool.slug}/` }));

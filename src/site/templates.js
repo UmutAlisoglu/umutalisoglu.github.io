@@ -14,7 +14,7 @@ function header(path) {
   return `<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header wrap hub-header">
   <a class="wordmark" href="/" aria-label="Alisoglu home"><span class="monogram">u.</span><span>alisoglu<span class="wordmark-dot">.</span><small>ideas you can actually use</small></span></a>
-  <nav aria-label="Main navigation">${navigation.map(([href, label]) => `<a href="${href}"${(href === '/' ? path === '/' : path.startsWith(href)) ? ` aria-current="${path === href ? 'page' : 'true'}"` : ''}>${label}</a>`).join('')}<a href="/contact/" class="nav-contact"${path === '/contact/' ? ' aria-current="page"' : ''}>Say hello <span aria-hidden="true">↗</span></a></nav>
+  <nav aria-label="Main navigation">${navigation.map(([href, label]) => `<a href="${href}"${(href === '/' ? path === '/' : path.startsWith(href)) ? ` aria-current="${path === href ? 'page' : 'true'}"` : ''}>${label}</a>`).join('')}<button type="button" class="tool-switcher-trigger" data-open-tools hidden aria-haspopup="dialog" title="Find a tool (Ctrl or Command + K)">Find a tool</button><a href="/contact/" class="nav-contact"${path === '/contact/' ? ' aria-current="page"' : ''}>Say hello <span aria-hidden="true">↗</span></a></nav>
 </header>`;
 }
 const footer = `<footer class="site-footer wrap new-footer"><a class="footer-brand" href="/">alisoglu<span>.</span><small>Human ideas. Useful experiments.</small></a><div><a href="/#about">About Umut</a><a href="/contact/">Contact & feedback</a><a href="/tools/workspace/">FileForge workspace</a><button type="button" data-open-offline class="footer-offline">Offline tools</button><a href="/privacy/">Privacy</a><a href="https://github.com/UmutAlisoglu/umutalisoglu.github.io">Website source ↗</a><a href="/THIRD_PARTY_NOTICES.md">Credits</a></div><p class="footer-note">Personal projects by Umut Alisoglu. Built with AI assistance.</p></footer>`;
@@ -29,7 +29,7 @@ export function siteTemplates() {
       handler(html, context) {
         const path = context.path.replace(/index\.html$/, '');
         let result = html.replace('<site-header></site-header>', header(path)).replace('<site-footer></site-footer>', footer)
-          .replace('</head>', '<link rel="manifest" href="/manifest.webmanifest"><script type="module" src="/src/site/offline.js"></script></head>')
+          .replace('</head>', '<link rel="manifest" href="/manifest.webmanifest"><script type="module" src="/src/site/offline.js"></script><script type="module" src="/src/site/tool-switcher.js"></script></head>')
           .replace('<fileforge-launcher></fileforge-launcher>', readFileSync(new URL('./launcher-template.html', import.meta.url), 'utf8'))
           .replace('<fileforge-workbench></fileforge-workbench>', readFileSync(new URL('./workspace-template.html', import.meta.url), 'utf8'))
           .replace('<tool-directory></tool-directory>', renderToolDirectory())

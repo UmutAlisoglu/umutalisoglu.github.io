@@ -14,10 +14,70 @@ const form = $('#conversion-form'), input = $('#files'), list = $('#file-list');
 // Dedicated URLs stay on their selected tool; the original studio retains its tabs.
 const dedicatedTool = document.body.dataset.fileforgeTool;
 let selected = [], pages = [], currentTool = 'image', outputURL = null, active = null, draggedPage = null;
+let sourcePreviewURL = null, resultPreviewURL = null, sourcePreviewVersion = 0, outputPreviewVersion = 0, sourcePreviewTask = null;
+const exactBytes = size => `${size.toLocaleString('en-US')} bytes`;
+
+// Previews contain at most 960 × 960 pixels. Only the converter uses full-size canvases.
+async function makeImagePreview(blob) {
+  let bitmap, canvas;
+  try {
+    bitmap = await createImageBitmap(blob);
+    const { width, height } = bitmap;
+    if (width * height > 40_000_000) throw new Error('This image exceeds 40 megapixels. Choose a smaller image or use the desktop app.');
+    const scale = Math.min(1, 960 / Math.max(width, height));
+    canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(width * scale)); canvas.height = Math.max(1, Math.round(height * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('The browser could not allocate a preview. Try a smaller image.');
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const preview = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('This browser could not create a preview.')), 'image/png'));
+    return { blob: preview, width, height };
+  } finally { bitmap?.close(); if (canvas) { canvas.width = 1; canvas.height = 1; } }
+}
+function setImageView(view) {
+  $('#image-preview-grid').dataset.view = view;
+  document.querySelectorAll('[data-image-view]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.imageView === view)));
+}
+function clearSourcePreview() {
+  sourcePreviewVersion++; sourcePreviewTask = null;
+  $('#image-source-preview').removeAttribute('src'); $('#image-source-preview').hidden = true;
+  if (sourcePreviewURL) URL.revokeObjectURL(sourcePreviewURL);
+  sourcePreviewURL = null; $('#image-comparison').hidden = true; $('#image-source-meta').textContent = '';
+}
+function sourcePreviewNote() {
+  return selected.length > 1 ? `Previewing the first image of ${selected.length}. Each image is converted separately.` : 'Original dimensions shown below. Animated images use their first frame.';
+}
+function refreshSourcePreview() {
+  clearSourcePreview();
+  if (currentTool !== 'image' || !selected.length) return;
+  const version = sourcePreviewVersion, file = selected[0];
+  $('#image-comparison').hidden = false; $('#image-preview-note').textContent = sourcePreviewNote();
+  $('#image-source-message').textContent = 'Preparing a local preview…'; $('#image-source-message').hidden = false;
+  $('#image-source-preview').alt = `Original preview of ${file.name}`;
+  sourcePreviewTask = (async () => {
+    try {
+      const preview = await makeImagePreview(file);
+      if (version !== sourcePreviewVersion || currentTool !== 'image' || selected[0] !== file) return;
+      sourcePreviewURL = URL.createObjectURL(preview.blob);
+      $('#image-source-preview').src = sourcePreviewURL; $('#image-source-preview').hidden = false; $('#image-source-message').hidden = true;
+      $('#image-source-meta').textContent = `${preview.width} × ${preview.height} px · ${exactBytes(file.size)}`;
+      $('#image-compare-controls').hidden = !resultPreviewURL;
+    } catch (error) {
+      if (version !== sourcePreviewVersion) return;
+      $('#image-source-message').textContent = `Preview unavailable. ${error.message || 'Try a valid image in a recent browser.'}`;
+      $('#image-source-meta').textContent = exactBytes(file.size);
+    }
+  })();
+}
+document.querySelectorAll('[data-image-view]').forEach(button => button.addEventListener('click', () => setImageView(button.dataset.imageView)));
 
 function clearOutput() {
   invalidateToolResult();
+  outputPreviewVersion++;
   $('#image-preview').removeAttribute('src'); $('#image-preview').hidden = true;
+  if (resultPreviewURL) URL.revokeObjectURL(resultPreviewURL);
+  resultPreviewURL = null; $('#image-result-card').hidden = true; $('#image-result-meta').textContent = '';
+  $('#image-compare-controls').hidden = true; $('#image-result-stats').hidden = true; setImageView('both');
+  $('#image-preview-note').textContent = sourcePreviewNote();
   if (outputURL) URL.revokeObjectURL(outputURL);
   outputURL = null; $('#result').hidden = true; $('#download-result').removeAttribute('href');
 }
@@ -43,7 +103,7 @@ function setBusy(busy) {
   $('#page-grid').querySelectorAll('li').forEach(card => { card.draggable = !busy; });
 }
 function selectionChanged() {
-  input.value = ''; clearOutput(); resetPages(); renderFiles();
+  input.value = ''; clearOutput(); resetPages(); renderFiles(); refreshSourcePreview();
   publishToolSelection(selected);
 }
 function renderFiles() {
@@ -88,7 +148,7 @@ function addFiles(files) {
 }
 function chooseTool(tool, focus = false) {
   if (active || !tools[tool]) return;
-  currentTool = tool; selected = []; input.value = ''; clearOutput(); resetPages();
+  currentTool = tool; selected = []; input.value = ''; clearOutput(); clearSourcePreview(); resetPages();
   input.accept = tools[tool].accept; input.multiple = tools[tool].count > 1;
   $('#tool-title').textContent = tools[tool].title; $('#tool-hint').textContent = tools[tool].hint;
   $('#tool-panel').setAttribute('aria-labelledby', dedicatedTool ? 'tool-title' : `tab-${tool}`);
@@ -203,7 +263,7 @@ zone.addEventListener('dragover', event => { event.preventDefault(); if (!active
 zone.addEventListener('dragleave', () => zone.classList.remove('dragging'));
 zone.addEventListener('drop', event => { event.preventDefault(); zone.classList.remove('dragging'); addFiles(Array.from(event.dataTransfer.files)); });
 $('#clear-files').addEventListener('click', () => { selected = []; selectionChanged(); report('Cleared. File data, previews and the result link have been released.'); });
-$('#cancel-job').addEventListener('click', () => { active?.abort(); });
+$('#cancel-job').addEventListener('click', () => { active?.abort(); clearOutput(); clearSourcePreview(); });
 
 async function backgroundConversion(files, options, signal) {
   const worker = currentTool === 'image' ? new Worker(new URL('./image.worker.js', import.meta.url), { type: 'module' }) : new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
@@ -235,6 +295,7 @@ form.addEventListener('submit', async event => {
     if (currentTool === 'organize' && pages.length && !pages.some(page => page.selected)) throw new Error('Select at least one page to export.');
   } catch (error) { report(error.message); return; }
   clearOutput();
+  if (currentTool === 'image' && !sourcePreviewURL && !sourcePreviewTask) refreshSourcePreview();
   const job = new AbortController(); active = job;
   const values = Object.fromEntries(new FormData(form)); values.removeAudio = $('#remove-audio').checked;
   setBusy(true); report('Starting locally…', 0);
@@ -257,18 +318,39 @@ form.addEventListener('submit', async event => {
     const link = $('#download-result'); link.href = outputURL; link.download = result.name;
     $('#result-name').textContent = result.name;
     let detail = `${formatBytes(blob.size)} · ${result.detail}`;
-    if (currentTool === 'image' && result.type !== 'application/pdf') {
+    if (currentTool === 'image') {
       const original = selected.reduce((total, file) => total + file.size, 0), difference = Math.round((1 - blob.size / original) * 100);
       detail += ` ${difference > 0 ? `${difference}% smaller` : difference < 0 ? `${Math.abs(difference)}% larger` : 'About the same size'} than the original${selected.length > 1 ? 's' : ''}.`;
+      $('#image-input-label').textContent = selected.length > 1 ? `${selected.length} originals combined` : 'Original size';
+      $('#image-input-bytes').textContent = exactBytes(original); $('#image-output-bytes').textContent = exactBytes(blob.size);
+      const delta = original - blob.size, percent = Math.abs(delta / original * 100).toLocaleString('en-US', { maximumFractionDigits: 1 });
+      $('#image-size-change').textContent = delta ? `${exactBytes(Math.abs(delta))} ${delta > 0 ? 'less' : 'more'} (${percent}%)` : 'Same size';
+      $('#image-result-stats').hidden = false;
+      if (result.type.startsWith('image/')) {
+        const version = outputPreviewVersion;
+        try {
+          const preview = await makeImagePreview(blob); job.signal.throwIfAborted();
+          if (version !== outputPreviewVersion) return;
+          resultPreviewURL = URL.createObjectURL(preview.blob); $('#image-preview').src = resultPreviewURL; $('#image-preview').hidden = false;
+          $('#image-result-card').hidden = false; $('#image-comparison').hidden = false;
+          $('#image-result-meta').textContent = `${preview.width} × ${preview.height} px · ${exactBytes(blob.size)}`;
+          $('#image-preview-note').textContent = 'Compare the original and your result. Full-size dimensions are shown; previews fit your screen.';
+          $('#image-compare-controls').hidden = !sourcePreviewURL;
+        } catch (error) {
+          if (job.signal.aborted) throw error;
+          $('#image-preview-note').textContent = 'The download is ready. A result preview is unavailable in this browser.';
+        }
+      } else {
+        $('#image-preview-note').textContent = result.type === 'application/pdf' ? `Original preview only. Your PDF contains ${selected.length} A4 page${selected.length === 1 ? '' : 's'}.` : `First image only. Your ZIP contains ${selected.length} converted images.`;
+      }
     }
     $('#result-detail').textContent = detail;
-    if (result.type.startsWith('image/')) { $('#image-preview').src = outputURL; $('#image-preview').hidden = false; }
     $('#result').hidden = false; report('Done. Your download is ready.', 100);
     publishToolResult({ blob, name: result.name, detail });
   } catch (error) { report(job.signal.aborted ? 'Cancelled. You can choose another file or try again.' : error.message || 'The conversion could not finish. Try the desktop app.'); }
   finally { active = null; setBusy(false); renderFiles(); if (currentTool === 'organize') renderPages(); }
 });
-window.addEventListener('beforeunload', () => { active?.abort(); clearOutput(); resetPages(); });
+window.addEventListener('beforeunload', () => { active?.abort(); clearOutput(); clearSourcePreview(); resetPages(); });
 window.addEventListener('hashchange', () => { if (dedicatedTool) return; if (active) history.replaceState(null, '', `#${currentTool}`); else chooseTool(location.hash.slice(1)); });
 updateImageHint();
 chooseTool(tools[dedicatedTool] ? dedicatedTool : tools[location.hash.slice(1)] ? location.hash.slice(1) : 'image');

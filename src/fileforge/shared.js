@@ -5,8 +5,17 @@ export function formatBytes(bytes) {
 }
 
 export function resultName(name, extension) {
-  const safe = name.replace(/[\\/<>:"|?*\x00-\x1f]/g, '_').replace(/\.[^.]+$/, '').slice(0, 140);
+  const safe = name.replace(/[\\/<>:"|?*\x00-\x1f]/g, '_').replace(/\.[^.]+$/, '').replace(/(?:-fileforge)+$/i, '').slice(0, 140);
   return `${safe || 'file'}-fileforge.${extension}`;
+}
+
+// A custom stem never changes the real export's extension or format.
+export function downloadName(stem, original) {
+  const extension = original.match(/\.([a-z0-9]+)$/i)?.[1] || 'bin';
+  let safe = String(stem).normalize('NFC').replace(/[\\/<>:"|?*\x00-\x1f\x7f]/g, '_').trim().replace(/^\.+|[. ]+$/g, '').slice(0, 140);
+  if (!safe) safe = original.replace(/\.[^.]+$/, '') || 'fileforge-result';
+  if (/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(safe)) safe = `file_${safe}`;
+  return `${safe}.${extension}`;
 }
 
 // ZIP entries must stay distinct, including on case-insensitive filesystems.
@@ -44,4 +53,9 @@ export function columnGroups(columns, maximum = 7) {
   const groups = [];
   for (let start = 0; start < columns; start += maximum) groups.push([start, Math.min(columns, start + maximum)]);
   return groups;
+}
+// Preserve ordinary text/number editing while allowing file paste on drop zones.
+export function isTextEditingTarget(target) {
+  const control = target?.closest?.('input,textarea,[contenteditable]');
+  return Boolean(control && (control.tagName !== 'INPUT' || !['file', 'range', 'checkbox', 'radio', 'button', 'submit', 'reset', 'color', 'image', 'hidden'].includes(control.type)));
 }

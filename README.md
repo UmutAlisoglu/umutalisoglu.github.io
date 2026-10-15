@@ -1,6 +1,6 @@
 # Alisoglu project hub
 
-Live at [alisoglu.com](https://alisoglu.com/), hosted on GitHub Pages. FileForge has ten browser tools, eleven task shortcuts, a connected workspace, editable cutouts, local OCR and optional offline installation. Dedicated guides, the classic five-tool studio, project pages, Games, Windows downloads and contact remain available. Images → PDF shares the Image studio engine. Skate Scape is linked at [alisoglu.com/skate-scape](https://alisoglu.com/skate-scape/) and served from its own [UmutAlisoglu/skate-scape](https://github.com/UmutAlisoglu/skate-scape) repository; its code and assets are not copied here.
+Live at [alisoglu.com](https://alisoglu.com/), hosted on GitHub Pages. FileForge has twelve browser tools, thirteen task shortcuts, a connected workspace, editable cutouts, local OCR and optional offline installation. Screenshot studio and Document scanner add creative framing and real perspective correction. Dedicated guides, the classic five-tool studio, project pages, Games, Windows downloads and contact remain available. Images → PDF shares the Image studio engine. Skate Scape is linked at [alisoglu.com/skate-scape](https://alisoglu.com/skate-scape/) and served from its own [UmutAlisoglu/skate-scape](https://github.com/UmutAlisoglu/skate-scape) repository; its code and assets are not copied here.
 
 All FileForge conversions run on the visitor's device. There is no upload/conversion API, database or runtime third-party service. Dependency code, the font, FFmpeg WebAssembly and the background-removal model/runtime are served from this website. The background engine loads only after starting that tool (about 19 MB on first use); its small U2NETP model is 4.6 MB. Browser tools have smaller limits than the desktop app; see [LEARN.md](LEARN.md) for their scope and the step-by-step learning guide.
 
@@ -68,3 +68,13 @@ The old /showcase/ address redirects here. The original showcase tool repository
 - Offline installation is optional. Save selected packs to download and verify public build assets. No selected files/results enter Cache Storage. Service worker scope `/tools/` excludes the separate game. Downloads stage atomically, cancellation keeps the old pack, and updates do not reload active conversions. Browser storage can be evicted. Exact sizes are generated from `dist/`; the cross-browser offline OCR pack includes all compatible cores, exceeding the first-use OCR download.
 
 The Windows app remains v0.2.0 with nine native tools. The new OCR reader, connected workspace and mask editor are browser features; the project comparison describes the difference.
+
+## Workshop update — 15 October 2026
+
+- Screenshot studio: PNG/JPEG/WebP up to 20 MB / 20 MP, with real canvas composition, browser/minimal frames, gradient or solid backgrounds, spacing, corners, shadows, tilt and captions. Explicit PNG/JPG/WebP exports at 1600×1000, 1080×1080 or 1920×1080. Preview zoom does not change output size. `/tools/screenshot-studio/?sample=1` generates original sample artwork locally.
+- Document scanner: one raster photo up to 20 MB / 12 MP. Manually position four corners with handles, keyboard arrows or exact coordinates. A worker rectifies actual pixels, with original, clean colour, grayscale or adaptive black-and-white treatments, bounded to 3 MP / 3000 px per edge. PNG/JPG or a one-page image PDF; the PDF is not searchable. `/tools/document-scanner/?sample=1` uses a generated document with its known sample corners.
+- Ctrl/Cmd+K opens the tool finder. Within a workspace, it offers actions compatible with the current files. Clipboard file paste works outside text fields. Finished output is the default source for the next action; the source picker can deliberately return to the original.
+- Image studio now compares actual input/output previews and dimensions. Output names can be changed in the connected workspace while preserving the true extension. No file contents or names are persisted.
+- The homepage's workshop design lives in `src/site/showcase.css`; functional shared components remain in their existing modules.
+
+Focused browser checks: `npm run test:finder`, `npm run test:image-preview`, `npm run test:workflow`, plus the screenshot/scanner checks listed in `package.json`. Run them against a production preview after building.

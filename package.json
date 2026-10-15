@@ -15,7 +15,13 @@
     "test:ocr": "node scripts/fileforge-ocr.mjs",
     "test:offline": "node scripts/offline-smoke.mjs",
     "test:workspace": "node scripts/workspace-smoke.mjs",
-    "test:background": "node scripts/background-editor-check.mjs"
+    "test:background": "node scripts/background-editor-check.mjs",
+    "test:finder": "node scripts/tool-switcher-smoke.mjs",
+    "test:image-preview": "node scripts/image-preview-check.mjs",
+    "test:workflow": "node scripts/workflow-refinement-check.mjs",
+    "test:workshop": "node scripts/workshop-workflow.mjs",
+    "test:screenshot": "node scripts/screenshot-studio-check.mjs",
+    "test:scanner": "node scripts/scanner-check.mjs"
   },
   "dependencies": {
     "@ffmpeg/core": "0.12.10",
