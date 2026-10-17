@@ -85,7 +85,7 @@ try {
     assert.equal(await page.locator('[data-workspace-thumb]').getAttribute('src'),null);
   });
   await check('sample PDF is generated locally and page operations export a real rotated PDF', async () => {
-    await page.locator('[data-workspace-demo=pdf]').first().click(); await engine().locator('#files').waitFor();
+    await page.locator('[data-workspace-demo=pdf]:visible').first().click(); await engine().locator('#files').waitFor();
     await engine().locator('#conversion-form button[type=submit]').click(); await engine().locator('.page-card').last().waitFor();
     assert.equal(await engine().locator('.page-card').count(),3);
     await engine().locator('.page-card').first().getByRole('button',{name:/Rotate clockwise/}).click();

@@ -77,6 +77,17 @@ export function renderToolCards(tools, compact = false) {
   return tools.map(tool => `<a class="task-card tone-${escapeHtml(tool.color)}" href="${escapeHtml(tool.href || `/tools/${tool.slug}/`)}" data-tool-id="${escapeHtml(tool.id)}"><span class="task-top"><span class="task-icon" aria-hidden="true">${escapeHtml(tool.symbol)}</span><span class="task-category">${escapeHtml(tool.category)}</span></span><h3>${escapeHtml(tool.name)}</h3><p>${escapeHtml(compact ? tool.short : tool.description)}</p><span class="task-open">Open tool <span aria-hidden="true">↗</span></span></a>`).join('\n');
 }
 
+export const jobGroups = [
+  { title: 'Make a PDF neater', description: 'Put pages in order, combine documents or turn pages into pictures.', ids: ['organize', 'merge', 'image-pdf', 'pdf-images'] },
+  { title: 'Fix a document photo', description: 'Straighten the page, read its text or share a spreadsheet as a PDF.', ids: ['scanner', 'text', 'spreadsheet'] },
+  { title: 'Make an image ready to share', description: 'Frame a screenshot, remove a background, crop, convert or trace.', ids: ['screenshot', 'background', 'crop', 'image', 'svg'] },
+  { title: 'Shrink a short video', description: 'Turn a large attachment into a smaller MP4 on your device.', ids: ['video'] },
+];
+
+export function renderJobGroups() {
+  return jobGroups.map(group => `<section class="tool-job-group"><header><h2>${group.title}</h2><p>${group.description}</p></header><div class="task-grid">${renderToolCards(group.ids.map(id => toolCatalog.find(tool => tool.id === id)))}</div></section>`).join('');
+}
+
 export function renderToolDirectory({ compact = false, id = 'fileforge-directory' } = {}) {
   const prefix = escapeHtml(id);
   const initialTools = compact ? featuredTools : toolCatalog;
@@ -90,7 +101,7 @@ export function renderToolDirectory({ compact = false, id = 'fileforge-directory
     <div class="tool-category-filters" role="group" aria-label="Filter tools by category">${toolCategories.map((category, index) => `<button type="button" data-tool-category="${escapeHtml(category)}" aria-pressed="${index === 0}">${escapeHtml(category)}</button>`).join('')}</div>
     <p class="tool-search-count" role="status" aria-live="polite" aria-atomic="true">${compact ? 'Popular tools to get started' : `${toolCatalog.length} tasks · ${engineCount} browser tools`}</p>
   </div>
-  <div class="task-grid${compact ? ' compact' : ''}" id="${prefix}-results" data-tool-results>${renderToolCards(initialTools, compact)}</div>
+  <div class="task-grid${compact ? ' compact' : ''}${compact ? '' : ' grouped-results'}" id="${prefix}-results" data-tool-results>${compact ? renderToolCards(initialTools, compact) : renderJobGroups()}</div>
   <div class="tool-search-empty" hidden><h3>No matching tools yet</h3><p>Try a file type such as PNG, PDF or MP4, or choose another category.</p><button type="button" class="button secondary" data-tool-reset>${compact ? 'Show popular tools' : 'Show all tools'}</button><a href="/contact/">Suggest a tool →</a></div>
 </div>`;
 }

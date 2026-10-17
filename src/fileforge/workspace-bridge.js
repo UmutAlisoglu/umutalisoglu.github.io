@@ -20,6 +20,12 @@ export function invalidateToolResult() {
 export function publishToolResult(output) {
   if (!(output?.blob instanceof Blob) || !output.blob.size || typeof output.name !== 'string') return;
   result = { blob: output.blob, name: output.name, detail: String(output.detail || '') };
+  if (!document.querySelector('.result-save-note')) {
+    const note = document.createElement('p'); note.className = 'result-save-note';
+    note.textContent = 'Download your result before closing this tab. Results aren’t saved here.';
+    const target = document.querySelector('.advanced-result-heading, #result, #ocr-result');
+    target?.append(note);
+  }
   notify('result', result);
   if (!embedded) {
     if (!compatibleTools([new File([output.blob], output.name, { type: output.blob.type })]).length) {

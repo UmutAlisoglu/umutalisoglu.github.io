@@ -1,159 +1,39 @@
-/* A quiet, recognisable workshop identity, scoped to the homepage. */
-.workshop-home { --workshop-purple: #6548b4; --workshop-ink: #292631; --workshop-rule: #e1dce7; }
-.workshop-home .home-hero { grid-template-columns: minmax(0, 1.14fr) minmax(360px, .86fr); gap: clamp(42px, 6vw, 90px); padding-top: 66px; padding-bottom: 57px; align-items: center; }
-.workshop-home .home-hero .hero-copy { padding-top: 2px; min-width: 0; }
-.workshop-home .home-hero .hero-copy h1 { color: var(--workshop-ink); font-size: clamp(57px, 6.1vw, 84px); font-weight: 650; line-height: 1.035; letter-spacing: -4px; margin: 26px 0 25px; }
-.workshop-home .home-hero .hero-copy h1 em { display: inline-block; color: var(--workshop-purple); font-family: Georgia, 'Times New Roman', serif; font-size: 1.15em; font-weight: 400; letter-spacing: -4.5px; line-height: .96; padding-right: 8px; }
-.workshop-home .home-hero .hero-description { max-width: 410px; color: #6c6574; font-size: 16px; line-height: 1.8; }
-.workshop-home .home-hero .hero-actions { gap: 23px; margin-top: 29px; }
-.workshop-home .home-hero .hero-footnote { margin-top: 20px; font-size: 10px; line-height: 1.7; }
-.workshop-home .workshop-signature { display: flex; align-items: center; gap: 12px; font-size: 9px; letter-spacing: 1.25px; line-height: 1.6; }
-.workshop-file-mark { position: relative; display: inline-block; width: 17px; height: 22px; flex: none; border: 1px solid #7a65a0; border-radius: 2px; clip-path: polygon(0 0, 65% 0, 100% 27%, 100% 100%, 0 100%); background: #eee8f8; }
-.workshop-file-mark::after { content: ''; position: absolute; right: -1px; top: -1px; width: 7px; height: 7px; border-left: 1px solid #7a65a0; border-bottom: 1px solid #7a65a0; background: var(--paper); }
-.workshop-hero-caption { display: flex; gap: 15px; flex-wrap: wrap; padding-top: 26px; margin-top: 31px; border-top: 1px solid var(--workshop-rule); font: 8px/1.5 var(--mono); letter-spacing: .9px; color: #81758d; max-width: 420px; }
-.workshop-hero-caption span + span::before { content: '/'; margin-right: 15px; color: #c3b7cc; }
-.workshop-home .home-hero .forge-launcher { border-radius: 5px 32px 5px 5px; padding: 32px 29px 26px; background: #fff; border-color: #ded6e8; box-shadow: 12px 14px 0 -1px #eee9f3, 12px 14px 0 0 #e5dfec; margin-top: 27px; margin-bottom: 15px; }
-.workshop-home .home-hero .forge-launcher::before { content: ''; position: absolute; right: -1px; top: -1px; width: 30px; height: 30px; border-bottom: 1px solid #ded6e8; border-left: 1px solid #ded6e8; border-radius: 0 29px 0 6px; background: linear-gradient(45deg, #eee6f6 49.5%, var(--paper) 50.5%); }
-.workshop-home .home-hero .forge-launcher h2 { font-size: 24px; letter-spacing: -.7px; margin-top: 27px; }
-.workshop-home .home-hero .forge-launcher-top { padding-right: 5px; }
-.workshop-home .home-hero .forge-universal-drop { border-radius: 6px; padding-top: 28px; padding-bottom: 28px; background: #fcfafd; border-color: #c4b5d6; }
-.workshop-home .home-hero .forge-launcher-bottom { margin-top: 24px; }
-.workshop-home .forge-proof-strip { padding-block: 23px; margin-bottom: 58px; }
-.workshop-home .forge-proof-strip p { font-size: 12px; }
-.workshop-home .forge-proof-strip a { font-size: 12px; }
-.workshop-showcase { padding-bottom: 66px; }
-.workshop-home .workshop-showcase .section-heading { align-items: end; margin-bottom: 27px; gap: 25px; }
-.workshop-home .workshop-showcase h2 { font-size: 36px; letter-spacing: -1.1px; margin-bottom: 0; line-height: 1.2; }
-.workshop-section-number { display: inline-block; color: #9d8bae; padding-right: 12px; margin-right: 10px; border-right: 1px solid #d6cadf; font: inherit; }
-.workshop-section-aside { font-size: 11px; line-height: 1.7; color: #7f7489; margin: 0 0 3px; text-align: right; }
-.workshop-showcase-grid { display: grid; grid-template-columns: 1.18fr 1fr; gap: 28px; }
-.workshop-feature { min-width: 0; border: 1px solid var(--workshop-rule); border-radius: 8px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
-.workshop-feature-art { min-width: 0; display: block; position: relative; text-decoration: none; overflow: hidden; isolation: isolate; }
-.workshop-feature-art:focus-visible { outline: 4px solid var(--accent); outline-offset: -5px; }
-.workshop-screen-art { background: #d8c8eb; aspect-ratio: 1.4; padding: 39px 40px 43px; display: flex; align-items: center; }
-.workshop-screen-canvas { width: 100%; min-width: 0; transform: rotate(-3deg); transition: transform .25s ease; }
-.workshop-screen-art:hover .workshop-screen-canvas { transform: rotate(-1deg); }
-.workshop-preview-window { background: #fffdf8; border: 1px solid #8c77ab; box-shadow: 0 18px 25px -15px #5f3c8799; border-radius: 8px; overflow: hidden; }
-.workshop-preview-chrome { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 13px; border-bottom: 1px solid #e8e1ec; background: #f5f1f8; color: #8e8198; font: 7px/1.4 var(--mono); }
-.workshop-preview-chrome > span:first-child { display: flex; gap: 4px; }
-.workshop-preview-chrome i { width: 5px; height: 5px; display: block; border-radius: 50%; background: #c9bdd5; }
-.workshop-preview-content { padding: 25px 29px 21px; position: relative; }
-.workshop-preview-index { display: block; color: #88798f; font: 6px/1.4 var(--mono); letter-spacing: .65px; margin-bottom: 17px; }
-.workshop-preview-content > strong { display: block; font-size: clamp(22px, 2.3vw, 31px); font-weight: 600; letter-spacing: -1px; line-height: 1.12; color: #352b40; }
-.workshop-preview-content > strong em { font-family: Georgia, serif; font-weight: 400; color: #7953a6; }
-.workshop-preview-rule { width: 24px; height: 1px; background: #b5a2c6; margin-top: 18px; }
-.workshop-preview-content > p { margin: 9px 0 0; font-size: 7px; color: #91829a; }
-.workshop-preview-signature { position: absolute; right: 25px; bottom: 20px; font-size: 10px; color: #8c6aa7; letter-spacing: -.5px; font-weight: 600; }
-.workshop-art-tag { position: absolute; bottom: 12px; left: 15px; right: 15px; display: flex; justify-content: space-between; color: #655077; font: 8px/1.5 var(--mono); letter-spacing: .8px; }
-.workshop-art-tag > span { font: 15px/1 var(--sans); }
-.workshop-scan-art { aspect-ratio: 1.186; background: #edece6; display: flex; align-items: center; }
-.workshop-scan-art svg { display: block; width: 100%; height: auto; }
-.workshop-scan-art .workshop-art-tag { color: #756e63; }
-.workshop-feature-copy { padding: 27px 31px 24px; display: flex; flex-direction: column; flex: 1; }
-.workshop-feature-heading { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 17px; }
-.workshop-new-label { display: inline-flex; font: 8px/1.5 var(--mono); letter-spacing: .65px; padding: 4px 6px; border: 1px solid #ded3ed; color: #745294; background: #f6f1fc; border-radius: 3px; }
-.workshop-feature-format { font: 8px/1.5 var(--mono); letter-spacing: .4px; color: #8b7d92; }
-.workshop-feature-copy h3 { font-size: 30px; font-weight: 600; letter-spacing: -.9px; line-height: 1.14; margin: 0 0 14px; color: var(--workshop-ink); }
-.workshop-feature-copy > p { font-size: 13px; line-height: 1.8; color: #776c7d; max-width: 390px; margin: 0 0 24px; }
-.workshop-feature-link { display: flex; gap: 20px; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--workshop-purple); padding-block: 11px; border-top: 1px solid #ece5f1; margin-top: auto; }
-.workshop-feature-link > span { font-size: 21px; line-height: 1; }
-.workshop-feature-link:hover { text-decoration: underline; text-underline-offset: 4px; }
-.workshop-feature-copy > small { font-size: 9px; line-height: 1.6; color: #8b7e94; margin-top: 5px; }
-.workshop-home .quick-tools { padding-top: 38px; padding-bottom: 48px; }
-.workshop-home .quick-tools .section-heading h2 { font-size: 36px; letter-spacing: -1.2px; }
-.workshop-home .task-grid.compact { gap: 16px; }
-.workshop-home .task-grid.compact .task-card { border-radius: 6px; padding: 22px; }
-.workshop-home .forge-demo-story { border-radius: 8px; background: #f1edf6; border-color: #e3dbe9; padding: 43px; gap: 57px; }
-.workshop-home .forge-demo-story .forge-demo-art { border-radius: 5px; }
-.workshop-home .forge-demo-copy h2 { font-size: 40px; letter-spacing: -1.3px; }
-.workshop-home .forge-demo-copy > p:not(.eyebrow) { color: #776b82; }
-.workshop-home .projects-feature { padding-top: 16px; }
-.workshop-home .project-mini { border-radius: 5px; }
-.workshop-home .playground-section { border-top: 1px solid #e7e1eb; border-bottom: 1px solid #e7e1eb; background: #f2eef6; color: var(--workshop-ink); }
-.workshop-home .playground-copy .eyebrow { color: #7c6a8c; }
-.workshop-home .playground-copy h2 em { color: var(--workshop-purple); }
-.workshop-home .playground-copy > p:not(.eyebrow) { color: #776b82; }
-.workshop-home .playground-copy > p.playground-note { color: #7e7188; }
-.workshop-home .prompt-machine { border-radius: 6px; }
-.workshop-home .about-fresh { padding-top: 65px; padding-bottom: 72px; }
-.workshop-home .about-fresh h2 { font-size: 31px; line-height: 1.25; }
-.workshop-home .about-fresh em { font-size: 34px; }
-@media (min-width: 1200px) { .workshop-home .home-hero .forge-launcher { margin-left: 4px; } }
-@media (max-width: 1000px) {
-  .workshop-home .home-hero { grid-template-columns: minmax(0, 1fr) minmax(320px, .95fr); gap: 38px; padding-top: 52px; }
-  .workshop-home .home-hero .hero-copy h1 { font-size: 65px; letter-spacing: -3px; }
-  .workshop-home .home-hero .hero-copy h1 em { letter-spacing: -3.5px; }
-  .workshop-home .home-hero .hero-description { font-size: 14px; }
-  .workshop-home .home-hero .forge-launcher { padding: 29px 23px 24px; }
-  .workshop-home .home-hero .forge-launcher h2 { font-size: 21px; }
-  .workshop-home .workshop-signature { font-size: 8px; letter-spacing: .85px; }
-  .workshop-showcase-grid { gap: 22px; }
-  .workshop-screen-art { padding: 33px 30px 40px; }
-  .workshop-preview-content { padding: 20px 23px; }
-  .workshop-preview-content > strong { font-size: 26px; }
-  .workshop-feature-copy { padding: 23px 25px; }
-  .workshop-feature-copy h3 { font-size: 27px; }
-}
-@media (max-width: 760px) {
-  .workshop-home .home-hero { grid-template-columns: 1fr; gap: 28px; padding-top: 32px; padding-bottom: 48px; }
-  .workshop-home .home-hero .hero-copy h1 { font-size: clamp(58px, 11vw, 76px); line-height: 1.02; letter-spacing: -3px; margin-top: 22px; margin-bottom: 22px; }
-  .workshop-home .home-hero .hero-description { font-size: 15px; max-width: 440px; }
-  .workshop-home .home-hero .hero-actions { margin-top: 24px; }
-  .workshop-hero-caption { display: none; }
-  .workshop-home .home-hero .forge-launcher { max-width: none; width: calc(100% - 12px); margin-top: 3px; margin-bottom: 8px; padding: 29px 26px 24px; }
-  .workshop-home .home-hero .forge-launcher h2 { font-size: 24px; }
-  .workshop-home .forge-proof-strip { margin-bottom: 42px; padding-block: 20px; }
-  .workshop-home .workshop-showcase h2 { font-size: 30px; letter-spacing: -.8px; }
-  .workshop-section-aside { display: none; }
-  .workshop-showcase { padding-bottom: 42px; }
-  .workshop-showcase-grid { grid-template-columns: 1fr; gap: 25px; }
-  .workshop-screen-art { aspect-ratio: 1.5; padding: 38px 45px 44px; }
-  .workshop-preview-content { padding: 25px 29px; }
-  .workshop-preview-content > strong { font-size: clamp(26px, 5.5vw, 38px); }
-  .workshop-scan-art { aspect-ratio: 1.45; }
-  .workshop-scan-art svg { max-width: 490px; margin-inline: auto; }
-  .workshop-feature-copy { padding: 24px 27px; }
-  .workshop-feature-copy h3 { font-size: 29px; }
-  .workshop-feature-copy h3 br { display: none; }
-  .workshop-feature-copy > p { max-width: 470px; font-size: 13px; margin-bottom: 21px; }
-  .workshop-home .quick-tools { padding-top: 31px; padding-bottom: 37px; }
-  .workshop-home .quick-tools .section-heading h2 { font-size: 31px; }
-  .workshop-home .forge-demo-story { padding: 28px; gap: 29px; }
-  .workshop-home .forge-demo-copy h2 { font-size: 35px; }
-  .workshop-home .projects-feature { padding-top: 0; }
-  .workshop-home .about-fresh { padding-top: 48px; padding-bottom: 48px; }
-}
-@media (max-width: 420px) {
-  .workshop-home .home-hero .hero-copy h1 { font-size: 57px; letter-spacing: -2.8px; }
-  .workshop-home .home-hero .hero-copy h1 em { letter-spacing: -3px; }
-  .workshop-home .workshop-signature { gap: 9px; font-size: 7px; letter-spacing: .75px; }
-  .workshop-home .home-hero .hero-description { font-size: 14px; }
-  .workshop-home .home-hero .hero-actions { gap: 17px; }
-  .workshop-home .home-hero .hero-footnote { font-size: 9px; }
-  .workshop-home .home-hero .forge-launcher { padding: 26px 20px 22px; }
-  .workshop-home .home-hero .forge-launcher h2 { font-size: 21px; }
-  .workshop-screen-art { padding: 32px 25px 39px; aspect-ratio: 1.2; }
-  .workshop-preview-chrome { padding: 9px 11px; }
-  .workshop-preview-content { padding: 23px; }
-  .workshop-preview-content > strong { font-size: 25px; }
-  .workshop-preview-index { font-size: 5px; }
-  .workshop-feature-copy { padding: 22px 21px; }
-  .workshop-feature-copy h3 { font-size: 27px; }
-  .workshop-feature-format { font-size: 7px; }
-  .workshop-scan-art { aspect-ratio: 1.25; }
-  .workshop-home .workshop-showcase h2 { font-size: 29px; }
-  .workshop-home .forge-demo-story { padding: 23px; }
-  .workshop-home .forge-demo-copy h2 { font-size: 33px; }
-}
-@media (max-width: 350px) {
-  .workshop-home .home-hero .hero-copy h1 { font-size: 49px; letter-spacing: -2.6px; }
-  .workshop-home .home-hero .hero-copy h1 em { letter-spacing: -2.7px; }
-  .workshop-home .home-hero .hero-actions { gap: 14px; flex-wrap: wrap; }
-  .workshop-home .home-hero .hero-actions .button { padding-inline: 18px; }
-  .workshop-home .workshop-showcase h2 { font-size: 26px; }
-  .workshop-feature-copy h3 { font-size: 25px; }
-  .workshop-preview-content { padding: 19px; }
-  .workshop-preview-content > strong { font-size: 23px; }
-  .workshop-preview-signature { right: 18px; bottom: 17px; }
-}
-@media (prefers-reduced-motion: reduce) { .workshop-screen-canvas { transition: none; } }
+/* FileForge's focused workshop front door. */
+.workshop-home{--workshop-purple:#6548b4;--workshop-ink:#292631}
+.focused-home .home-hero{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:65px;padding-top:42px;padding-bottom:38px;align-items:center}
+.focused-home .home-hero .hero-copy h1{font-size:clamp(43px,4.5vw,65px);font-weight:650;line-height:1.07;letter-spacing:-2.8px;margin:20px 0}
+.focused-home .home-hero h1 em{font-family:Georgia,serif;font-weight:400;color:var(--workshop-purple)}
+.focused-home .home-hero .hero-description{font-size:16px;max-width:340px;line-height:1.8}
+.workshop-signature{display:flex;align-items:center;gap:10px;font-size:9px!important;letter-spacing:1px}
+.workshop-file-mark{width:17px;height:22px;display:inline-block;border:1px solid #8d76ac;border-radius:2px;background:#eee7f6;clip-path:polygon(0 0,65% 0,100% 27%,100% 100%,0 100%)}
+.focused-home .home-hero .hero-footnote{display:block;font-size:11px;line-height:1.9;max-width:330px;color:#7a6b88;margin:18px 0 0}
+.hero-footnote a{display:block;font-weight:600;color:var(--workshop-purple)}
+.focused-home .home-hero .forge-launcher{background:#fff;border-radius:5px 28px 5px 5px;box-shadow:9px 10px 0 #eee9f3;padding:26px 28px;margin:0 10px 10px 0}
+.focused-home .home-hero .forge-launcher::before{content:'';position:absolute;right:-1px;top:-1px;width:27px;height:27px;background:linear-gradient(45deg,#eee6f6 49.5%,var(--paper) 50.5%);border-left:1px solid #ded6e8;border-bottom:1px solid #ded6e8;border-radius:0 27px 0 5px}
+.focused-home .home-hero .forge-launcher h2{font-size:24px;margin-top:20px}
+.focused-home .forge-universal-drop{padding:20px 15px;background:#fcfaff;border-radius:7px}
+.focused-home .forge-file-stack{height:45px;transform:scale(.8);transform-origin:top center;margin-bottom:7px}
+.focused-home .forge-launcher .forge-launcher-status{font-size:10px;line-height:1.7;margin:11px 0}
+.focused-home .forge-launcher-bottom{margin-top:13px;padding-top:12px}
+.sample-jobs{display:grid;grid-template-columns:.7fr 1fr 1fr 1fr;gap:12px;margin-bottom:58px!important;align-items:stretch}
+.sample-jobs>div{padding:16px 0}.sample-jobs>div p:last-child{font-size:11px;color:#897b93;margin-top:8px}
+.sample-jobs>a,.sample-jobs>button{display:grid;grid-template-columns:26px 1fr;gap:5px 9px;align-content:center;text-align:left;background:#fff;border:1px solid #e1d9ea;border-radius:10px;padding:17px 13px;color:var(--ink);font-family:var(--sans);min-width:0;transition:background .15s,border-color .15s}
+.sample-jobs>a:hover,.sample-jobs>button:hover{background:#f7f1ff;border-color:#bda3d9}
+.sample-jobs>a>span,.sample-jobs>button>span{grid-row:span 2;font-size:25px;color:#8e6cba;align-self:center}
+.sample-jobs strong{font-size:11px;line-height:1.6;font-weight:600}.sample-jobs small{font-size:10px;line-height:1.7;color:#8b7d95}
+.sample-jobs :focus-visible{outline:3px solid #8d5cd1;outline-offset:4px}
+.focused-home .quick-tools{padding-top:0;margin-bottom:35px}
+.focused-home .quick-tools .section-heading h2{font-size:32px}
+.focused-home .forge-demo-story{margin-top:30px;margin-bottom:65px;gap:50px;border-radius:15px;padding:38px;grid-template-columns:.8fr 1fr}
+.focused-home .forge-demo-copy h2{font-size:40px}.focused-home .forge-demo-copy h2 em{color:var(--workshop-purple);font-family:Georgia,serif;font-weight:400}
+.forge-recipe span+span::before{content:'→';margin-right:8px;color:#967eab}
+.privacy-proof{display:grid;grid-template-columns:.8fr 1.4fr;gap:70px;padding:45px 0 55px;border-block:1px solid #e2dbe9;scroll-margin-top:25px;margin-bottom:36px!important}
+.proof-intro h2{font-size:32px;letter-spacing:-1px;line-height:1.2;margin:16px 0}.proof-intro>p:not(.eyebrow){font-size:13px;color:#81708d;line-height:1.8}.proof-intro>a{font-size:12px}
+.proof-facts{display:flex;flex-direction:column;gap:22px}.proof-facts>div{padding-bottom:20px;border-bottom:1px solid #e6dfed}.proof-facts>div:last-child{padding-bottom:0;border:0}.proof-facts span{font:9px var(--mono);letter-spacing:1px;color:#957ba6}.proof-facts h3{font-size:16px;margin:9px 0}.proof-facts p{font-size:12px;color:#80718b;line-height:1.85;margin:0}
+.also-built{display:flex;justify-content:space-between;gap:35px;align-items:center;padding:8px 0 40px!important}.also-built>div{max-width:400px}.also-built p:not(.eyebrow){font-size:12px;color:#82728b;line-height:1.8}.also-built nav{display:flex;gap:18px;flex-wrap:wrap;justify-content:flex-end;font-size:11px}.also-built nav span{color:#9d8ba7;width:100%;text-align:right;font:9px var(--mono);letter-spacing:1px}
+@media(max-width:1000px){.focused-home .home-hero{gap:32px;grid-template-columns:.85fr 1.15fr}.focused-home .home-hero .hero-copy h1{font-size:48px}.sample-jobs{grid-template-columns:repeat(3,minmax(0,1fr))}.sample-jobs>div{grid-column:1/-1;padding:0}.sample-jobs>div p:last-child{display:none}.privacy-proof{gap:35px}}
+@media(max-width:760px){.focused-home .home-hero{grid-template-columns:1fr;gap:20px;padding-top:24px;padding-bottom:28px}.focused-home .home-hero .hero-copy h1{font-size:43px;letter-spacing:-2px;margin:12px 0}.focused-home .home-hero h1 br{display:none}.focused-home .home-hero .hero-description{font-size:14px;max-width:none;margin:0}.focused-home .home-hero .hero-footnote{max-width:none;margin-top:10px}.hero-footnote a{display:inline;margin-left:4px}.focused-home .home-hero .forge-launcher{padding:22px;margin-right:8px}.sample-jobs{grid-template-columns:1fr;margin-bottom:40px!important;gap:8px}.sample-jobs>div{padding:0 0 4px}.sample-jobs>a,.sample-jobs>button{padding:12px 15px}.sample-jobs strong{font-size:12px}.focused-home .forge-demo-story{grid-template-columns:1fr;padding:24px;gap:25px}.focused-home .forge-demo-art{max-width:350px;width:100%;margin:auto}.focused-home .forge-demo-copy h2{font-size:34px}.privacy-proof{grid-template-columns:1fr;gap:25px;padding:30px 0}.proof-intro h2{font-size:29px}.also-built{flex-direction:column;align-items:start;gap:15px}.also-built nav{justify-content:start}.also-built nav span{text-align:left}}
+
+@media(max-width:350px){.focused-home .home-hero .hero-copy h1{font-size:36px;margin:10px 0}.focused-home .home-hero{gap:14px;padding-top:16px}.focused-home .home-hero .hero-description{font-size:12px}.focused-home .home-hero .forge-launcher{padding:18px}.focused-home .home-hero .forge-launcher h2{font-size:21px}.focused-home .home-hero .hero-footnote{font-size:10px}}
+
+.focused-home .forge-demo-row{display:none}

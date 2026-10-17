@@ -1,4 +1,4 @@
-import { featuredTools, findTools, renderToolCards, engineCount } from './tool-catalog.js';
+import { featuredTools, findTools, renderToolCards, renderJobGroups, engineCount } from './tool-catalog.js';
 import './tool-search.css';
 
 for (const directory of document.querySelectorAll('[data-tool-directory]')) {
@@ -17,7 +17,9 @@ for (const directory of document.querySelectorAll('[data-tool-directory]')) {
     const query = search.value.trim();
     const initial = compact && !query && category === 'All tools';
     const tools = initial ? featuredTools : findTools(query, category);
-    grid.innerHTML = renderToolCards(tools, compact);
+    const grouped = !compact && !query && category === 'All tools';
+    grid.classList.toggle('grouped-results', grouped);
+    grid.innerHTML = grouped ? renderJobGroups() : renderToolCards(tools, compact);
     grid.hidden = tools.length === 0;
     empty.hidden = tools.length !== 0;
     clear.hidden = !search.value;

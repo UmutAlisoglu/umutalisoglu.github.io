@@ -399,3 +399,11 @@ h1 em { font-family: inherit; font-style: normal; font-weight: 600; letter-spaci
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+.tool-input-facts { border:1px solid #e2dbea; border-left:3px solid #8d69bc; background:#fcfaff; border-radius:8px; padding:17px 20px; margin:0 0 28px; }
+.tool-input-facts p { font-size:12px; line-height:1.8; margin:0 0 4px; color:#746580; }
+.tool-input-facts strong { display:block; color:var(--ink); font-weight:600; }
+.tool-input-facts>div { display:flex; flex-wrap:wrap; gap:10px 24px; margin-top:10px; font-size:11px; }
+.result-save-note { font-size:11px; line-height:1.7; color:#80728a; flex-basis:100%; }
+.advanced-result-heading:has(.result-save-note) { flex-wrap:wrap; }
+.idea-page .playground-section{background:#f3eef8;color:var(--ink);margin:25px 0 70px}.idea-page .playground-copy p{color:#786c86}.idea-page .playground-copy h1{font-size:clamp(38px,5vw,64px);line-height:1.1;letter-spacing:-2px}.idea-page .playground-copy h1 em{color:var(--accent)}

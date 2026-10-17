@@ -17,7 +17,7 @@ const check = async (name, run) => { await run(); console.log(`PASS ${name}`); }
 try {
   await check('homepage samples reach real tools without exporting automatically', async () => {
     await page.goto(base);
-    await page.getByRole('link', { name: 'Make something shareable' }).click();
+    await page.getByRole('link', { name: /Screenshot → framed image/ }).click();
     await page.locator('#screenshot-export:not(:disabled)').waitFor();
     assert.equal(await page.locator('#screenshot-result').isVisible(), false);
     assert.equal(await page.locator('#screenshot-preview').isVisible(), true);

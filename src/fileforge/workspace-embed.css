@@ -2,3 +2,5 @@
 .embedded-tool .forge-tool-entry,.embedded-tool #download-result,.embedded-tool #advanced-download{display:none!important}
 .embedded-tool #page-grid{max-height:650px;overflow-y:auto;padding:3px}
 .embedded-tool .scanner-layout,.embedded-tool .screenshot-layout{display:block!important;margin:0!important}.embedded-tool .scanner-workspace,.embedded-tool .screenshot-workspace{border:0!important;border-radius:0!important;box-shadow:none!important;padding:22px!important}.embedded-tool .scanner-sidebar,.embedded-tool .screenshot-sidebar,.embedded-tool .scanner-guide,.embedded-tool .screenshot-guide{display:none!important}
+.embedded-tool .tool-input-facts { display:none!important; }
+.embedded-tool .result-save-note { display:none!important; }

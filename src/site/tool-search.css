@@ -35,3 +35,8 @@
   .tool-search-empty { padding: 22px; }
   .tool-search-empty > a { display: block; margin-left: 0; }
 }
+.grouped-results { display:block!important; }
+.tool-job-group { margin:0 0 42px; }
+.tool-job-group>header { margin-bottom:18px; }
+.tool-job-group>header h2 { font-size:25px; letter-spacing:-.7px; margin:0 0 7px; }
+.tool-job-group>header p { font-size:13px; color:var(--muted); margin:0; line-height:1.7; }

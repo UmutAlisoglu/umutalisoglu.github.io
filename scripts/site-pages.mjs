@@ -32,10 +32,14 @@ try {
       assert.equal(await page.locator('h1').count(), 1, path);
       const title = await page.title(); assert.ok(!titles.has(title), title); titles.add(title);
       assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), `https://alisoglu.com${path}`);
-      assert.equal(await page.locator('header nav [aria-current]').count(), path === '/privacy/' ? 0 : 1, path);
+      assert.equal(await page.locator('header nav [aria-current]').count(), ['/privacy/', '/idea-machine/'].includes(path) ? 0 : 1, path);
       assert.equal(await page.locator('footer a[href="/privacy/"]').count(), 1);
       const duplicates = await page.evaluate(() => { const ids = [...document.querySelectorAll('[id]')].map(node => node.id); return ids.filter((id, index) => ids.indexOf(id) !== index); });
       assert.deepEqual(duplicates, [], path);
+      if (toolPages.some(tool => path === `/tools/${tool.slug}/`) || advancedTools.some(tool => path === `/tools/${tool.slug}/`)) {
+        const facts = page.locator('.tool-input-facts'); assert.equal(await facts.count(), 1, path);
+        assert.match(await facts.innerText(), /MB/); assert.match(await facts.locator('a[href^="mailto:"]').getAttribute('href'), /subject=FileForge/);
+      }
       for (const href of await page.locator('a[href]').evaluateAll(nodes => nodes.map(node => node.href))) {
         const url = new URL(href); if (url.origin === new URL(base).origin) links.add(url.pathname + url.hash);
       }
@@ -123,9 +127,11 @@ try {
     await page.getByRole('button', { name: 'Preview my report' }).click();
       const url = new URL(await page.locator('#feedback-github').getAttribute('href'));
       assert.equal(url.pathname, `/UmutAlisoglu/${repo}/issues/new`); assert.equal(url.searchParams.get('title'), 'A test & an idea'); assert.match(url.searchParams.get('body'), /<script>/);
+      const mail = new URL(await page.locator('#feedback-email').getAttribute('href'));
+      assert.equal(mail.protocol, 'mailto:'); assert.equal(mail.searchParams.get('subject'), 'A test & an idea'); assert.match(mail.searchParams.get('body'), /<script>/);
       assert.equal(await page.locator('#feedback-draft script').count(), 0);
     }
-    await page.locator('#feedback-details').fill('Edited draft'); assert.equal(await page.locator('#feedback-preview').isVisible(), false); assert.equal(await page.locator('#feedback-github').getAttribute('href'), null);
+    await page.locator('#feedback-details').fill('Edited draft'); assert.equal(await page.locator('#feedback-preview').isVisible(), false); assert.equal(await page.locator('#feedback-github').getAttribute('href'), null); assert.equal(await page.locator('#feedback-email').getAttribute('href'), null);
     await page.reload(); assert.equal(await page.locator('#feedback-details').inputValue(), '');
     await page.locator('#feedback-title-input').fill('Unicode report');
     await page.locator('#feedback-details').fill('例'.repeat(1500));
@@ -136,7 +142,8 @@ try {
   await check('homepage shortcuts and the idea machine work', async () => {
     await page.goto(base); assert.equal(await page.locator('#quick-tools .task-card').count(), 4);
     await page.locator('#quick-tools .task-card').first().click(); assert.ok(page.url().includes('/tools/pdf-organizer/'));
-    await page.goto(base); await page.locator('#surprise-button').click(); assert.equal(await page.locator('#prompt-result').isVisible(), true);
+    await page.goto(base); assert.equal(await page.locator('#prompt-form').count(), 0);
+    await page.locator('footer a[href="/idea-machine/"]').click(); await page.locator('#surprise-button').click(); assert.equal(await page.locator('#prompt-result').isVisible(), true);
   });
   await check('all pages fit desktop, tablet and narrow phones', async () => {
     for (const width of [1440, 768, 390, 320]) {

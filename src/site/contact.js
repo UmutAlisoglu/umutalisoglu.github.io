@@ -2,6 +2,7 @@ const form = document.querySelector('#feedback-form');
 const preview = document.querySelector('#feedback-preview');
 const draft = document.querySelector('#feedback-draft');
 const link = document.querySelector('#feedback-github');
+const email = document.querySelector('#feedback-email');
 const repositories = {
   website: 'umutalisoglu.github.io',
   fileforge: 'fileforge',
@@ -27,13 +28,14 @@ form.addEventListener('submit', event => {
   }
   draft.textContent = `${title}\n\n${body}`;
   link.href = url.href;
+  email.href = `mailto:umu@alisoglu.com?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
   preview.hidden = false;
-  link.focus({ preventScroll: true });
+  email.focus({ preventScroll: true });
   preview.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'nearest' });
 });
 form.addEventListener('input', event => {
   event.target.setCustomValidity?.('');
-  preview.hidden = true; draft.textContent = ''; link.removeAttribute('href');
+  preview.hidden = true; draft.textContent = ''; link.removeAttribute('href'); email.removeAttribute('href');
 });
 // Without JavaScript, only the direct contact links are shown. Typed feedback
 // must never fall back to a normal form submission or a URL query on this site.
