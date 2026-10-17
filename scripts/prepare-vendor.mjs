@@ -23,3 +23,8 @@ for (const file of ['ort-wasm-simd-threaded.mjs', 'ort-wasm-simd-threaded.wasm']
 }
 await cp('node_modules/imagetracerjs/LICENSE', 'public/licenses/imagetracer-Unlicense.txt');
 await prepareOCR();
+
+// Keep the LGPL HEIC decoder replaceable and unmodified, separate from site code.
+await mkdir('public/vendor/heic', { recursive: true });
+await cp('node_modules/heic-to/dist/next/heic-to.js', 'public/vendor/heic/heic-to.js');
+await cp('node_modules/heic-to/LICENSE', 'public/licenses/heic-to-LGPL-3.0.txt');

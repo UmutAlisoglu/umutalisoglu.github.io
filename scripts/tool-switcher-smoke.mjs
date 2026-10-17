@@ -26,11 +26,11 @@ try {
   await check('native tool finder has a labelled search, keyboard navigation and restored focus', async () => {
     await open();
     assert.equal(await page.evaluate(() => document.activeElement.id), 'tool-switcher-query');
-    assert.equal(await finder().locator('[data-switcher-tool]').count(), 13);
+    assert.equal(await finder().locator('[data-switcher-tool]').count(), 17);
     await query().press('ArrowDown'); assert.equal(await focusedTool(), 'image-pdf');
     await page.keyboard.press('ArrowDown'); assert.equal(await focusedTool(), 'background');
     await page.keyboard.press('ArrowUp'); assert.equal(await focusedTool(), 'image-pdf');
-    await page.keyboard.press('ArrowUp'); assert.equal(await focusedTool(), 'scanner');
+    await page.keyboard.press('ArrowUp'); assert.equal(await focusedTool(), 'metadata');
     await page.keyboard.press('Escape');
     assert.equal(await finder().count(), 0);
     assert.equal(await page.evaluate(() => document.activeElement.hasAttribute('data-open-tools')), true);
@@ -38,7 +38,7 @@ try {
     await query().press('Shift+Tab');
     assert.equal(await page.evaluate(() => document.activeElement.hasAttribute('data-close-tools')), true);
     await page.keyboard.press('Shift+Tab');
-    assert.equal(await focusedTool(), 'scanner', 'Native modal keeps focus inside the finder');
+    assert.equal(await focusedTool(), 'metadata', 'Native modal keeps focus inside the finder');
     await page.keyboard.press('Escape');
     await page.keyboard.press('Meta+k'); await finder().waitFor();
     await page.keyboard.press('Escape');
@@ -80,7 +80,7 @@ try {
     await page.locator('[data-workspace-input]').setInputFiles({ name: 'finder-test.png', mimeType: 'image/png', buffer });
     await page.locator('[data-workspace-session]').waitFor({ state: 'visible' });
     await open();
-    assert.equal(await finder().locator('[data-switcher-tool]').count(), 8);
+    assert.equal(await finder().locator('[data-switcher-tool]').count(), 9);
     assert.equal(await finder().locator('[data-switcher-tool=video]').count(), 0);
     assert.equal(await finder().locator('a[data-switcher-tool]').count(), 0);
     await query().fill('crop'); await query().press('Enter');
@@ -93,7 +93,7 @@ try {
     assert.equal(await page.locator('[data-workspace-tool-name]').evaluate(node => node === document.activeElement), true, 'Opened tool heading receives focus after the dialog closes');
     await engine.locator('#crop-width').press('Control+k'); await finder().waitFor();
     assert.equal(await engine.locator('.tool-switcher[open]').count(), 0, 'Embedded engine opens its owning workspace finder');
-    assert.equal(await finder().locator('button[data-switcher-tool]').count(), 8);
+    assert.equal(await finder().locator('button[data-switcher-tool]').count(), 9);
     await page.keyboard.press('Escape');
     assert.equal(page.url(), base + '/tools/workspace/');
     await open();
@@ -104,11 +104,11 @@ try {
     await query().press('Enter'); assert.equal(await finder().isVisible(), true);
     await page.keyboard.press('Escape');
     await open(); // The request event must replace stale state with the real controller state.
-    assert.equal(await finder().locator('button[data-switcher-tool]').count(), 8);
+    assert.equal(await finder().locator('button[data-switcher-tool]').count(), 9);
     assert.equal(await finder().locator('button[data-switcher-tool]:disabled').count(), 0);
     await page.keyboard.press('Escape');
     await page.locator('[data-workspace-clear]').click();
-    await open(); assert.equal(await finder().locator('a[data-switcher-tool]').count(), 13);
+    await open(); assert.equal(await finder().locator('a[data-switcher-tool]').count(), 17);
     await page.keyboard.press('Escape');
   });
   await check('finder fits 320px, tablet and desktop without horizontal overflow', async () => {

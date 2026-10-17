@@ -17,6 +17,7 @@ async function walk(directory) {
 await walk(root);
 const definitions = [
   { id: 'core', label: 'Everyday image & PDF tools', description: 'Workspace, screenshot studio, document scanner, conversion, cropping, SVG tracing, PDF pages and spreadsheet exports. Required for every pack.' },
+  { id: 'heic', label: 'HEIC photo conversion', description: 'Local HEIC/HEIF decoder. Only needed for iPhone photos.' },
   { id: 'background', label: 'Background removal', description: 'The local AI model and its WebAssembly engine.' },
   { id: 'video', label: 'Video compression', description: 'The FFmpeg engine. Larger download; compression uses your device.' },
   { id: 'ocr', label: 'Text extraction engine', description: 'Local OCR engine. Choose at least one language below.' },
@@ -41,6 +42,7 @@ for (const path of files.sort()) {
   if (/^vendor\/tesseract\/lang\/(eng|deu|tur)\.traineddata(?:\.gz)?$/.test(rel)) group = `ocr-${rel.match(/\/(eng|deu|tur)\./)[1]}`;
   else if (/^tools\/engines\/tesseract\//.test(rel)) group = 'ocr';
   else if (/^vendor\/tesseract\//.test(rel)) group = 'ocr';
+  else if (/^vendor\/heic\//.test(rel)) group = 'heic';
   else if (/^vendor\/ffmpeg\//.test(rel)) group = 'video';
   else if (/^vendor\/ort\//.test(rel) || /^assets\/models\//.test(rel) || /^assets\/ort.*\.wasm$/.test(rel)) group = 'background';
   else if (/^tools\/.+\/index\.html$/.test(rel) || rel === 'tools/index.html' || /^(?:manifest\.webmanifest|icons\/|fonts\/|licenses\/|vendor\/pdfjs\/|THIRD_PARTY_NOTICES\.md)/.test(rel)) group = 'core';

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 import { toolPages, advancedTools, renderToolDirectory } from './tool-catalog.js';
-import { renderToolUsage } from './tool-usage.js';
+import { toolUsage, renderToolUsage } from './tool-usage.js';
 export { toolPages } from './tool-catalog.js';
 
 export const sitePaths = [
@@ -11,14 +11,14 @@ export const sitePaths = [
 ];
 
 function header(path) {
-  const navigation = [['/', 'Home'], ['/tools/', 'Tools'], ['/projects/', 'Projects'], ['/games/', 'Games'], ['/downloads/', 'Downloads']];
+  const navigation = [['/', 'Home'], ['/tools/', 'Tools'], ['/projects/', 'Projects'], ['/downloads/', 'Downloads']];
   return `<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header wrap hub-header">
   <a class="wordmark" href="/" aria-label="Alisoglu home"><span class="monogram">u.</span><span>alisoglu<span class="wordmark-dot">.</span><small>ideas you can actually use</small></span></a>
   <nav aria-label="Main navigation">${navigation.map(([href, label]) => `<a href="${href}"${(href === '/' ? path === '/' : path.startsWith(href)) ? ` aria-current="${path === href ? 'page' : 'true'}"` : ''}>${label}</a>`).join('')}<button type="button" class="tool-switcher-trigger" data-open-tools hidden aria-haspopup="dialog" title="Find a tool (Ctrl or Command + K)">Find a tool</button><a href="/contact/" class="nav-contact"${path === '/contact/' ? ' aria-current="page"' : ''}>Say hello <span aria-hidden="true">↗</span></a></nav>
 </header>`;
 }
-const footer = `<footer class="site-footer wrap new-footer"><a class="footer-brand" href="/">alisoglu<span>.</span><small>Human ideas. Useful experiments.</small></a><div><a href="/#about">About Umut</a><a href="/contact/">Contact & feedback</a><a href="/tools/workspace/">FileForge workspace</a><button type="button" data-open-offline class="footer-offline">Offline tools</button><a href="/privacy/">Privacy</a><a href="/idea-machine/">Idea machine</a><a href="https://github.com/UmutAlisoglu/umutalisoglu.github.io">Website source ↗</a><a href="/THIRD_PARTY_NOTICES.md">Credits</a></div><p class="footer-note">Personal projects by Umut Alisoglu. Built with AI assistance.</p></footer>`;
+const footer = `<footer class="site-footer wrap new-footer"><a class="footer-brand" href="/">alisoglu<span>.</span><small>Human ideas. Useful experiments.</small></a><div><a href="/#about">About Umut</a><a href="/contact/">Contact & feedback</a><a href="/tools/workspace/">FileForge workspace</a><button type="button" data-open-offline class="footer-offline">Offline tools</button><a href="/privacy/">Privacy</a><a href="/games/">Games</a><a href="/idea-machine/">Idea machine</a><a href="https://github.com/UmutAlisoglu/umutalisoglu.github.io">Website source ↗</a><a href="/THIRD_PARTY_NOTICES.md">Credits</a></div><p class="footer-note">Personal projects by Umut Alisoglu. Built with AI assistance.</p></footer>`;
 
 // Vite expands these fragments into ordinary HTML, before bundling scripts and styles.
 // Visitors receive the complete page; shared navigation needs no JavaScript.
@@ -49,7 +49,11 @@ export function siteTemplates() {
         }
         if (/^\/tools\/(?!workspace\/|$)/.test(path)) result = result.replace('<div class="breadcrumbs">', '<p class="forge-tool-entry">Want to connect your tools? <a href="/tools/workspace/">Open the workspace →</a></p><div class="breadcrumbs">');
         const currentTool = [...toolPages, ...advancedTools].find(tool => path === `/tools/${tool.slug}/`);
-        if (currentTool) result = result.replace(/(<div class="page-intro">[\s\S]*?<\/div>)/, `$1${renderToolUsage(currentTool)}`);
+        if (currentTool) {
+          const facts = toolUsage[currentTool.id];
+          if (facts) result = result.replace(/(<div class="page-intro">[\s\S]*?<\/h1>\s*<p>)[\s\S]*?(<\/p>)/, (_, start, end) => start + facts[0] + ' ' + facts[1] + end);
+          result = result.replace(/(<div class="page-intro">[\s\S]*?<\/div>)/, `$1${renderToolUsage(currentTool)}`);
+        }
         return result;
       },
     },

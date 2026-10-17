@@ -38,7 +38,7 @@ try {
     assert.equal(initial.sw.length, 0); assert.ok(!initial.storage.includes('fileforge:favourite-tools:v1'));
     await page.locator('[data-workspace-input]').setInputFiles(fixture);
     await page.locator('[data-workspace-session]').waitFor({ state: 'visible' });
-    assert.equal(await page.locator('[data-workspace-actions] [data-workspace-tool]').count(), 8);
+    assert.equal(await page.locator('[data-workspace-actions] [data-workspace-tool]').count(), 9);
     assert.equal(await page.locator('[data-workspace-tool=video]').count(), 0);
     assert.equal(await page.locator('[data-workspace-file-name]').innerText(), 'quadrants.png');
     await page.locator('[data-workspace-search]').fill('crop'); assert.equal(await page.locator('[data-workspace-actions] [data-workspace-tool]').count(), 1); await page.locator('[data-workspace-search]').fill('');

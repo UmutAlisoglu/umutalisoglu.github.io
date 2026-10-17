@@ -32,13 +32,13 @@ try {
       assert.equal(await page.locator('h1').count(), 1, path);
       const title = await page.title(); assert.ok(!titles.has(title), title); titles.add(title);
       assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), `https://alisoglu.com${path}`);
-      assert.equal(await page.locator('header nav [aria-current]').count(), ['/privacy/', '/idea-machine/'].includes(path) ? 0 : 1, path);
+      assert.equal(await page.locator('header nav [aria-current]').count(), ['/privacy/', '/idea-machine/', '/games/'].includes(path) ? 0 : 1, path);
       assert.equal(await page.locator('footer a[href="/privacy/"]').count(), 1);
       const duplicates = await page.evaluate(() => { const ids = [...document.querySelectorAll('[id]')].map(node => node.id); return ids.filter((id, index) => ids.indexOf(id) !== index); });
       assert.deepEqual(duplicates, [], path);
       if (toolPages.some(tool => path === `/tools/${tool.slug}/`) || advancedTools.some(tool => path === `/tools/${tool.slug}/`)) {
         const facts = page.locator('.tool-input-facts'); assert.equal(await facts.count(), 1, path);
-        assert.match(await facts.innerText(), /MB/); assert.match(await facts.locator('a[href^="mailto:"]').getAttribute('href'), /subject=FileForge/);
+        assert.match(await page.locator('.page-intro').innerText(), /MB/); assert.match(await facts.locator('a[href^="mailto:"]').getAttribute('href'), /subject=FileForge/);
       }
       for (const href of await page.locator('a[href]').evaluateAll(nodes => nodes.map(node => node.href))) {
         const url = new URL(href); if (url.origin === new URL(base).origin) links.add(url.pathname + url.hash);
@@ -98,6 +98,10 @@ try {
         assert.equal(await page.locator('#scanner-run').isDisabled(), true);
         assert.equal(await page.locator('#scanner-input').isVisible(), true);
         assert.equal(await page.locator('#scanner-sample').isVisible(), true);
+      } else if (['heic','compress','split','metadata'].includes(tool.id)) {
+        assert.equal(await page.locator('body').getAttribute('data-finish-tool'), tool.id);
+        assert.equal(await page.locator('#finish-run').isDisabled(), true);
+        assert.equal(await page.locator('#finish-input').isVisible(), true);
       } else {
         assert.equal(await page.locator('body').getAttribute('data-advanced-tool'), advancedIds[tool.id]);
         assert.equal(await page.locator('#advanced-run').isDisabled(), true);
@@ -140,8 +144,9 @@ try {
     assert.match(await page.locator('#feedback-details').evaluate(node => node.validationMessage), /too long/);
   });
   await check('homepage shortcuts and the idea machine work', async () => {
-    await page.goto(base); assert.equal(await page.locator('#quick-tools .task-card').count(), 4);
-    await page.locator('#quick-tools .task-card').first().click(); assert.ok(page.url().includes('/tools/pdf-organizer/'));
+    await page.goto(base); assert.equal(await page.locator('#quick-tools').count(), 0);
+    assert.equal(await page.locator('.sample-jobs strong').count(), 3);
+    assert.equal(await page.locator('header a[href="/games/"]').count(), 0);
     await page.goto(base); assert.equal(await page.locator('#prompt-form').count(), 0);
     await page.locator('footer a[href="/idea-machine/"]').click(); await page.locator('#surprise-button').click(); assert.equal(await page.locator('#prompt-result').isVisible(), true);
   });

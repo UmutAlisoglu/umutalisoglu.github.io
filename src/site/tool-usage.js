@@ -1,5 +1,9 @@
 // Shared, visible selection facts. Keep these aligned with each engine's checks.
 export const toolUsage = {
+  heic: ['HEIC or HEIF · one photo up to 20 MB / 24 megapixels.', 'First image only. No HDR, depth data or Live Photo video; unsupported variants may need a JPG export from Photos.', false],
+  compress: ['One unlocked PDF up to 25 MB / 200 pages.', 'Recompresses ordinary RGB JPEG images only. Text-only PDFs may barely shrink. No forms or signatures.', false],
+  split: ['One unlocked PDF up to 25 MB / 200 pages.', 'Page numbers and ranges into one PDF per export. No forms, signatures or bookmark splitting.', false],
+  metadata: ['JPG or PNG · one file up to 20 MB.', 'Removes location, camera and descriptive tags, preserving pixels, colour profiles and orientation. Does not hide faces or visible text.', false],
   image: ['JPG, PNG, WebP, GIF or BMP · up to 50 images · 20 MB each / 100 MB total.', 'Animated images use the first frame; no TIFF input.', true],
   organize: ['1–20 unlocked PDFs · 25 MB each / 75 MB total · up to 200 pages.', 'Page editing can affect forms, bookmarks and signatures.', true],
   spreadsheet: ['XLSX or UTF-8 CSV · up to 10 MB.', 'Creates PDF tables; charts and Excel print layouts aren’t preserved.', true],
@@ -18,5 +22,5 @@ export function renderToolUsage(tool) {
   const facts = toolUsage[tool.id];
   if (!facts) return '';
   const email = `mailto:umu@alisoglu.com?subject=${encodeURIComponent(`FileForge feedback: ${tool.name}`)}`;
-  return `<aside class="tool-input-facts" aria-label="Formats, limits and help"><p><strong>Before you choose a file</strong> ${facts[0]}</p><p>${facts[1]}</p><div><a href="${email}">Report a problem by email ↗</a>${facts[2] ? '<a href="/projects/fileforge/#desktop">Bigger files? FileForge for Windows →</a>' : ''}</div></aside>`;
+  return `<aside class="tool-input-facts" aria-label="Help with this tool"><div><a href="${email}">Report a problem by email ↗</a>${facts[2] ? '<a href="/projects/fileforge/#desktop">Bigger files? FileForge for Windows →</a>' : ''}</div></aside>`;
 }

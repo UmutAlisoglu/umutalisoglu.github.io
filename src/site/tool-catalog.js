@@ -16,12 +16,15 @@ export const advancedTools = [
   { id: 'text', slug: 'extract-text', name: 'Extract text', symbol: 'T', short: 'Screenshots & scans into words', description: 'Read text from images or scanned PDF pages, edit it and download a TXT file.', color: 'blue', category: 'Documents', keywords: 'ocr text txt extract read recognize recognise recognition screenshot photo image png jpg jpeg webp pdf scan scanned document copy words english german turkish' },
   { id: 'screenshot', slug: 'screenshot-studio', name: 'Screenshot studio', symbol: '▱', short: 'Screenshots worth sharing', description: 'Frame your screenshot with a background, spacing and a caption. Export a polished image.', color: 'purple', category: 'Images', keywords: 'screenshot screen image photo png jpg jpeg webp mockup mock up studio browser window frame border presentation poster thumbnail sharing share design caption gradient background' },
   { id: 'scanner', slug: 'document-scanner', name: 'Document scanner', symbol: '⌑', short: 'A photo into a clean page', description: 'Straighten a photographed page, clean up the paper and save an image or PDF.', color: 'mint', category: 'Documents', keywords: 'document scanner scan scanning photo photograph picture image paper receipt page perspective straighten skew deskew corners clean cleanup png jpg jpeg webp bmp gif pdf' },
+  { id: 'heic', slug: 'heic-to-jpg', name: 'HEIC → JPG', symbol: '◩', short: 'iPhone photos, ready to use', description: 'Convert one HEIC or HEIF photo to a shareable JPG on your device.', color: 'pink', category: 'Images', keywords: 'heic heif iphone apple photo jpg jpeg convert conversion' },
+  { id: 'compress', slug: 'compress-pdf', name: 'Compress PDF', symbol: '⇲', short: 'Smaller images. Text intact.', description: 'Reduce supported JPEG images inside a PDF while keeping selectable text.', color: 'purple', category: 'PDFs', keywords: 'pdf compress compression shrink smaller reduce size jpeg images' },
+  { id: 'split', slug: 'split-pdf', name: 'Split PDF', symbol: '⋮', short: 'Just the pages you need', description: 'Extract page numbers or ranges into a separate PDF, ready for the next task.', color: 'yellow', category: 'PDFs', keywords: 'pdf split extract separate pages range document' },
+  { id: 'metadata', slug: 'remove-metadata', name: 'Remove image metadata', symbol: '◈', short: 'Keep the picture. Leave the GPS.', description: 'Remove location, camera tags and comments from JPG or PNG without recompressing pixels.', color: 'mint', category: 'Images', keywords: 'metadata exif gps location privacy camera remove strip jpg jpeg png image photo' },
 ];
 
 const imagePdf = { id: 'image-pdf', slug: 'image-converter', name: 'Images → PDF', symbol: '▧', short: 'One image or a whole document', description: 'Turn PNG, JPG or WebP images into one PDF, in the order you choose.', color: 'purple', category: 'PDFs', keywords: 'image images photo picture png jpg jpeg webp bmp gif pdf convert converter conversion scan document combine', href: '/tools/image-converter/?format=pdf' };
 
-export const toolCatalog = [imagePdf, advancedTools[0], toolPages[4], toolPages[0], advancedTools[1], advancedTools[2], advancedTools[3], toolPages[3], toolPages[1], toolPages[2], advancedTools[4], advancedTools[5], advancedTools[6]];
-export const engineCount = toolPages.length + advancedTools.length;
+export const toolCatalog = [imagePdf, advancedTools[0], toolPages[4], toolPages[0], advancedTools[1], advancedTools[2], advancedTools[3], toolPages[3], toolPages[1], toolPages[2], advancedTools[4], advancedTools[5], advancedTools[6], ...advancedTools.slice(7)];
 export const toolCategories = ['All tools', 'Images', 'PDFs', 'Video', 'Documents'];
 export const featuredTools = [toolPages[1], toolPages[0], toolPages[4], toolPages[2]];
 
@@ -40,6 +43,7 @@ const conversionPattern = new RegExp(`\\b(${formatWords}) (?:to|into) (?:an? )?(
 const ignoredWords = new Set(['a', 'an', 'the', 'my', 'i', 'want', 'need', 'please', 'to', 'into', 'and', 'or', 'with', 'make', 'this', 'file', 'files', 'any', 'can', 'you', 'it', 'me', 'convert', 'conversion', 'from', 'for']);
 
 function conversionTool(source, target) {
+  if (['heic', 'heif'].includes(source) && ['jpg', 'jpeg'].includes(target)) return 'heic';
   if ((rasterInputs.has(source) || source === 'pdf') && ['text', 'txt'].includes(target)) return 'text';
   if (rasterInputs.has(source)) {
     if (target === 'pdf') return 'image-pdf';
@@ -78,9 +82,9 @@ export function renderToolCards(tools, compact = false) {
 }
 
 export const jobGroups = [
-  { title: 'Make a PDF neater', description: 'Put pages in order, combine documents or turn pages into pictures.', ids: ['organize', 'merge', 'image-pdf', 'pdf-images'] },
+  { title: 'Make a PDF neater', description: 'Shrink image-heavy PDFs, extract pages, put them in order or combine documents.', ids: ['compress', 'split', 'organize', 'merge', 'image-pdf', 'pdf-images'] },
   { title: 'Fix a document photo', description: 'Straighten the page, read its text or share a spreadsheet as a PDF.', ids: ['scanner', 'text', 'spreadsheet'] },
-  { title: 'Make an image ready to share', description: 'Frame a screenshot, remove a background, crop, convert or trace.', ids: ['screenshot', 'background', 'crop', 'image', 'svg'] },
+  { title: 'Make an image ready to share', description: 'Frame a screenshot, remove a background, crop, convert or trace.', ids: ['heic', 'screenshot', 'background', 'crop', 'image', 'svg', 'metadata'] },
   { title: 'Shrink a short video', description: 'Turn a large attachment into a smaller MP4 on your device.', ids: ['video'] },
 ];
 
@@ -99,7 +103,7 @@ export function renderToolDirectory({ compact = false, id = 'fileforge-directory
       <p id="${prefix}-hint" class="tool-search-hint">Search by task or file type. Everything runs in your browser.</p>
     </form>
     <div class="tool-category-filters" role="group" aria-label="Filter tools by category">${toolCategories.map((category, index) => `<button type="button" data-tool-category="${escapeHtml(category)}" aria-pressed="${index === 0}">${escapeHtml(category)}</button>`).join('')}</div>
-    <p class="tool-search-count" role="status" aria-live="polite" aria-atomic="true">${compact ? 'Popular tools to get started' : `${toolCatalog.length} tasks · ${engineCount} browser tools`}</p>
+    <p class="tool-search-count" role="status" aria-live="polite" aria-atomic="true">${compact ? 'Popular tools to get started' : 'Choose the job you need done'}</p>
   </div>
   <div class="task-grid${compact ? ' compact' : ''}${compact ? '' : ' grouped-results'}" id="${prefix}-results" data-tool-results>${compact ? renderToolCards(initialTools, compact) : renderJobGroups()}</div>
   <div class="tool-search-empty" hidden><h3>No matching tools yet</h3><p>Try a file type such as PNG, PDF or MP4, or choose another category.</p><button type="button" class="button secondary" data-tool-reset>${compact ? 'Show popular tools' : 'Show all tools'}</button><a href="/contact/">Suggest a tool →</a></div>

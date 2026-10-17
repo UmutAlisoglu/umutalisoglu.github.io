@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import { PDFDocument } from 'pdf-lib';
 
 const base = process.env.FILEFORGE_BASE_URL || 'http://127.0.0.1:8780';
 await mkdir('.qa/offline', { recursive: true });
@@ -44,7 +45,7 @@ try {
   report.push('Verified opt-in core pack, with no files/blobs or optional engines in CacheStorage');
   // Explicitly download optional engines, then prove they work without a
   // connection rather than assuming a cache entry means a usable tool.
-  for (const group of ['background', 'video', 'ocr-eng']) await page.locator(`[data-offline-group="${group}"]`).check();
+  for (const group of ['heic', 'background', 'video', 'ocr-eng']) await page.locator(`[data-offline-group="${group}"]`).check();
   await page.locator('[data-offline-save]').click();
   await page.locator('[data-offline-cancel]').waitFor({ state: 'hidden', timeout: 180_000 });
   assert.equal(await page.locator('[data-offline-status]').evaluate(element => element.classList.contains('is-error')), false, await page.locator('[data-offline-status]').textContent());
@@ -62,6 +63,21 @@ try {
   assert.equal(await tool.locator('#result').isVisible(), true, await tool.locator('#job-status').textContent());
   assert.match(await tool.locator('#download-result').getAttribute('href'), /^blob:/);
   report.push('New offline navigation + real PNG conversion succeeded entirely offline');
+  const finishing = await context.newPage(); finishing.on('pageerror', error => errors.push(error.message));
+  const pdf = await PDFDocument.create(); pdf.addPage().drawText('OFFLINE SELECTABLE TEXT'); const pdfBytes = Buffer.from(await pdf.save());
+  for (const [slug, name, bytes] of [
+    ['heic-to-jpg','offline.heic',await readFile('.local/fixtures/example.heic')],
+    ['compress-pdf','offline.pdf',pdfBytes],
+    ['split-pdf','offline.pdf',pdfBytes],
+    ['remove-metadata','offline.png',Buffer.from(png,'base64')],
+  ]) {
+    await finishing.goto(`${base}/tools/${slug}/`);
+    await finishing.locator('#finish-input').setInputFiles({name,mimeType:'application/octet-stream',buffer:bytes});
+    await finishing.locator('#finish-run').click();
+    await finishing.locator('#finish-result').waitFor({timeout:60000});
+    assert.match(await finishing.locator('#finish-download').getAttribute('href'),/^blob:/,slug);
+  }
+  await finishing.close(); report.push('HEIC decoding, PDF compression/splitting and metadata removal produce real results offline');
   const creative = await context.newPage(); creative.on('pageerror', error => errors.push(error.message));
   await creative.goto(`${base}/tools/screenshot-studio/?sample=1`);
   await creative.locator('#screenshot-export:not(:disabled)').waitFor();

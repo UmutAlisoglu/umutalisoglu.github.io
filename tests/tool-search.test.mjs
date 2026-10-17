@@ -23,7 +23,7 @@ test('conversion searches distinguish direction even when tools share format key
 });
 
 test('unsupported conversion directions do not suggest a tool with misleading shared keywords', () => {
-  for (const query of ['SVG to PNG', 'svg → jpg', 'TIFF to PDF', 'tif to png', 'PNG to TIFF', 'pdf to svg', 'PDF to WebP', 'png to gif', 'HEIC to JPG', 'DOCX to PDF', 'XLS to PDF']) {
+  for (const query of ['SVG to PNG', 'svg → jpg', 'TIFF to PDF', 'tif to png', 'PNG to TIFF', 'pdf to svg', 'PDF to WebP', 'png to gif', 'DOCX to PDF', 'XLS to PDF']) {
     assert.deepEqual(ids(query), [], query);
   }
 });
@@ -38,10 +38,12 @@ test('natural filler words do not hide supported tasks', () => {
 
 test('general discovery and category filtering remain available alongside directional searches', () => {
   assert.equal(ids('').length, toolCatalog.length);
-  assert.deepEqual(ids('', 'Images'), ['background', 'image', 'svg', 'crop', 'screenshot']);
-  assert.deepEqual(ids('', 'PDFs'), ['image-pdf', 'pdf-images', 'merge', 'organize']);
+  assert.deepEqual(ids('', 'Images'), ['background', 'image', 'svg', 'crop', 'screenshot', 'heic', 'metadata']);
+  assert.deepEqual(ids('', 'PDFs'), ['image-pdf', 'pdf-images', 'merge', 'organize', 'compress', 'split']);
   assert.deepEqual(ids('remove bg'), ['background']);
   assert.deepEqual(ids('crop screenshot'), ['crop']);
   assert.deepEqual(ids('PNG to PDF', 'Images'), []);
   assert.deepEqual(ids('PNG to PDF', 'PDFs'), ['image-pdf']);
 });
+
+test('HEIC searches route only supported JPG conversion', () => { assert.deepEqual(ids('HEIC to JPG'), ['heic']); assert.deepEqual(ids('HEIF to JPEG'), ['heic']); assert.deepEqual(ids('HEIC to PDF'), []); });

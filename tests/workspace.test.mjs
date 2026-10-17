@@ -4,10 +4,10 @@ import { compatibleTools, validateWorkspaceFiles } from '../src/site/workspace-t
 const file = (name,size=1000)=>({name,size});
 const ids = files=>compatibleTools(files).map(tool=>tool.id);
 test('workspace accepts only tools matching the entire batch and practical size limits',()=>{
-  assert.deepEqual(ids([file('picture.PNG')]),['image-pdf','background','image','svg','crop','text','screenshot','scanner']);
+  assert.deepEqual(ids([file('picture.PNG')]),['image-pdf','background','image','svg','crop','text','screenshot','scanner','metadata']);
   assert.deepEqual(ids([file('one.jpg'),file('two.webp')]),['image-pdf','image']);
   assert.deepEqual(ids([file('one.pdf'),file('two.pdf')]),['merge','organize']);
-  assert.deepEqual(ids([file('one.pdf',24e6)]),['pdf-images','merge','organize','text']);
+  assert.deepEqual(ids([file('one.pdf',24e6)]),['pdf-images','merge','organize','text','compress','split']);
   assert.deepEqual(ids([file('picture.png',21e6)]),[]);
   assert.deepEqual(ids([file('one.pdf'),file('picture.png')]),[]);
   assert.deepEqual(ids([file('movie.mp4',100e6)]),['video']);
@@ -16,3 +16,5 @@ test('workspace accepts only tools matching the entire batch and practical size 
   assert.throws(()=>validateWorkspaceFiles(Array.from({length:51},()=>file('x.png'))),/50 files/);
   assert.throws(()=>validateWorkspaceFiles([file('movie.mp4',100e6+1)]),/100 MB/);
 });
+
+test('HEIC enters conversion and JPG can continue to PDF',()=>{assert.deepEqual(ids([file('iphone.heic')]),['heic']);assert.ok(ids([file('converted.jpg')]).includes('image-pdf'));});

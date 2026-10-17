@@ -22,8 +22,6 @@
 .sample-jobs>a>span,.sample-jobs>button>span{grid-row:span 2;font-size:25px;color:#8e6cba;align-self:center}
 .sample-jobs strong{font-size:11px;line-height:1.6;font-weight:600}.sample-jobs small{font-size:10px;line-height:1.7;color:#8b7d95}
 .sample-jobs :focus-visible{outline:3px solid #8d5cd1;outline-offset:4px}
-.focused-home .quick-tools{padding-top:0;margin-bottom:35px}
-.focused-home .quick-tools .section-heading h2{font-size:32px}
 .focused-home .forge-demo-story{margin-top:30px;margin-bottom:65px;gap:50px;border-radius:15px;padding:38px;grid-template-columns:.8fr 1fr}
 .focused-home .forge-demo-copy h2{font-size:40px}.focused-home .forge-demo-copy h2 em{color:var(--workshop-purple);font-family:Georgia,serif;font-weight:400}
 .forge-recipe span+span::before{content:'→';margin-right:8px;color:#967eab}

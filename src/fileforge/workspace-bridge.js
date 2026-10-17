@@ -19,7 +19,15 @@ export function invalidateToolResult() {
 }
 export function publishToolResult(output) {
   if (!(output?.blob instanceof Blob) || !output.blob.size || typeof output.name !== 'string') return;
-  result = { blob: output.blob, name: output.name, detail: String(output.detail || '') };
+  const imageExport = /^image\/(?:png|jpeg|webp)$/.test(output.blob.type);
+  const privacy = 'Location and camera metadata removed. Visible faces and text are unchanged.';
+  result = { blob: output.blob, name: output.name, detail: String(output.detail || '') + (imageExport ? ' · ' + privacy : '') };
+  let privacyNote = document.querySelector('.image-export-privacy');
+  if (imageExport && !privacyNote) {
+    privacyNote = document.createElement('p'); privacyNote.className = 'image-export-privacy option-note';
+    document.querySelector('.advanced-result-heading, #result, #ocr-result, #screenshot-result, #scanner-result')?.append(privacyNote);
+  }
+  if (privacyNote) { privacyNote.textContent = privacy; privacyNote.hidden = !imageExport; }
   if (!document.querySelector('.result-save-note')) {
     const note = document.createElement('p'); note.className = 'result-save-note';
     note.textContent = 'Download your result before closing this tab. Results aren’t saved here.';
