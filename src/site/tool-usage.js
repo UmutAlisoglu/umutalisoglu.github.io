@@ -21,6 +21,6 @@ export const toolUsage = {
 export function renderToolUsage(tool) {
   const facts = toolUsage[tool.id];
   if (!facts) return '';
-  const email = `mailto:umu@alisoglu.com?subject=${encodeURIComponent(`FileForge feedback: ${tool.name}`)}`;
+  const email = `mailto:umut@alisoglu.com?subject=${encodeURIComponent(`FileForge feedback: ${tool.name}`)}`;
   return `<aside class="tool-input-facts" aria-label="Help with this tool"><div><a href="${email}">Report a problem by email ↗</a>${facts[2] ? '<a href="/projects/fileforge/#desktop">Bigger files? FileForge for Windows →</a>' : ''}</div></aside>`;
 }

@@ -123,7 +123,7 @@ try {
   });
   await check('feedback stays local, escapes text, routes drafts correctly and clears stale previews', async () => {
     await page.goto(base + '/contact/');
-    assert.equal(await page.locator('a[href="mailto:umu@alisoglu.com"]').count(), 1);
+    assert.equal(await page.locator('a[href="mailto:umut@alisoglu.com"]').count(), 1);
     await page.locator('#feedback-title-input').fill('A test & an idea'); await page.locator('#feedback-details').fill('<script>alert("test")</script>\nSteps: open a tool.');
     for (const [project, repo] of [['website', 'umutalisoglu.github.io'], ['fileforge', 'fileforge'], ['repodock', 'repodock'], ['skate-scape', 'skate-scape']]) {
       await page.locator('#feedback-project').selectOption(project);
@@ -132,7 +132,7 @@ try {
       const url = new URL(await page.locator('#feedback-github').getAttribute('href'));
       assert.equal(url.pathname, `/UmutAlisoglu/${repo}/issues/new`); assert.equal(url.searchParams.get('title'), 'A test & an idea'); assert.match(url.searchParams.get('body'), /<script>/);
       const mail = new URL(await page.locator('#feedback-email').getAttribute('href'));
-      assert.equal(mail.protocol, 'mailto:'); assert.equal(mail.searchParams.get('subject'), 'A test & an idea'); assert.match(mail.searchParams.get('body'), /<script>/);
+      assert.equal(mail.protocol, 'mailto:'); assert.equal(mail.pathname, 'umut@alisoglu.com'); assert.equal(mail.searchParams.get('subject'), 'A test & an idea'); assert.match(mail.searchParams.get('body'), /<script>/);
       assert.equal(await page.locator('#feedback-draft script').count(), 0);
     }
     await page.locator('#feedback-details').fill('Edited draft'); assert.equal(await page.locator('#feedback-preview').isVisible(), false); assert.equal(await page.locator('#feedback-github').getAttribute('href'), null); assert.equal(await page.locator('#feedback-email').getAttribute('href'), null);
@@ -176,7 +176,7 @@ try {
       assert.equal(await staticPage.locator('h1').count(), 1);
     }
     await staticPage.getByRole('navigation').getByRole('link', { name: 'Projects', exact: true }).click(); assert.equal(await staticPage.locator('.project-row').count(), 3);
-    await staticPage.goto(base + '/contact/'); assert.equal(await staticPage.locator('#feedback-form').isVisible(), false); assert.equal(await staticPage.locator('a[href="mailto:umu@alisoglu.com"]').isVisible(), true); await staticContext.close();
+    await staticPage.goto(base + '/contact/'); assert.equal(await staticPage.locator('#feedback-form').isVisible(), false); assert.equal(await staticPage.locator('a[href="mailto:umut@alisoglu.com"]').isVisible(), true); await staticContext.close();
   });
   assert.deepEqual(errors, [], 'No browser errors'); assert.deepEqual(outbound, [], 'No uploads or external runtime requests');
   console.log('PASS privacy: all runtime requests are same-site GETs; no issues submitted');

@@ -10,7 +10,7 @@ This is the source for [alisoglu.com](https://alisoglu.com/), my little corner o
 - [Skate Scape](https://alisoglu.com/skate-scape/) — an early-access browser skating game. Its source lives in the separate [skate-scape repo](https://github.com/UmutAlisoglu/skate-scape).
 - [Downloads](https://alisoglu.com/downloads/) — desktop releases and setup notes.
 
-Questions or ideas? [Say hello](mailto:umu@alisoglu.com), or [open an issue](https://github.com/UmutAlisoglu/umutalisoglu.github.io/issues).
+Questions or ideas? [Say hello](mailto:umut@alisoglu.com), or [open an issue](https://github.com/UmutAlisoglu/umutalisoglu.github.io/issues).
 
 ## Run it locally
 

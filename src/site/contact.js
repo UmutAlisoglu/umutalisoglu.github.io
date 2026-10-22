@@ -28,7 +28,7 @@ form.addEventListener('submit', event => {
   }
   draft.textContent = `${title}\n\n${body}`;
   link.href = url.href;
-  email.href = `mailto:umu@alisoglu.com?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+  email.href = `mailto:umut@alisoglu.com?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
   preview.hidden = false;
   email.focus({ preventScroll: true });
   preview.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'nearest' });
