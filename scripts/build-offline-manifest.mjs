@@ -18,6 +18,7 @@ await walk(root);
 const definitions = [
   { id: 'core', label: 'Everyday image & PDF tools', description: 'Workspace, screenshot studio, document scanner, conversion, cropping, SVG tracing, PDF pages and spreadsheet exports. Required for every pack.' },
   { id: 'heic', label: 'HEIC photo conversion', description: 'Local HEIC/HEIF decoder. Only needed for iPhone photos.' },
+  { id: 'office', label: 'Word & PowerPoint preview engines', description: 'Local DOCX/PPTX rendering and page-image PDF exports. Optional; review previews before sharing.' },
   { id: 'background', label: 'Background removal', description: 'The local AI model and its WebAssembly engine.' },
   { id: 'video', label: 'Video compression', description: 'The FFmpeg engine. Larger download; compression uses your device.' },
   { id: 'ocr', label: 'Text extraction engine', description: 'Local OCR engine. Choose at least one language below.' },
@@ -39,7 +40,8 @@ for (const path of files.sort()) {
   // vendor copy remains publicly available for source/provenance inspection.
   if (/^vendor\/tesseract\/worker\.min\.js(?:\.LICENSE\.txt)?$/.test(rel)) continue;
   let group;
-  if (/^vendor\/tesseract\/lang\/(eng|deu|tur)\.traineddata(?:\.gz)?$/.test(rel)) group = `ocr-${rel.match(/\/(eng|deu|tur)\./)[1]}`;
+  if (/^tools\/office-engine\//.test(rel) || /^tools\/_assets\/(?:office-engine|docx-preview|aiden0z|jszip)/.test(rel)) group = 'office';
+  else if (/^vendor\/tesseract\/lang\/(eng|deu|tur)\.traineddata(?:\.gz)?$/.test(rel)) group = `ocr-${rel.match(/\/(eng|deu|tur)\./)[1]}`;
   else if (/^tools\/engines\/tesseract\//.test(rel)) group = 'ocr';
   else if (/^vendor\/tesseract\//.test(rel)) group = 'ocr';
   else if (/^vendor\/heic\//.test(rel)) group = 'heic';

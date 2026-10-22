@@ -23,7 +23,7 @@ test('conversion searches distinguish direction even when tools share format key
 });
 
 test('unsupported conversion directions do not suggest a tool with misleading shared keywords', () => {
-  for (const query of ['SVG to PNG', 'svg → jpg', 'TIFF to PDF', 'tif to png', 'PNG to TIFF', 'pdf to svg', 'PDF to WebP', 'png to gif', 'DOCX to PDF', 'XLS to PDF']) {
+  for (const query of ['SVG to PNG', 'svg → jpg', 'TIFF to PDF', 'tif to png', 'PNG to TIFF', 'pdf to svg', 'PDF to WebP', 'png to gif', 'XLS to PDF']) {
     assert.deepEqual(ids(query), [], query);
   }
 });

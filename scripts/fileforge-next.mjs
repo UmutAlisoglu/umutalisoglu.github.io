@@ -1,4 +1,5 @@
 import { chromium } from 'playwright';
+import { toolCatalog } from '../src/site/tool-catalog.js';
 import { PDFDocument, StandardFonts, degrees, rgb } from 'pdf-lib';
 import { unzipSync } from 'fflate';
 import { createHash } from 'node:crypto';
@@ -106,13 +107,13 @@ try {
     }
     await search.fill('png to pdf'); assert.equal(await directory.locator('[data-tool-id=image-pdf]').getAttribute('href'), '/tools/image-converter/?format=pdf');
     await directory.locator('.tool-search-clear').click();
-    for (const [category, count] of [['Images', 7], ['PDFs', 6], ['Video', 1], ['Documents', 3], ['All tools', 17]]) {
+    for (const [category, count] of [['Images', 7], ['PDFs', 6], ['Video', 1], ['Documents', 8], ['All tools', toolCatalog.length]]) {
       await directory.locator(`[data-tool-category="${category}"]`).click();
       assert.equal(await directory.locator('[data-tool-results] .task-card').count(), count, category);
       assert.equal(await directory.locator(`[data-tool-category="${category}"]`).getAttribute('aria-pressed'), 'true');
     }
     await search.fill('not-a-supported-task'); assert.equal(await directory.locator('.tool-search-empty').isVisible(), true);
-    await directory.locator('[data-tool-reset]').click(); assert.equal(await directory.locator('[data-tool-results] .task-card').count(), 17);
+    await directory.locator('[data-tool-reset]').click(); assert.equal(await directory.locator('[data-tool-results] .task-card').count(), toolCatalog.length);
     await page.goto(base + '/tools/?q=remove%20bg'); assert.equal(await page.locator('[data-tool-id=background]').isVisible(), true);
     await page.screenshot({ path: resolve(output, 'fileforge-search.png'), fullPage: true });
   });
@@ -196,7 +197,7 @@ try {
     }
     await page.goto(base + '/tools/'); await page.screenshot({ path: resolve(output, 'fileforge-directory-mobile.png'), fullPage: true });
     const staticContext = await browser.newContext({ javaScriptEnabled: false }); const staticPage = await staticContext.newPage();
-    await staticPage.goto(base + '/tools/'); assert.equal(await staticPage.locator('[data-tool-results] .task-card').count(), 17);
+    await staticPage.goto(base + '/tools/'); assert.equal(await staticPage.locator('[data-tool-results] .task-card').count(), toolCatalog.length);
     for (const slug of ['remove-background', 'image-to-svg', 'crop-image', 'pdf-to-images']) {
       const link = staticPage.locator(`[data-tool-results] a[href="/tools/${slug}/"]`); assert.equal(await link.isVisible(), true);
     }

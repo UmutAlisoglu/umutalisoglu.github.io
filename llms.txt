@@ -1,0 +1,47 @@
+# Umut Alisoglu / FileForge
+
+> alisoglu.com is Umut Alisoglu’s personal website, with free browser file tools, desktop projects and Skate Scape, an unofficial fan project.
+
+FileForge browser tools are free to use without an account. Selected files, pasted text and generated results are processed on the visitor’s device, in the current browser session. They are not uploaded to a conversion server or saved by this website. Download results before closing the tab.
+
+Ordinary visits download website code, fonts and engines from the host; the host receives ordinary connection information such as IP addresses. Optional preferences store settings locally only after opt-in. Optional offline mode caches public tool code, not selected files, filenames or results. The separately hosted game has its own local storage and external game-data requests.
+
+Word and PowerPoint conversion supports DOCX and PPTX up to 10 MB and 20 pages/slides. Preview-based exports contain flattened page images: layout, fonts and graphics can differ from Office. Legacy DOC/PPT files, macros and embedded objects are not supported. For exact Office layout, export from the original application.
+
+## Site
+- [About Umut](https://alisoglu.com/about/index.md): Person and project background.
+- [Free tools directory](https://alisoglu.com/tools/index.md): Full catalogue, formats and practical limits.
+- [Privacy](https://alisoglu.com/privacy/index.md): Local processing, optional storage, hosting and game data.
+- [Projects](https://alisoglu.com/projects/index.md): FileForge, Repodock and Skate Scape.
+- [Contact](https://alisoglu.com/contact/index.md): Email umut@alisoglu.com and project feedback.
+
+## Document tools
+- [Word to PDF](https://alisoglu.com/tools/word-to-pdf/index.md): Local DOCX preview and flattened PDF export.
+- [PowerPoint to PDF](https://alisoglu.com/tools/powerpoint-to-pdf/index.md): Local PPTX preview and static PDF export.
+- [Text to PDF](https://alisoglu.com/tools/text-to-pdf/index.md): Pasted text or TXT to selectable-text PDF.
+- [PDF to text](https://alisoglu.com/tools/pdf-to-text/index.md): Extract existing selectable text without OCR.
+- [CSV and JSON](https://alisoglu.com/tools/csv-json/index.md): CSV rows and flat JSON object arrays.
+- [Excel to PDF](https://alisoglu.com/tools/excel-to-pdf/index.md): XLSX and CSV tables, not complete Excel print layouts.
+- [Extract text](https://alisoglu.com/tools/extract-text/index.md): Local OCR for images and selected scanned PDF pages in English, German and Turkish.
+
+## More tools
+- [Connected workspace](https://alisoglu.com/tools/workspace/index.md): Pass results between compatible tools in memory.
+- [Image studio](https://alisoglu.com/tools/image-converter/index.md): Resize, convert, batch images and create PDFs.
+- [PDF organizer](https://alisoglu.com/tools/pdf-organizer/index.md): Preview, rotate and reorder pages.
+- [Merge PDFs](https://alisoglu.com/tools/merge-pdf/index.md): Combine documents.
+- [Split PDF](https://alisoglu.com/tools/split-pdf/index.md): Export selected pages.
+- [Compress PDF](https://alisoglu.com/tools/compress-pdf/index.md): Recompress supported JPEG images, keeping selectable text.
+- [PDF to images](https://alisoglu.com/tools/pdf-to-images/index.md): PDF pages as PNG or JPEG.
+- [Remove background](https://alisoglu.com/tools/remove-background/index.md): On-device background removal and mask editing.
+- [Screenshot studio](https://alisoglu.com/tools/screenshot-studio/index.md): Frame screenshots with backgrounds and captions.
+- [Document scanner](https://alisoglu.com/tools/document-scanner/index.md): Straighten a photographed page using four corners.
+- [Crop image](https://alisoglu.com/tools/crop-image/index.md): Crop to an exact region or ratio.
+- [Image to SVG](https://alisoglu.com/tools/image-to-svg/index.md): Trace raster artwork into vector shapes.
+- [HEIC to JPG](https://alisoglu.com/tools/heic-to-jpg/index.md): Convert one HEIC/HEIF photo.
+- [Remove metadata](https://alisoglu.com/tools/remove-metadata/index.md): Remove descriptive JPG/PNG tags while preserving pixels.
+- [Video compressor](https://alisoglu.com/tools/video-compressor/index.md): Compress a short video into MP4 on the device.
+
+## Projects and source
+- [Skate Scape](https://alisoglu.com/projects/skate-scape/index.md): Unofficial fan project; not an official game or endorsement.
+- [Repodock](https://alisoglu.com/projects/repodock/index.md): Windows launcher for local GitHub projects.
+- [Website source](https://github.com/UmutAlisoglu/umutalisoglu.github.io): Public code and build instructions.

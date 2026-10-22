@@ -11,7 +11,7 @@ export default defineConfig({
     // for a new worker to start offline. The separate game keeps its own scope.
     assetsDir: 'tools/_assets',
     rolldownOptions: {
-      input: Object.fromEntries(sitePaths.map(path => [path === '/' ? 'home' : path.slice(1, -1).replaceAll('/', '-'), resolve(`.${path}index.html`)])),
+      input: { ...Object.fromEntries(sitePaths.map(path => [path === '/' ? 'home' : path.slice(1, -1).replaceAll('/', '-'), resolve(`.${path}index.html`)])), 'office-engine': resolve('tools/office-engine/index.html') },
     },
   },
 });

@@ -1,5 +1,10 @@
 // Shared, visible selection facts. Keep these aligned with each engine's checks.
 export const toolUsage = {
+  'word-pdf': ['One DOCX up to 10 MB; up to 20 output pages.', 'Preview-based export with flattened page images. Fonts, complex layouts and page breaks may differ. No legacy DOC, macros or embedded objects.', false],
+  'powerpoint-pdf': ['One PPTX up to 10 MB; 1–20 slides.', 'Static, flattened page images. Fonts, charts and effects may differ; no animation, media playback, legacy PPT or embedded objects. External content is blocked.', false],
+  'text-pdf': ['Paste up to 200,000 characters or open one UTF-8 TXT up to 1 MB.', 'A4 or US Letter, 9–24 pt. Up to 100 pages. Unsupported font characters are replaced with squares and reported.', false],
+  'pdf-text': ['One unlocked PDF up to 25 MB; select up to 100 pages.', 'Reads existing selectable text, without OCR. Columns and tables may read in a different order. Scanned pages need Extract text.', false],
+  data: ['One UTF-8 CSV or JSON up to 2 MB; 10,000 rows and 100 columns.', 'CSV uses a header row and comma separators. JSON must be an array of flat row objects. CSV values stay strings. Formula-like text protection is on by default.', false],
   heic: ['HEIC or HEIF · one photo up to 20 MB / 24 megapixels.', 'First image only. No HDR, depth data or Live Photo video; unsupported variants may need a JPG export from Photos.', false],
   compress: ['One unlocked PDF up to 25 MB / 200 pages.', 'Recompresses ordinary RGB JPEG images only. Text-only PDFs may barely shrink. No forms or signatures.', false],
   split: ['One unlocked PDF up to 25 MB / 200 pages.', 'Page numbers and ranges into one PDF per export. No forms, signatures or bookmark splitting.', false],

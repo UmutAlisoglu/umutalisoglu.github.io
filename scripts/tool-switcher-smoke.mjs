@@ -1,4 +1,5 @@
 import { chromium } from 'playwright';
+import { toolCatalog } from '../src/site/tool-catalog.js';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -26,11 +27,11 @@ try {
   await check('native tool finder has a labelled search, keyboard navigation and restored focus', async () => {
     await open();
     assert.equal(await page.evaluate(() => document.activeElement.id), 'tool-switcher-query');
-    assert.equal(await finder().locator('[data-switcher-tool]').count(), 17);
+    assert.equal(await finder().locator('[data-switcher-tool]').count(), toolCatalog.length);
     await query().press('ArrowDown'); assert.equal(await focusedTool(), 'image-pdf');
     await page.keyboard.press('ArrowDown'); assert.equal(await focusedTool(), 'background');
     await page.keyboard.press('ArrowUp'); assert.equal(await focusedTool(), 'image-pdf');
-    await page.keyboard.press('ArrowUp'); assert.equal(await focusedTool(), 'metadata');
+    await page.keyboard.press('ArrowUp'); assert.equal(await focusedTool(), toolCatalog.at(-1).id);
     await page.keyboard.press('Escape');
     assert.equal(await finder().count(), 0);
     assert.equal(await page.evaluate(() => document.activeElement.hasAttribute('data-open-tools')), true);
@@ -38,7 +39,7 @@ try {
     await query().press('Shift+Tab');
     assert.equal(await page.evaluate(() => document.activeElement.hasAttribute('data-close-tools')), true);
     await page.keyboard.press('Shift+Tab');
-    assert.equal(await focusedTool(), 'metadata', 'Native modal keeps focus inside the finder');
+    assert.equal(await focusedTool(), toolCatalog.at(-1).id, 'Native modal keeps focus inside the finder');
     await page.keyboard.press('Escape');
     await page.keyboard.press('Meta+k'); await finder().waitFor();
     await page.keyboard.press('Escape');
@@ -108,7 +109,7 @@ try {
     assert.equal(await finder().locator('button[data-switcher-tool]:disabled').count(), 0);
     await page.keyboard.press('Escape');
     await page.locator('[data-workspace-clear]').click();
-    await open(); assert.equal(await finder().locator('a[data-switcher-tool]').count(), 17);
+    await open(); assert.equal(await finder().locator('a[data-switcher-tool]').count(), toolCatalog.length);
     await page.keyboard.press('Escape');
   });
   await check('finder fits 320px, tablet and desktop without horizontal overflow', async () => {

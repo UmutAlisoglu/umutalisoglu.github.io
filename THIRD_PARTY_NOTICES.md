@@ -1,5 +1,7 @@
 # Open-source credits
 
+Document tools also bundle **docx-preview 0.4.1** (Apache-2.0), **@aiden0z/pptx-renderer 1.4.0** (Apache-2.0), **html2canvas 1.4.1** (MIT), **JSZip 3.10.2** (MIT/GPL dual license; used under MIT), **ECharts 6.1.0** (Apache-2.0), **zrender 6.1.0** (BSD-3-Clause), and **mtx-decompressor 1.8.0** (MPL-2.0). License copies are in `/licenses/`; the upstream PowerPoint renderer notices and ECMA-derived geometry notices are included there too. This build resolves the external decompressor to 1.8.0; the upstream notice describes its older bundled distribution. The unmodified MPL-covered source for this build is available at https://github.com/ChristopherVR/mtx-decompressor/tree/v1.8.0 and https://github.com/ChristopherVR/mtx-decompressor/archive/refs/tags/v1.8.0.tar.gz . These licenses apply to their respective components, not visitor documents.
+
 The website runs file conversions on the visitor's device. The following libraries and font are distributed with its browser build:
 
 - **pdf-lib 1.17.1**, MIT: https://github.com/Hopding/pdf-lib/tree/v1.17.1

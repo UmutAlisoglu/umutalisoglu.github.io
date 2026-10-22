@@ -16,6 +16,17 @@ for (const directory of ['cmaps', 'standard_fonts', 'wasm', 'iccs']) {
 }
 await cp('node_modules/pdfjs-dist/LICENSE', 'public/licenses/pdfjs-Apache-2.0.txt');
 await cp('node_modules/fflate/LICENSE', 'public/licenses/fflate-MIT.txt');
+for (const [source, target] of [
+  ['docx-preview/LICENSE', 'docx-preview-Apache-2.0.txt'],
+  ['html2canvas/LICENSE', 'html2canvas-MIT.txt'],
+  ['jszip/LICENSE.markdown', 'JSZip-license.txt'],
+  ['@aiden0z/pptx-renderer/LICENSE', 'pptx-renderer-Apache-2.0.txt'],
+  ['@aiden0z/pptx-renderer/THIRD_PARTY_NOTICES.md', 'pptx-renderer-notices.md'],
+  ['@aiden0z/pptx-renderer/licenses/ECMA-text-copyright-notice.txt', 'ECMA-text-copyright-notice.txt'],
+  ['mtx-decompressor/LICENSE', 'mtx-decompressor-MPL-2.0.txt'],
+  ['echarts/LICENSE', 'ECharts-Apache-2.0.txt'],
+  ['zrender/LICENSE', 'zrender-BSD-3-Clause.txt'],
+]) await cp(`node_modules/${source}`, `public/licenses/${target}`);
 // The model runner's JS/WASM are served here; no third-party runtime requests.
 await mkdir('public/vendor/ort', { recursive: true });
 for (const file of ['ort-wasm-simd-threaded.mjs', 'ort-wasm-simd-threaded.wasm']) {

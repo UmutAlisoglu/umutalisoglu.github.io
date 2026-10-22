@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
+import { discoveryTags } from './discovery.js';
 
-import { toolPages, advancedTools, renderToolDirectory } from './tool-catalog.js';
+import { toolPages, advancedTools, documentTools, allToolPages, renderToolDirectory } from './tool-catalog.js';
 import { toolUsage, renderToolUsage } from './tool-usage.js';
 export { toolPages } from './tool-catalog.js';
 
 export const sitePaths = [
-  '/', '/tools/', '/tools/fileforge/', '/tools/workspace/', ...toolPages.map(tool => `/tools/${tool.slug}/`), ...advancedTools.map(tool => `/tools/${tool.slug}/`),
+  '/', '/tools/', '/tools/fileforge/', '/tools/workspace/', ...allToolPages.map(tool => `/tools/${tool.slug}/`),
   '/projects/', '/projects/fileforge/', '/projects/repodock/', '/projects/skate-scape/',
   '/games/', '/downloads/', '/privacy/', '/contact/', '/idea-machine/', '/about/',
 ];
@@ -30,32 +31,33 @@ export function siteTemplates() {
       order: 'pre',
       handler(html, context) {
         const path = context.path.replace(/index\.html$/, '');
+        if (path === '/tools/office-engine/') return html;
         let result = html.replace('<site-header></site-header>', header(path)).replace('<site-footer></site-footer>', footer)
-          .replace('</head>', '<link rel="stylesheet" href="/src/site/personal.css"><link rel="manifest" href="/manifest.webmanifest"><script type="module" src="/src/site/offline.js"></script><script type="module" src="/src/site/tool-switcher.js"></script></head>')
+          .replace('</head>', '<link rel="stylesheet" href="/src/site/personal.css"><link rel="stylesheet" href="/src/fileforge/documents.css"><link rel="describedby" type="text/markdown" href="/llms.txt"><link rel="manifest" href="/manifest.webmanifest"><script type="module" src="/src/site/offline.js"></script><script type="module" src="/src/site/tool-switcher.js"></script></head>')
           .replace('<fileforge-launcher></fileforge-launcher>', readFileSync(new URL('./launcher-template.html', import.meta.url), 'utf8'))
           .replace('<fileforge-workbench></fileforge-workbench>', readFileSync(new URL('./workspace-template.html', import.meta.url), 'utf8'))
           .replace('<tool-directory></tool-directory>', renderToolDirectory())
           .replace('<tool-directory data-variant="home"></tool-directory>', renderToolDirectory({ compact: true, id: 'home-tools' }))
-          .replace('<advanced-tool-links></advanced-tool-links>', `<p>More FileForge tools</p><div class="tool-nav" aria-label="FileForge tools">${[...toolPages, ...advancedTools].map(tool => `<a href="/tools/${tool.slug}/"${path === `/tools/${tool.slug}/` ? ' aria-current="page"' : ''}><span class="tool-symbol" aria-hidden="true">${tool.symbol}</span><span>${tool.name}<small>${tool.short}</small></span></a>`).join('')}</div>`);
+          .replace('<advanced-tool-links></advanced-tool-links>', `<p>More FileForge tools</p><div class="tool-nav" aria-label="FileForge tools">${allToolPages.map(tool => `<a href="/tools/${tool.slug}/"${path === `/tools/${tool.slug}/` ? ' aria-current="page"' : ''}><span class="tool-symbol" aria-hidden="true">${tool.symbol}</span><span>${tool.name}<small>${tool.short}</small></span></a>`).join('')}</div>`);
         if (result.includes('<fileforge-workspace></fileforge-workspace>')) {
           let workspace = readFileSync(new URL('./fileforge-workspace.html', import.meta.url), 'utf8');
           const dedicated = result.match(/data-fileforge-tool="([a-z]+)"/)?.[1];
           if (dedicated) {
-            const links = [...toolPages, ...advancedTools].map(tool => `<a href="/tools/${tool.slug}/"${tool.id === dedicated ? ' aria-current="page"' : ''}><span class="tool-symbol" aria-hidden="true">${tool.symbol}</span><span>${tool.name}<small>${tool.short}</small></span></a>`).join('');
+            const links = allToolPages.map(tool => `<a href="/tools/${tool.slug}/"${tool.id === dedicated ? ' aria-current="page"' : ''}><span class="tool-symbol" aria-hidden="true">${tool.symbol}</span><span>${tool.name}<small>${tool.short}</small></span></a>`).join('');
             workspace = workspace.replace(/<div class="tool-tabs"[\s\S]*?<\/div>/, `<div class="tool-nav" aria-label="More FileForge tools">${links}</div>`)
               .replace('role="tabpanel" aria-labelledby="tab-image"', 'aria-labelledby="tool-title"');
           }
-          if (!dedicated) workspace = workspace.replace('<div class="desktop-tip">', `<section class="additional-tool-list"><p>More FileForge tools</p>${advancedTools.map(tool => `<a href="/tools/${tool.slug}/">${tool.name} ↗</a>`).join('')}</section><div class="desktop-tip">`);
+          if (!dedicated) workspace = workspace.replace('<div class="desktop-tip">', `<section class="additional-tool-list"><p>More FileForge tools</p>${[...advancedTools, ...documentTools].map(tool => `<a href="/tools/${tool.slug}/">${tool.name} ↗</a>`).join('')}</section><div class="desktop-tip">`);
           result = result.replace('<fileforge-workspace></fileforge-workspace>', workspace);
         }
         if (/^\/tools\/(?!workspace\/|$)/.test(path)) result = result.replace('<div class="breadcrumbs">', '<p class="forge-tool-entry">Want to connect your tools? <a href="/tools/workspace/">Open the workspace →</a></p><div class="breadcrumbs">');
-        const currentTool = [...toolPages, ...advancedTools].find(tool => path === `/tools/${tool.slug}/`);
+        const currentTool = allToolPages.find(tool => path === `/tools/${tool.slug}/`);
         if (currentTool) {
           const facts = toolUsage[currentTool.id];
           if (facts) result = result.replace(/(<div class="page-intro">[\s\S]*?<\/h1>\s*<p>)[\s\S]*?(<\/p>)/, (_, start, end) => start + facts[0] + ' ' + facts[1] + end);
           result = result.replace(/(<div class="page-intro">[\s\S]*?<\/div>)/, `$1${renderToolUsage(currentTool)}`);
         }
-        return result;
+        return result.replace('</head>', `${discoveryTags(path)}</head>`);
       },
     },
   };

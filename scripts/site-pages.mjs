@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { sitePaths, toolPages } from '../src/site/templates.js';
-import { advancedTools } from '../src/site/tool-catalog.js';
+import { advancedTools, documentTools } from '../src/site/tool-catalog.js';
 
 const base = process.env.TEST_URL || 'http://127.0.0.1:8780';
 const output = resolve('.local/browser-check'); await mkdir(output, { recursive: true });
@@ -82,7 +82,7 @@ try {
     for (const tool of advancedTools) {
       await page.goto(`${base}/tools/${tool.slug}/`);
       assert.equal(await page.locator('.tool-nav a[aria-current]').getAttribute('href'), `/tools/${tool.slug}/`);
-      assert.equal(await page.locator('.tool-nav a').count(), toolPages.length + advancedTools.length);
+      assert.equal(await page.locator('.tool-nav a').count(), toolPages.length + advancedTools.length + documentTools.length);
       if (tool.id === 'text') {
         assert.equal(await page.locator('body').getAttribute('data-ocr-tool'), 'text');
         assert.equal(await page.locator('#ocr-run').isDisabled(), true);
@@ -168,10 +168,10 @@ try {
   }
   await check('navigation and page content remain available without JavaScript', async () => {
     const staticContext = await browser.newContext({ javaScriptEnabled: false }); const staticPage = await staticContext.newPage();
-    await staticPage.goto(base + '/tools/pdf-organizer/'); assert.equal(await staticPage.locator('.tool-nav a').count(), toolPages.length + advancedTools.length); assert.equal(await staticPage.locator('noscript').isVisible(), true);
+    await staticPage.goto(base + '/tools/pdf-organizer/'); assert.equal(await staticPage.locator('.tool-nav a').count(), toolPages.length + advancedTools.length + documentTools.length); assert.equal(await staticPage.locator('noscript').isVisible(), true);
     for (const tool of advancedTools) {
       await staticPage.goto(`${base}/tools/${tool.slug}/`);
-      assert.equal(await staticPage.locator('.tool-nav a').count(), toolPages.length + advancedTools.length);
+      assert.equal(await staticPage.locator('.tool-nav a').count(), toolPages.length + advancedTools.length + documentTools.length);
       assert.equal(await staticPage.locator('noscript').isVisible(), true);
       assert.equal(await staticPage.locator('h1').count(), 1);
     }

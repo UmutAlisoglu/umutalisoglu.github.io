@@ -135,12 +135,12 @@ try {
     assert.equal(await engine().locator('#advanced-filename').innerText(), 'No file selected');
     assert.equal(await engine().locator('#advanced-run').isDisabled(), true);
   });
-  await check('terminal TXT, SVG and ZIP results remain downloadable without opening an empty continuation', async () => {
+  await check('TXT can continue to PDF while SVG and ZIP remain terminal downloads', async () => {
     await page.goto(base + '/tools/extract-text/');
     await page.locator('#ocr-sample').click(); await page.locator('#ocr-run').click();
     await page.locator('#ocr-result').waitFor({ state: 'visible', timeout: 90_000 });
     assert.match(await page.locator('#ocr-text').inputValue(), /Your files stay on your device/i);
-    assert.equal(await page.getByRole('button', { name: 'Continue in workspace' }).count(), 0);
+    assert.equal(await page.getByRole('button', { name: 'Continue in workspace' }).count(), 1);
     assert.equal(await page.locator('#ocr-download').isEnabled(), true);
     await page.goto(base + '/tools/image-to-svg/'); await page.locator('#advanced-input').setInputFiles(fixture);
     await page.locator('#advanced-run').click(); await page.locator('#advanced-result').waitFor({ state: 'visible', timeout: 90_000 });

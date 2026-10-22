@@ -7,7 +7,7 @@ This is the source for [alisoglu.com](https://alisoglu.com/), my little corner o
 - [About me](https://alisoglu.com/about/) — a little about the person behind the tabs.
 - [FileForge](https://alisoglu.com/tools/) — browser tools for images, PDFs, spreadsheets, video and text. There’s a connected workspace for passing results from one tool to another, too.
 - [Repodock](https://alisoglu.com/projects/repodock/) — a Windows app for running local GitHub projects and following their logs.
-- [Skate Scape](https://alisoglu.com/skate-scape/) — an early-access browser skating game. Its source lives in the separate [skate-scape repo](https://github.com/UmutAlisoglu/skate-scape).
+- [Skate Scape](https://alisoglu.com/skate-scape/) — an unofficial fan-made browser skating game. Its source lives in the separate [skate-scape repo](https://github.com/UmutAlisoglu/skate-scape).
 - [Downloads](https://alisoglu.com/downloads/) — desktop releases and setup notes.
 
 Questions or ideas? [Say hello](mailto:umut@alisoglu.com), or [open an issue](https://github.com/UmutAlisoglu/umutalisoglu.github.io/issues).
@@ -38,6 +38,19 @@ npm run preview
 - `src/fileforge/` contains the file-processing tools; `src/site/workspace.js` connects them.
 - `tools/` contains the tool directory, individual guides and workspace entry point.
 
+## New document tools
+
+- Word → PDF and PowerPoint → PDF: preview DOCX/PPTX locally, then export flattened page images. Up to 10 MB and 20 pages/slides. Layout can differ from Office; use the original app when exact layout or tagged, accessible PDFs are required. Older DOC/PPT formats, macros and embedded OLE objects aren’t supported.
+- Text → PDF: paste notes or open a UTF-8 TXT; choose A4 or Letter and export selectable text.
+- PDF → text: read existing selectable text, with page ranges and editable TXT output. Scans use the separate OCR tool.
+- CSV ↔ JSON: convert comma-separated tables and arrays of flat row objects. CSV values stay strings. Formula-like CSV text protection is enabled by default.
+
+All five tools work in the connected workspace. Office engines load only after Preview; an optional offline pack keeps them separate from the basic tools.
+
+## Discovery
+
+The build publishes `/llms.txt`, a `/llm.txt` compatibility alias, `/llms-full.txt`, and Markdown summaries at each public page’s `index.md`. Pages link to these summaries and include structured person, website and tool metadata. Tool claims and limits come from the shared catalogue. These files help readers and crawlers understand the site; they don’t promise search placement.
+
 ## A few notes on the tools
 
 Selected files are processed on the visitor’s device. There’s no conversion server, account system, analytics or file-upload endpoint. Engines, fonts and models are served from this site and load as needed. Each tool explains its own formats and limits.
@@ -57,6 +70,7 @@ npm run test:pages
 npm run test:workspace
 npm run test:workshop
 npm run test:finder
+npm run test:documents
 ```
 
 They cover routes and links, phone-to-desktop layouts, feedback drafts and actual file workflows. More focused checks are listed in `package.json`. Set `TEST_URL` to test another local server, or `BROWSER_CHANNEL` to use another Playwright browser channel. Output goes into ignored `.local/`.

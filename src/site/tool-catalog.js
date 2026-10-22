@@ -24,7 +24,15 @@ export const advancedTools = [
 
 const imagePdf = { id: 'image-pdf', slug: 'image-converter', name: 'Images → PDF', symbol: '▧', short: 'One image or a whole document', description: 'Turn PNG, JPG or WebP images into one PDF, in the order you choose.', color: 'purple', category: 'PDFs', keywords: 'image images photo picture png jpg jpeg webp bmp gif pdf convert converter conversion scan document combine', href: '/tools/image-converter/?format=pdf' };
 
-export const toolCatalog = [imagePdf, advancedTools[0], toolPages[4], toolPages[0], advancedTools[1], advancedTools[2], advancedTools[3], toolPages[3], toolPages[1], toolPages[2], advancedTools[4], advancedTools[5], advancedTools[6], ...advancedTools.slice(7)];
+export const documentTools = [
+  { id: 'word-pdf', slug: 'word-to-pdf', name: 'Word → PDF', symbol: 'W', short: 'Preview a DOCX, save a PDF', description: 'Preview a DOCX on your device and export its pages as a flattened PDF. Check layout before sharing.', color: 'blue', category: 'Documents', keywords: 'word docx document pdf convert converter office preview free private' },
+  { id: 'powerpoint-pdf', slug: 'powerpoint-to-pdf', name: 'PowerPoint → PDF', symbol: 'P', short: 'Slides ready to share', description: 'Preview a PPTX and export static slides as a flattened PDF. No upload or account.', color: 'pink', category: 'Documents', keywords: 'powerpoint pptx presentation slides deck pdf convert converter office preview free private' },
+  { id: 'text-pdf', slug: 'text-to-pdf', name: 'Text → PDF', symbol: '¶', short: 'Notes into a tidy document', description: 'Paste text or open a TXT file, choose a page size and download a PDF with selectable text.', color: 'mint', category: 'Documents', keywords: 'text txt notes plain unicode pdf convert converter create document write paste' },
+  { id: 'pdf-text', slug: 'pdf-to-text', name: 'PDF → text', symbol: '≡', short: 'Copy the text that’s already there', description: 'Extract selectable text from a PDF into an editable TXT file. For scans, use Extract text instead.', color: 'yellow', category: 'Documents', keywords: 'pdf text txt extract copy selectable document read convert converter' },
+  { id: 'data', slug: 'csv-json', name: 'CSV ↔ JSON', symbol: '{}', short: 'Small data, less fiddling', description: 'Convert CSV rows to JSON objects or a JSON object array to CSV. Everything stays in this tab.', color: 'purple', category: 'Documents', keywords: 'csv json convert converter table data rows spreadsheet format' },
+];
+export const allToolPages = [...toolPages, ...advancedTools, ...documentTools];
+export const toolCatalog = [imagePdf, advancedTools[0], toolPages[4], toolPages[0], advancedTools[1], advancedTools[2], advancedTools[3], toolPages[3], toolPages[1], toolPages[2], advancedTools[4], advancedTools[5], advancedTools[6], ...advancedTools.slice(7), ...documentTools];
 export const toolCategories = ['All tools', 'Images', 'PDFs', 'Video', 'Documents'];
 export const featuredTools = [toolPages[1], toolPages[0], toolPages[4], toolPages[2]];
 
@@ -38,11 +46,16 @@ const rasterOutputs = new Set(['png', 'jpg', 'jpeg', 'webp', 'image', 'images', 
 const pdfImageOutputs = new Set(['png', 'jpg', 'jpeg', 'image', 'images', 'photo', 'photos', 'picture', 'pictures']);
 // Recognize unsupported format names too: "SVG to PNG" must not accidentally
 // match the raster-to-SVG tool just because both words appear in its description.
-const formatWords = 'png|jpg|jpeg|webp|gif|bmp|images?|photos?|pictures?|pdf|svg|tif|tiff|heic|heif|avif|eps|psd|raw|xlsx|xls|csv|excel|doc|docx|mp4|mov|mkv|webm|avi|mp3|wav|text|txt';
+const formatWords = 'png|jpg|jpeg|webp|gif|bmp|images?|photos?|pictures?|pdf|svg|tif|tiff|heic|heif|avif|eps|psd|raw|xlsx|xls|csv|excel|doc|docx|word|pptx|ppt|powerpoint|json|mp4|mov|mkv|webm|avi|mp3|wav|text|txt';
 const conversionPattern = new RegExp(`\\b(${formatWords}) (?:to|into) (?:an? )?(${formatWords})\\b`);
 const ignoredWords = new Set(['a', 'an', 'the', 'my', 'i', 'want', 'need', 'please', 'to', 'into', 'and', 'or', 'with', 'make', 'this', 'file', 'files', 'any', 'can', 'you', 'it', 'me', 'convert', 'conversion', 'from', 'for']);
 
 function conversionTool(source, target) {
+  if (['word', 'docx'].includes(source) && target === 'pdf') return 'word-pdf';
+  if (['powerpoint', 'pptx'].includes(source) && target === 'pdf') return 'powerpoint-pdf';
+  if (['text', 'txt'].includes(source) && target === 'pdf') return 'text-pdf';
+  if (source === 'pdf' && ['text', 'txt'].includes(target)) return 'pdf-text';
+  if ((source === 'csv' && target === 'json') || (source === 'json' && target === 'csv')) return 'data';
   if (['heic', 'heif'].includes(source) && ['jpg', 'jpeg'].includes(target)) return 'heic';
   if ((rasterInputs.has(source) || source === 'pdf') && ['text', 'txt'].includes(target)) return 'text';
   if (rasterInputs.has(source)) {
@@ -82,6 +95,7 @@ export function renderToolCards(tools, compact = false) {
 }
 
 export const jobGroups = [
+  { title: 'Documents, without the upload', description: 'Turn Word files, slides and notes into PDFs, pull out text or switch between CSV and JSON. Free to use. No account.', ids: ['word-pdf', 'powerpoint-pdf', 'text-pdf', 'pdf-text', 'data'] },
   { title: 'Make a PDF neater', description: 'Shrink image-heavy PDFs, extract pages, put them in order or combine documents.', ids: ['compress', 'split', 'organize', 'merge', 'image-pdf', 'pdf-images'] },
   { title: 'Fix a document photo', description: 'Straighten the page, read its text or share a spreadsheet as a PDF.', ids: ['scanner', 'text', 'spreadsheet'] },
   { title: 'Make an image ready to share', description: 'Frame a screenshot, remove a background, crop, convert or trace.', ids: ['heic', 'screenshot', 'background', 'crop', 'image', 'svg', 'metadata'] },
