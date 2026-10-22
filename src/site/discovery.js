@@ -3,7 +3,7 @@ export function discoveryTags(path) {
   const url = `https://alisoglu.com${path}`;
   const tool = allToolPages.find(tool => path === `/tools/${tool.slug}/`);
   const person = { '@type': 'Person', '@id': 'https://alisoglu.com/#umut', name: 'Umut Alisoglu', url: 'https://alisoglu.com/about/', sameAs: ['https://github.com/UmutAlisoglu'] };
-  const site = { '@type': 'WebSite', '@id': 'https://alisoglu.com/#website', name: 'Umut Alisoglu', url: 'https://alisoglu.com/', author: { '@id': person['@id'] }, description: 'Personal projects, free browser tools and a fan-made skating game.' };
+  const site = { '@type': 'WebSite', '@id': 'https://alisoglu.com/#website', name: 'Umut Alisoglu', url: 'https://alisoglu.com/', author: { '@id': person['@id'] }, description: 'FileForge local file tools, Repodock for Windows, and Skate Scape, an unofficial RuneScape skating fan project.' };
   const graph = [person, site];
   if (tool) {
     graph.push({ '@type': 'WebApplication', name: `${tool.name} — FileForge`, url, description: tool.description, applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any modern browser', browserRequirements: 'JavaScript enabled', isAccessibleForFree: true, offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, author: { '@id': person['@id'] }, featureList: ['Runs on your device', 'No file uploads', 'No account required', 'No saved conversion history'] });

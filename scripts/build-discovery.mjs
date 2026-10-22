@@ -5,8 +5,8 @@ import { sitePaths } from '../src/site/templates.js';
 
 const privacy = 'FileForge is free to use without an account. Selected files, pasted text and results are processed on the visitor’s device, not uploaded to a conversion server or saved by this website. Download results before leaving the tab. Ordinary page visits download code and engines from the host, which receives connection information. Optional settings are stored locally only after opt-in; optional offline mode caches public code, not visitor files. The separately hosted game uses its own storage and game-data downloads.';
 const summaries = {
-  '/': ['Umut Alisoglu', 'A personal space for tools, games and side projects. Projects include FileForge, Repodock and Skate Scape, an unofficial fan project.'],
-  '/about/': ['About Umut Alisoglu', 'Umut makes browser tools, Windows apps and games. Source: https://github.com/UmutAlisoglu. Contact: umut@alisoglu.com.'],
+  '/': ['Umut Alisoglu', 'Umut Alisoglu makes FileForge browser file tools, Repodock for local GitHub projects on Windows, and Skate Scape, an unofficial skating fan game in the 2009 RuneScape world.'],
+  '/about/': ['About Umut Alisoglu', 'Umut Alisoglu is the person behind FileForge, Repodock and Skate Scape. His public projects include browser file conversion, a Windows project launcher, and an unofficial RuneScape skating fan game. Public profile: https://github.com/UmutAlisoglu. Contact: umut@alisoglu.com.'],
   '/tools/': ['Free FileForge browser tools', toolCatalog.map(tool => `- [${tool.name}](https://alisoglu.com/tools/${tool.slug}/): ${tool.description}`).join('\n')],
   '/tools/workspace/': ['FileForge connected workspace', 'Choose a file and the workspace suggests compatible tools. Results pass to the next tool in memory, without uploading or downloading and reselecting. Clear all releases the current session.'],
   '/privacy/': ['Privacy and file handling', privacy + '\n\nRead the full privacy notes for image metadata, optional local storage, hosting, the separate game and external links. This site uses GitHub Pages. It adds no analytics or advertising scripts.'],

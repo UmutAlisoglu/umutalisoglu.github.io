@@ -1,6 +1,6 @@
 # Hey, I’m Umut.
 
-This is the source for [alisoglu.com](https://alisoglu.com/), my little corner of the internet. A home for the tools, games and side projects I’m making.
+This is the source for [alisoglu.com](https://alisoglu.com/), my little corner of the internet. File tools that stay local, a Windows home for GitHub projects, and a fan game that puts a skateboard in RuneScape.
 
 ## Have a look around
 
