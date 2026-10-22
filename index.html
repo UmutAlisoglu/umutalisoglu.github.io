@@ -3,32 +3,56 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>FileForge — Your everyday file toolbox | Alisoglu</title>
-  <meta name="description" content="Convert, compress and edit your files in your browser. Search FileForge tools for images, PDFs, video and spreadsheets. Free to use, with files kept on your device.">
-  <meta name="theme-color" content="#f9f8fb">
+  <title>Umut Alisoglu — A little corner of the internet</title>
+  <meta name="description" content="Hey, I’m Umut. This is where I keep the tools, games and side projects I’m making. Have a look around.">
+  <meta name="theme-color" content="#f5f3ec">
   <link rel="canonical" href="https://alisoglu.com/">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="FileForge — Your everyday file toolbox | Alisoglu">
-  <meta property="og:description" content="Convert, compress and edit your files in your browser. Search FileForge tools for images, PDFs, video and spreadsheets. Free to use, with files kept on your device.">
+  <meta property="og:title" content="Umut Alisoglu — A little corner of the internet">
+  <meta property="og:description" content="Tools, games and the occasional side quest. A personal space by Umut Alisoglu.">
   <meta property="og:url" content="https://alisoglu.com/">
   <meta property="og:image" content="https://alisoglu.com/assets/social-card.png">
   <link rel="icon" href="/assets/monogram.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/hub.css">
   <link rel="stylesheet" href="/site.css">
-  <link rel="stylesheet" href="/src/site/showcase.css">
-  <script type="module" src="/src/site/workspace.js"></script>
 </head>
-<body class="workshop-home focused-home">
+<body class="personal-home">
   <site-header></site-header>
-  <main id="main">
-    <section class="hero wrap home-hero" aria-labelledby="hero-title">
-      <div class="hero-copy"><p class="eyebrow workshop-signature"><span class="workshop-file-mark" aria-hidden="true"></span> FILEFORGE / BY UMUT ALISOGLU</p><h1 id="hero-title">Everyday files.<br> A better <em>finish.</em></h1><p class="hero-description">Convert, compress and edit in one private file workspace.</p><p class="hero-footnote">Free to use. No account. <a href="#privacy-proof">Your files aren’t uploaded. See how →</a></p></div>
-      <fileforge-launcher></fileforge-launcher>
+  <main id="main" class="wrap personal-main">
+    <section class="personal-hero" aria-labelledby="intro-title">
+      <div class="personal-intro">
+        <p class="eyebrow"><span class="intro-dot" aria-hidden="true"></span> A LITTLE CORNER OF THE INTERNET</p>
+        <h1 id="intro-title">Hey, I’m Umut.<br>I like making<br><em>things.</em><span class="hello-star" aria-hidden="true">✳</span></h1>
+        <p class="intro-copy">Sometimes a useful tool. Sometimes a game.<br>Usually something I wanted to try.</p>
+        <div class="personal-actions"><a class="button primary" href="#projects">Take a look around <span aria-hidden="true">↓</span></a><a class="text-link" href="/about/">A bit about me <span aria-hidden="true">↗</span></a></div>
+      </div>
+      <aside class="desk-note" aria-label="A few things you’ll find here">
+        <div class="note-topline"><span>THE SHORT VERSION</span><span aria-hidden="true">↗</span></div>
+        <div class="orbit-mark" aria-hidden="true"><span>u.</span><i></i><b>hello!</b></div>
+        <p>A few useful things.<br>A few <em>just-because</em> things.</p>
+        <div class="note-bottomline"><span>TOOLS / GAMES / SIDE QUESTS</span><span aria-hidden="true">( + )</span></div>
+      </aside>
     </section>
-    <section class="wrap sample-jobs" aria-labelledby="sample-jobs-title"><div><p class="eyebrow" id="sample-jobs-title">TRY A SAMPLE JOB</p><p>No file handy? Start here.</p></div><a href="/tools/document-scanner/?sample=1"><span aria-hidden="true">⌑</span><strong>Photo of a page → clean scan</strong><small>Adjust four corners. See the difference.</small></a><a href="/tools/screenshot-studio/?sample=1"><span aria-hidden="true">▱</span><strong>Screenshot → framed image</strong><small>A background, a caption, a better finish.</small></a><button type="button" data-workspace-demo="pdf"><span aria-hidden="true">▦</span><strong>Mixed-up pages → tidy PDF</strong><small>Reorder, rotate and keep what you need.</small></button></section>
-    <div class="wrap"><fileforge-workbench></fileforge-workbench></div>
-    <section class="forge-demo-story wrap" aria-labelledby="demo-title"><div class="forge-demo-art"><img src="/assets/demos/headphones.png" width="1254" height="1254" loading="lazy" alt="Violet headphones on a pale mint studio backdrop"><span>ORIGINAL AI-GENERATED SAMPLE</span></div><div class="forge-demo-copy"><p class="eyebrow">ONE FILE. A FEW GOOD MOVES.</p><h2 id="demo-title">One file.<br><em>Keep going.</em></h2><p>Remove the background. Crop the result. Resize it for sharing. Your finished image moves to the next tool without downloading and selecting it again.</p><div class="forge-recipe" aria-label="Example workflow"><span>Remove background</span><span>Crop</span><span>Resize & export</span></div><button type="button" class="button primary" data-workspace-demo="photo">Try this photo <span aria-hidden="true">↗</span></button><p class="forge-demo-small">Real local processing. Download the result you make.</p></div></section>
-    <section class="wrap privacy-proof" id="privacy-proof" aria-labelledby="proof-title"><div class="proof-intro"><p class="eyebrow">A PRIVATE FILE WORKSHOP</p><h2 id="proof-title">Your device does the work.</h2><p>Here’s what “local processing” means.</p><a class="text-link" href="/privacy/">Read the full privacy notes →</a></div><div class="proof-facts"><div><span>01 / PROCESSING</span><h3>In your browser</h3><p>Canvas, browser workers and WebAssembly handle the file work. Background removal and text recognition run their models on your device.</p></div><div><span>02 / YOUR FILES</span><h3>No upload step</h3><p>Your selected files and generated results aren’t sent to a conversion server. The workspace passes them between tools in memory.</p></div><div><span>03 / NETWORK &amp; SAVING</span><h3>Website downloads, explained</h3><p>Your browser requests pages, code and engines from this host, which receives ordinary connection information. Download your result before closing the tab; results aren’t saved here.</p></div></div></section>
-    <section class="wrap also-built" id="about" aria-label="About Umut and other projects"><div><p class="eyebrow">BUILT BY UMUT ALISOGLU</p><p>I make practical tools and playful experiments. FileForge is the everyday toolbox.</p></div><nav aria-label="Other projects"><span>Also built</span><a href="/projects/repodock/">Repodock ↗</a><a href="/projects/skate-scape/">Skate Scape ↗</a><a href="/projects/">About the projects →</a></nav></section>
-  </main><site-footer></site-footer>
-</body></html>
+    <section class="personal-projects" id="projects" aria-labelledby="projects-title">
+      <div class="personal-section-heading"><div><p class="eyebrow">01 / THINGS I’VE BEEN MAKING</p><h2 id="projects-title">Out of my tabs.<br><em>Into yours.</em></h2></div><a class="text-link" href="/projects/">All project details <span aria-hidden="true">↗</span></a></div>
+      <div class="personal-project-grid">
+        <article class="personal-project">
+          <a class="project-cover cover-fileforge" href="/tools/" aria-label="Try FileForge browser tools"><span class="cover-index">01 / THE USEFUL ONE</span><div class="file-stack" aria-hidden="true"><span class="paper-sheet paper-back">JPG</span><span class="paper-sheet paper-front"><img src="/assets/fileforge.svg" width="52" height="52" alt=""><b>PDF</b><small>all sorted.</small></span><span class="paper-sticker">keep it local ↗</span></div><span class="cover-bottom">FILEFORGE <span aria-hidden="true">↗</span></span></a>
+          <div class="personal-project-meta"><span>BROWSER TOOLS + WINDOWS</span><span>01</span></div><h3><a href="/projects/fileforge/">FileForge <span aria-hidden="true">↗</span></a></h3><p>For the “I just need to convert this file” moments. Images, PDFs and more, right in your browser.</p><a class="text-link" href="/tools/workspace/">Open the workspace →</a>
+        </article>
+        <article class="personal-project">
+          <a class="project-cover cover-repodock" href="/projects/repodock/" aria-label="Explore Repodock"><span class="cover-index">02 / LESS TERMINAL JUGGLING</span><div class="repodock-preview"><img src="/assets/repodock-dashboard.png" alt="Repodock’s dashboard for running local projects" loading="lazy"></div><span class="cover-bottom">REPODOCK <span aria-hidden="true">↗</span></span></a>
+          <div class="personal-project-meta"><span>WINDOWS APP</span><span>02</span></div><h3><a href="/projects/repodock/">Repodock <span aria-hidden="true">↗</span></a></h3><p>One place to run local GitHub projects and see what they’re doing. Fewer terminal windows to lose.</p><a class="text-link" href="/projects/repodock/">Have a closer look →</a>
+        </article>
+        <article class="personal-project">
+          <a class="project-cover cover-skate" href="/projects/skate-scape/" aria-label="Explore Skate Scape, an early-access browser game"><span class="cover-index">03 / THE SIDE QUEST</span><div class="skate-drawing" aria-hidden="true"><svg viewBox="0 0 300 200" fill="none"><path d="M20 165H280M38 141H259M66 118H234M101 95H200M150 60L38 184M150 60L262 184M150 60V184" stroke="currentColor" opacity=".18"/><g transform="rotate(-28 150 100)"><rect x="65" y="64" width="175" height="62" rx="31" fill="#ecf3b8" stroke="currentColor" stroke-width="2"/><path d="M99 65V126M206 65V126" stroke="currentColor" stroke-width="2"/><circle cx="103" cy="140" r="10" fill="currentColor"/><circle cx="200" cy="140" r="10" fill="currentColor"/><path d="M103 125V132M200 125V132M140 95H170M155 80V110" stroke="currentColor" stroke-width="3"/></g><path d="M40 63L66 50M36 88L55 80M227 153L252 142" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><span class="skate-sticker">just one more run.</span><span class="cover-bottom">SKATE SCAPE <span aria-hidden="true">↗</span></span></a>
+          <div class="personal-project-meta"><span>BROWSER GAME / EARLY ACCESS</span><span>03</span></div><h3><a href="/projects/skate-scape/">Skate Scape <span aria-hidden="true">↗</span></a></h3><p>A skating game with tricks, combos and a world to roam. Still taking shape. Go have a play.</p><a class="text-link" href="/skate-scape/">Play in your browser →</a>
+        </article>
+      </div>
+    </section>
+    <section class="personal-about" id="about" aria-labelledby="about-title"><div><p class="eyebrow">02 / BEHIND THE TABS</p><h2 id="about-title">A place to make<br><em>room for ideas.</em></h2></div><div><p>I’m Umut Alisoglu. This site is a home for the things I’m working on: little fixes for everyday annoyances, apps I want to use, and experiments that got out of hand.</p><p>I like keeping things straightforward. Try something, see what works, make it a little better.</p><a class="text-link" href="/about/">More about me <span aria-hidden="true">↗</span></a></div></section>
+    <section class="personal-contact" aria-labelledby="hello-title"><div><p class="eyebrow">03 / LEAVE A TAB OPEN</p><h2 id="hello-title">Got something<br><em>on your mind?</em></h2><p>An idea, a question, a bug you found. I’d like to hear it.</p></div><a class="hello-link" href="mailto:umu@alisoglu.com">Say hello <span aria-hidden="true">↗</span><small>umu@alisoglu.com</small></a></section>
+  </main>
+  <site-footer></site-footer>
+</body>
+</html>

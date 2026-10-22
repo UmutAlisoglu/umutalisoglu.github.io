@@ -15,8 +15,8 @@ const workbench = () => page.frameLocator('.workspace-dialog iframe');
 const engine = () => workbench().frameLocator('[data-workspace-frame] iframe');
 const check = async (name, run) => { await run(); console.log(`PASS ${name}`); };
 try {
-  await check('homepage samples reach real tools without exporting automatically', async () => {
-    await page.goto(base);
+  await check('tool directory samples reach real tools without exporting automatically', async () => {
+    await page.goto(base + '/tools/');
     await page.getByRole('link', { name: /Screenshot → framed image/ }).click();
     await page.locator('#screenshot-export:not(:disabled)').waitFor();
     assert.equal(await page.locator('#screenshot-result').isVisible(), false);

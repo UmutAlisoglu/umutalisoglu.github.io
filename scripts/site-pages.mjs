@@ -32,7 +32,7 @@ try {
       assert.equal(await page.locator('h1').count(), 1, path);
       const title = await page.title(); assert.ok(!titles.has(title), title); titles.add(title);
       assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), `https://alisoglu.com${path}`);
-      assert.equal(await page.locator('header nav [aria-current]').count(), ['/privacy/', '/idea-machine/', '/games/'].includes(path) ? 0 : 1, path);
+      assert.equal(await page.locator('header nav [aria-current]').count(), ['/privacy/', '/idea-machine/', '/games/', '/downloads/'].includes(path) ? 0 : 1, path);
       assert.equal(await page.locator('footer a[href="/privacy/"]').count(), 1);
       const duplicates = await page.evaluate(() => { const ids = [...document.querySelectorAll('[id]')].map(node => node.id); return ids.filter((id, index) => ids.indexOf(id) !== index); });
       assert.deepEqual(duplicates, [], path);
@@ -145,7 +145,9 @@ try {
   });
   await check('homepage shortcuts and the idea machine work', async () => {
     await page.goto(base); assert.equal(await page.locator('#quick-tools').count(), 0);
-    assert.equal(await page.locator('.sample-jobs strong').count(), 3);
+    assert.equal(await page.locator('.personal-project').count(), 3);
+    await page.getByRole('link', { name: 'Take a look around' }).click(); assert.equal(new URL(page.url()).hash, '#projects');
+    await page.goto(base + '/tools/'); assert.equal(await page.locator('.sample-jobs strong').count(), 3);
     assert.equal(await page.locator('header a[href="/games/"]').count(), 0);
     await page.goto(base); assert.equal(await page.locator('#prompt-form').count(), 0);
     await page.locator('footer a[href="/idea-machine/"]').click(); await page.locator('#surprise-button').click(); assert.equal(await page.locator('#prompt-result').isVisible(), true);

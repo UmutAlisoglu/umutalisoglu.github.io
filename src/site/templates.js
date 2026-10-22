@@ -7,18 +7,19 @@ export { toolPages } from './tool-catalog.js';
 export const sitePaths = [
   '/', '/tools/', '/tools/fileforge/', '/tools/workspace/', ...toolPages.map(tool => `/tools/${tool.slug}/`), ...advancedTools.map(tool => `/tools/${tool.slug}/`),
   '/projects/', '/projects/fileforge/', '/projects/repodock/', '/projects/skate-scape/',
-  '/games/', '/downloads/', '/privacy/', '/contact/', '/idea-machine/',
+  '/games/', '/downloads/', '/privacy/', '/contact/', '/idea-machine/', '/about/',
 ];
 
 function header(path) {
-  const navigation = [['/', 'Home'], ['/tools/', 'Tools'], ['/projects/', 'Projects'], ['/downloads/', 'Downloads']];
+  const navigation = [['/', 'Home'], ['/about/', 'About'], ['/projects/', 'Projects'], ['/tools/', 'Tools']];
+  const finder = path.startsWith('/tools/') ? '<button type="button" class="tool-switcher-trigger" data-open-tools hidden aria-haspopup="dialog" title="Find a tool (Ctrl or Command + K)">Find a tool</button>' : '';
   return `<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header wrap hub-header">
-  <a class="wordmark" href="/" aria-label="Alisoglu home"><span class="monogram">u.</span><span>alisoglu<span class="wordmark-dot">.</span><small>ideas you can actually use</small></span></a>
-  <nav aria-label="Main navigation">${navigation.map(([href, label]) => `<a href="${href}"${(href === '/' ? path === '/' : path.startsWith(href)) ? ` aria-current="${path === href ? 'page' : 'true'}"` : ''}>${label}</a>`).join('')}<button type="button" class="tool-switcher-trigger" data-open-tools hidden aria-haspopup="dialog" title="Find a tool (Ctrl or Command + K)">Find a tool</button><a href="/contact/" class="nav-contact"${path === '/contact/' ? ' aria-current="page"' : ''}>Say hello <span aria-hidden="true">↗</span></a></nav>
+  <a class="wordmark" href="/" aria-label="Umut Alisoglu home"><span class="monogram">u.</span><span>umut alisoglu<span class="wordmark-dot">.</span><small>my little corner of the internet</small></span></a>
+  <nav aria-label="Main navigation">${navigation.map(([href, label]) => `<a href="${href}"${(href === '/' ? path === '/' : path.startsWith(href)) ? ` aria-current="${path === href ? 'page' : 'true'}"` : ''}>${label}</a>`).join('')}${finder}<a href="/contact/" class="nav-contact"${path === '/contact/' ? ' aria-current="page"' : ''}>Say hello <span aria-hidden="true">↗</span></a></nav>
 </header>`;
 }
-const footer = `<footer class="site-footer wrap new-footer"><a class="footer-brand" href="/">alisoglu<span>.</span><small>Human ideas. Useful experiments.</small></a><div><a href="/#about">About Umut</a><a href="/contact/">Contact & feedback</a><a href="/tools/workspace/">FileForge workspace</a><button type="button" data-open-offline class="footer-offline">Offline tools</button><a href="/privacy/">Privacy</a><a href="/games/">Games</a><a href="/idea-machine/">Idea machine</a><a href="https://github.com/UmutAlisoglu/umutalisoglu.github.io">Website source ↗</a><a href="/THIRD_PARTY_NOTICES.md">Credits</a></div><p class="footer-note">Personal projects by Umut Alisoglu. Built with AI assistance.</p></footer>`;
+const footer = `<footer class="site-footer wrap new-footer"><a class="footer-brand" href="/">umut alisoglu<span>.</span><small>Thanks for stopping by.</small></a><div><a href="/about/">About me</a><a href="/contact/">Contact & feedback</a><a href="/tools/workspace/">FileForge workspace</a><a href="/downloads/">Downloads</a><a href="/games/">Games</a><a href="/idea-machine/">Idea machine</a><button type="button" data-open-offline class="footer-offline">Offline tools</button><a href="/privacy/">Privacy</a><a href="/THIRD_PARTY_NOTICES.md">Credits</a></div><p class="footer-note"><span>A work in progress, as most good things are.</span><a href="https://github.com/UmutAlisoglu/umutalisoglu.github.io">This site on GitHub ↗</a></p></footer>`;
 
 // Vite expands these fragments into ordinary HTML, before bundling scripts and styles.
 // Visitors receive the complete page; shared navigation needs no JavaScript.
@@ -30,7 +31,7 @@ export function siteTemplates() {
       handler(html, context) {
         const path = context.path.replace(/index\.html$/, '');
         let result = html.replace('<site-header></site-header>', header(path)).replace('<site-footer></site-footer>', footer)
-          .replace('</head>', '<link rel="manifest" href="/manifest.webmanifest"><script type="module" src="/src/site/offline.js"></script><script type="module" src="/src/site/tool-switcher.js"></script></head>')
+          .replace('</head>', '<link rel="stylesheet" href="/src/site/personal.css"><link rel="manifest" href="/manifest.webmanifest"><script type="module" src="/src/site/offline.js"></script><script type="module" src="/src/site/tool-switcher.js"></script></head>')
           .replace('<fileforge-launcher></fileforge-launcher>', readFileSync(new URL('./launcher-template.html', import.meta.url), 'utf8'))
           .replace('<fileforge-workbench></fileforge-workbench>', readFileSync(new URL('./workspace-template.html', import.meta.url), 'utf8'))
           .replace('<tool-directory></tool-directory>', renderToolDirectory())

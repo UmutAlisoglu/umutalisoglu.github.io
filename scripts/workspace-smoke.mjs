@@ -26,14 +26,14 @@ async function pixels(bytes) {
   return page.evaluate(async data => { const image = await createImageBitmap(new Blob([new Uint8Array(data)], { type: 'image/png' })); const c = document.createElement('canvas'); c.width = image.width; c.height = image.height; const ctx = c.getContext('2d'); ctx.drawImage(image, 0, 0); const colour = [...ctx.getImageData(Math.floor(c.width / 2), Math.floor(c.height / 2), 1, 1).data]; image.close(); return { width: c.width, height: c.height, colour }; }, [...bytes]);
 }
 try {
-  await page.goto(base + '/');
+  await page.goto(base + '/tools/workspace/');
   const image = Buffer.from(await page.evaluate(async () => {
     const canvas = document.createElement('canvas'); canvas.width = 240; canvas.height = 160;
     const ctx = canvas.getContext('2d'); ctx.fillStyle = '#ed2b2b'; ctx.fillRect(0, 0, 240, 160); ctx.fillStyle = '#124fc3'; ctx.fillRect(120, 80, 120, 80);
     return [...new Uint8Array(await (await new Promise(resolve => canvas.toBlob(resolve))).arrayBuffer())];
   }));
   const fixture = { name: 'quadrants.png', mimeType: 'image/png', buffer: image };
-  await check('homepage selects locally and shows only compatible actions', async () => {
+  await check('workspace selects locally and shows only compatible actions', async () => {
     const initial = await page.evaluate(async () => ({ sw: await navigator.serviceWorker.getRegistrations(), storage: Object.keys(localStorage) }));
     assert.equal(initial.sw.length, 0); assert.ok(!initial.storage.includes('fileforge:favourite-tools:v1'));
     await page.locator('[data-workspace-input]').setInputFiles(fixture);
