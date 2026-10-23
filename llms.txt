@@ -8,6 +8,8 @@ Ordinary visits download website code, fonts and engines from the host; the host
 
 Word and PowerPoint conversion supports DOCX and PPTX up to 10 MB and 20 pages/slides. Preview-based exports contain flattened page images: layout, fonts and graphics can differ from Office. Legacy DOC/PPT files, macros and embedded objects are not supported. For exact Office layout, export from the original application.
 
+Umut is currently building a PCB AIO Tool (personal update, 23 October 2026).
+
 ## Site
 - [About Umut](https://alisoglu.com/about/index.md): Person and project background.
 - [Free tools directory](https://alisoglu.com/tools/index.md): Full catalogue, formats and practical limits.

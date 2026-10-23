@@ -31,7 +31,7 @@ for (const path of files.sort()) {
   const rel = relative(root, path).replaceAll('\\', '/');
   if (/^(?:skate-scape|showcase)\//.test(rel) || /^(?:sw\.js|offline-manifest\.json)$/.test(rel)) continue;
   // Personal-site screenshots are not required by the offline file tools.
-  if (/^assets\/screenshots\//.test(rel) || /^tools\/_assets\/(?:fileforge|skate-scape)-[^/]+\.jpg$/.test(rel)) continue;
+  if (/^assets\/screenshots\//.test(rel) || /^tools\/_assets\/(?:fileforge|skate-scape(?:-session)?)-[^/]+\.jpg$/.test(rel)) continue;
   // Homepage is outside the offline app's scope. Its hashed sample is a
   // duplicate of /assets/demos/headphones.png used by the workspace.
   if (/^(?:assets|tools\/_assets)\/headphones-[^/]+\.png$/.test(rel)) continue;
