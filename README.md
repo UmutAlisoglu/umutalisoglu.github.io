@@ -5,7 +5,7 @@ This is the source for [alisoglu.com](https://alisoglu.com/), my personal websit
 ## Have a look around
 
 - [About me](https://alisoglu.com/about/) — a little about the person behind the tabs.
-- [FileForge](https://alisoglu.com/tools/) — browser tools for images, PDFs, spreadsheets, video and text. There’s a connected workspace for passing results from one tool to another, too.
+- [FileForge](https://alisoglu.com/tools/) — browser tools for images, PDFs, spreadsheets, video and text. There’s a connected workspace for passing results from one tool to another, too. Windows 0.3.0 bundles that workspace and its engines, alongside the native converters.
 - [Repodock](https://alisoglu.com/projects/repodock/) — a Windows app for running local GitHub projects and following their logs.
 - [Other experiments](https://alisoglu.com/projects/#experiments) — separate from the main software portfolio, including the unofficial Skate Scape fan project.
 - [Downloads](https://alisoglu.com/downloads/) — desktop releases and setup notes.

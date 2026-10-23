@@ -17,6 +17,10 @@ Umut is currently building a PCB AIO Tool (personal update, 23 October 2026).
 - [Projects](https://alisoglu.com/projects/index.md): FileForge, Repodock and Skate Scape.
 - [Contact](https://alisoglu.com/contact/index.md): Email umut@alisoglu.com and project feedback.
 
+## Windows desktop edition
+
+[FileForge Windows 0.3.0](https://github.com/UmutAlisoglu/fileforge/releases/tag/v0.3.0), released 23 October 2026, bundles the connected workspace and its engines plus nine native converters for larger jobs. Extract the complete ZIP and keep its workspace folder beside FileForge.exe. WebView2 is required; only native video needs separately installed FFmpeg/FFprobe. Workspace selections stay in page memory; native jobs use temporary copies on the same computer.
+
 ## Document tools
 - [Word to PDF](https://alisoglu.com/tools/word-to-pdf/index.md): Local DOCX preview and flattened PDF export.
 - [PowerPoint to PDF](https://alisoglu.com/tools/powerpoint-to-pdf/index.md): Local PPTX preview and static PDF export.
