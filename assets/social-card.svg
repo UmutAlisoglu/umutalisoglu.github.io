@@ -4,11 +4,11 @@
   <circle cx="85" cy="65" r="23" fill="#304fd8"/>
   <text x="70" y="79" font-family="Georgia,serif" font-style="italic" font-size="35" fill="white">u.</text>
   <text x="125" y="76" font-family="Arial,sans-serif" font-size="24" font-weight="600" fill="#272923">umut alisoglu.</text>
-  <text x="65" y="203" font-family="Consolas,monospace" font-size="14" letter-spacing="2" fill="#62645b">TOOLS, GAMES &amp; SIDE QUESTS</text>
+  <text x="65" y="203" font-family="Consolas,monospace" font-size="14" letter-spacing="2" fill="#62645b">SOFTWARE &amp; PERSONAL PROJECTS</text>
   <text x="60" y="321" font-family="Arial,sans-serif" font-size="108" letter-spacing="-4" fill="#272923">Umut</text>
   <text x="60" y="435" font-family="Georgia,serif" font-size="108" font-style="italic" letter-spacing="-4" fill="#304fd8">Alisoglu.</text>
-  <text x="65" y="503" font-family="Arial,sans-serif" font-size="21" fill="#565b52">Useful tools. A skateboard in RuneScape.</text>
-  <g transform="rotate(6 942 325)"><rect x="785" y="167" width="305" height="318" fill="#ebece2"/><ellipse cx="936" cy="307" rx="123" ry="65" transform="rotate(-25 936 307)" fill="none" stroke="#304fd8" opacity=".5"/><ellipse cx="936" cy="307" rx="123" ry="48" transform="rotate(37 936 307)" fill="none" stroke="#304fd8" opacity=".5"/><text x="865" y="348" font-family="Georgia,serif" font-style="italic" font-size="148" letter-spacing="-17" fill="#304fd8">u.</text><circle cx="1043" cy="267" r="10" fill="#d96039"/><text x="811" y="204" font-family="Consolas,monospace" font-size="10" fill="#62645b">THE SHORT VERSION</text><text x="812" y="432" font-family="Arial,sans-serif" font-size="17" fill="#272923">TOOLS / GAMES / SIDE QUESTS</text></g>
+  <text x="65" y="503" font-family="Arial,sans-serif" font-size="21" fill="#565b52">Practical tools for everyday work.</text>
+  <g font-family="Arial,sans-serif"><rect x="785" y="167" width="305" height="330" rx="5" fill="#ebece2" stroke="#d8d9ce"/><text x="813" y="207" font-size="12" letter-spacing="1" fill="#565b52">SELECTED WORK</text><path d="M813 230H1062M813 332H1062" stroke="#cdd0c5"/><text x="813" y="275" font-size="29" fill="#272923">FileForge</text><text x="813" y="305" font-size="15" fill="#565b52">Local file tools</text><text x="813" y="377" font-size="29" fill="#272923">Repodock</text><text x="813" y="407" font-size="15" fill="#565b52">Local project dashboard</text><circle cx="818" cy="458" r="4" fill="#304fd8"/><text x="833" y="463" font-size="14" fill="#565b52">PCB AIO Tool · in progress</text></g>
   <text x="65" y="592" font-family="Consolas,monospace" font-size="16" fill="#62645b">alisoglu.com</text>
   <text x="1135" y="592" text-anchor="end" font-family="Arial,sans-serif" font-size="17" fill="#62645b">Have a look around. ↗</text>
 </svg>

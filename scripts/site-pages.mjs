@@ -145,7 +145,7 @@ try {
   });
   await check('homepage shortcuts and the idea machine work', async () => {
     await page.goto(base); assert.equal(await page.locator('#quick-tools').count(), 0);
-    assert.equal(await page.locator('.personal-project').count(), 3);
+    assert.equal(await page.locator('.personal-project').count(), 2);
     await page.getByRole('link', { name: 'Explore my projects' }).click(); assert.equal(new URL(page.url()).hash, '#projects');
     await page.goto(base + '/tools/'); assert.equal(await page.locator('.sample-jobs strong').count(), 3);
     assert.equal(await page.locator('header a[href="/games/"]').count(), 0);

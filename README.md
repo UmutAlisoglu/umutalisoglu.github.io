@@ -1,13 +1,13 @@
 # Hey, I’m Umut.
 
-This is the source for [alisoglu.com](https://alisoglu.com/), my little corner of the internet. File tools that stay local, a Windows home for GitHub projects, and a fan game that puts a skateboard in RuneScape.
+This is the source for [alisoglu.com](https://alisoglu.com/), my personal website for software and projects. File tools that stay local, a Windows dashboard for GitHub projects, and a PCB AIO Tool currently in progress.
 
 ## Have a look around
 
 - [About me](https://alisoglu.com/about/) — a little about the person behind the tabs.
 - [FileForge](https://alisoglu.com/tools/) — browser tools for images, PDFs, spreadsheets, video and text. There’s a connected workspace for passing results from one tool to another, too.
 - [Repodock](https://alisoglu.com/projects/repodock/) — a Windows app for running local GitHub projects and following their logs.
-- [Skate Scape](https://alisoglu.com/skate-scape/) — an unofficial fan-made browser skating game. Its source lives in the separate [skate-scape repo](https://github.com/UmutAlisoglu/skate-scape).
+- [Other experiments](https://alisoglu.com/projects/#experiments) — separate from the main software portfolio, including the unofficial Skate Scape fan project.
 - [Downloads](https://alisoglu.com/downloads/) — desktop releases and setup notes.
 
 Questions or ideas? [Say hello](mailto:umut@alisoglu.com), or [open an issue](https://github.com/UmutAlisoglu/umutalisoglu.github.io/issues).
