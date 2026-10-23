@@ -6,6 +6,8 @@ import './advanced.css';
 
 const $ = selector => document.querySelector(selector);
 const kind = document.body.dataset.advancedTool;
+const requestedFormat = new URLSearchParams(location.search).get('format');
+if (kind === 'pdfimages' && ['png', 'jpg'].includes(requestedFormat)) $('#pdf-format').value = requestedFormat;
 const workspace = $('#advanced-workspace');
 const input = $('#advanced-input'), drop = $('#advanced-drop');
 const settings = $('#advanced-options'), run = $('#advanced-run'), cancel = $('#advanced-cancel');

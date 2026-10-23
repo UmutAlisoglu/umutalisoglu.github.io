@@ -1,5 +1,6 @@
 import { featuredTools, findTools, renderToolCards, renderJobGroups } from './tool-catalog.js';
 import './tool-search.css';
+import './conversion-picker.js';
 
 for (const directory of document.querySelectorAll('[data-tool-directory]')) {
   const discovery = directory.querySelector('.tool-discovery');

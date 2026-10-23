@@ -4,6 +4,8 @@ import './documents.css';
 
 const $ = selector => document.querySelector(selector);
 const kind = document.body.dataset.documentTool;
+const requestedFormat = new URLSearchParams(location.search).get('format');
+if (kind === 'data' && ['csv', 'json'].includes(requestedFormat)) $('#document-settings [name=format]').value = requestedFormat;
 const extensions = { 'text-pdf': ['txt'], 'pdf-text': ['pdf'], data: ['csv', 'json'] }[kind];
 const limit = { 'text-pdf': 1e6, 'pdf-text': 25e6, data: 2e6 }[kind];
 let selected, worker, controller, working = false, outputURL, currentResult, sequence = 0, timer;

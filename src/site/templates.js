@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { discoveryTags } from './discovery.js';
+import { renderConversionPicker } from './conversion-options.js';
 
 import { toolPages, advancedTools, documentTools, allToolPages, renderToolDirectory } from './tool-catalog.js';
 import { toolUsage, renderToolUsage } from './tool-usage.js';
@@ -37,6 +38,7 @@ export function siteTemplates() {
           .replace('<fileforge-launcher></fileforge-launcher>', readFileSync(new URL('./launcher-template.html', import.meta.url), 'utf8'))
           .replace('<fileforge-workbench></fileforge-workbench>', readFileSync(new URL('./workspace-template.html', import.meta.url), 'utf8'))
           .replace('<tool-directory></tool-directory>', renderToolDirectory())
+          .replace('<conversion-picker></conversion-picker>', renderConversionPicker())
           .replace('<tool-directory data-variant="home"></tool-directory>', renderToolDirectory({ compact: true, id: 'home-tools' }))
           .replace('<advanced-tool-links></advanced-tool-links>', `<p>More FileForge tools</p><div class="tool-nav" aria-label="FileForge tools">${allToolPages.map(tool => `<a href="/tools/${tool.slug}/"${path === `/tools/${tool.slug}/` ? ' aria-current="page"' : ''}><span class="tool-symbol" aria-hidden="true">${tool.symbol}</span><span>${tool.name}<small>${tool.short}</small></span></a>`).join('')}</div>`);
         if (result.includes('<fileforge-workspace></fileforge-workspace>')) {

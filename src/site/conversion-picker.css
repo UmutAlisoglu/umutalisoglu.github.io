@@ -1,0 +1,20 @@
+.conversion-picker{margin:0 0 30px;border:1px solid var(--line);border-radius:8px;padding:28px;background:#eeeee6}
+.conversion-picker-heading{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:24px}
+.conversion-picker-heading .eyebrow{font:11px/1.6 var(--mono);color:var(--muted);margin:0 0 8px;letter-spacing:.7px}
+.conversion-picker-heading h2{font-size:27px;line-height:1.25;letter-spacing:-.7px;margin:0}
+.conversion-picker-heading>p{font-size:14px;color:var(--muted);line-height:1.7;max-width:300px;margin:0}
+.conversion-fields{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr) auto;gap:18px;align-items:end}
+.conversion-fields label{display:block;font-size:13px;font-weight:600;color:var(--ink)}
+.conversion-fields select{display:block;width:100%;margin:9px 0 0;min-height:48px;background:#fcfbf6;border:1px solid #c7cbbd;border-radius:5px;font:15px var(--sans);color:var(--ink);padding:10px 12px}
+.conversion-direction{font-size:23px;color:var(--muted);align-self:end;padding-bottom:9px;text-align:center}
+.conversion-fields .button{min-height:48px;font-size:14px;padding:12px 18px;white-space:nowrap}
+.conversion-facts{margin-top:22px;border-top:1px solid #d0d3c6;padding-top:18px;font-size:14px;line-height:1.8}
+.conversion-facts strong{font-size:15px;font-weight:600}
+.conversion-facts p{margin:4px 0 0;color:var(--muted)}
+.conversion-picker-footnote{font-size:12px;color:var(--muted);line-height:1.8;margin:16px 0 0}
+.conversion-fallback{font-size:15px;line-height:1.9}
+.conversion-fallback a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.conversion-picker [hidden]{display:none!important}
+.conversion-picker :is(select,button,a):focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+@media(max-width:800px){.conversion-picker-heading{display:block}.conversion-picker-heading>p{margin-top:12px;max-width:none}.conversion-fields{grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);gap:12px}.conversion-fields .button{grid-column:1/-1;justify-content:center;margin-top:4px}}
+@media(max-width:430px){.conversion-picker{padding:22px 18px}.conversion-picker-heading h2{font-size:24px}.conversion-fields select{font-size:13px;padding-inline:8px}.conversion-facts{font-size:13px}}

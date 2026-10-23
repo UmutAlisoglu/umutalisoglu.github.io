@@ -38,6 +38,10 @@ npm run preview
 - `src/fileforge/` contains the file-processing tools; `src/site/workspace.js` connects them.
 - `tools/` contains the tool directory, individual guides and workspace entry point.
 
+The directory starts with a conversion picker. It shows supported output formats and the same limits used by the tool guides, then opens the converter with that output selected. Files are chosen inside the tool; the picker makes no upload or preference-storage requests. The browser and Windows editions have different feature sets, compared on the FileForge project page.
+
+Run `npm run test:conversions` against the local preview to check picker routing, real JPEG/CSV exports, narrow screens and navigation without JavaScript.
+
 ## New document tools
 
 - Word → PDF and PowerPoint → PDF: preview DOCX/PPTX locally, then export flattened page images. Up to 10 MB and 20 pages/slides. Layout can differ from Office; use the original app when exact layout or tagged, accessible PDFs are required. Older DOC/PPT formats, macros and embedded OLE objects aren’t supported.
