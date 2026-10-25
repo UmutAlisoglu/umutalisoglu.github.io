@@ -16,10 +16,11 @@ function header(path) {
   const navigation = [['/', 'Home'], ['/about/', 'About'], ['/projects/', 'Projects'], ['/tools/', 'Tools']];
   const finder = path.startsWith('/tools/') ? '<button type="button" class="tool-switcher-trigger" data-open-tools hidden aria-haspopup="dialog" title="Find a tool (Ctrl or Command + K)">Find a tool</button>' : '';
   return `<a class="skip-link" href="#main">Skip to content</a>
-<header class="site-header wrap hub-header">
+<div class="site-header-band"><header class="site-header wrap hub-header">
   <a class="wordmark" href="/" aria-label="Umut Alisoglu home"><span class="monogram">u.</span><span>umut alisoglu<span class="wordmark-dot">.</span><small>software &amp; projects</small></span></a>
-  <nav aria-label="Main navigation">${navigation.map(([href, label]) => `<a href="${href}"${(href === '/' ? path === '/' : path.startsWith(href)) ? ` aria-current="${path === href ? 'page' : 'true'}"` : ''}>${label}</a>`).join('')}${finder}<a href="/contact/" class="nav-contact"${path === '/contact/' ? ' aria-current="page"' : ''}>Say hello <span aria-hidden="true">↗</span></a></nav>
-</header>`;
+  <button class="site-menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" hidden><span>Menu</span><span class="menu-lines" aria-hidden="true"></span></button>
+  <nav id="site-navigation" aria-label="Main navigation">${navigation.map(([href, label]) => `<a href="${href}"${(href === '/' ? path === '/' : path.startsWith(href)) ? ` aria-current="${path === href ? 'page' : 'true'}"` : ''}>${label}</a>`).join('')}${finder}<a href="/contact/" class="nav-contact"${path === '/contact/' ? ' aria-current="page"' : ''}>Say hello <span aria-hidden="true">↗</span></a></nav>
+</header></div>`;
 }
 const footer = `<footer class="site-footer wrap new-footer"><a class="footer-brand" href="/">umut alisoglu<span>.</span><small>Thanks for stopping by.</small></a><div><a href="/about/">About me</a><a href="/contact/">Contact & feedback</a><a href="/tools/workspace/">FileForge workspace</a><a href="/downloads/">Downloads</a><a href="/projects/#experiments">Other projects</a><a href="/idea-machine/">Idea generator</a><button type="button" data-open-offline class="footer-offline">Offline tools</button><a href="/privacy/">Privacy</a><a href="/THIRD_PARTY_NOTICES.md">Credits</a></div><p class="footer-note"><span>© 2026 Umut Alisoglu</span><a href="https://github.com/UmutAlisoglu/umutalisoglu.github.io">This site on GitHub ↗</a></p></footer>`;
 
@@ -59,7 +60,12 @@ export function siteTemplates() {
           if (facts) result = result.replace(/(<div class="page-intro">[\s\S]*?<\/h1>\s*<p>)[\s\S]*?(<\/p>)/, (_, start, end) => start + facts[0] + ' ' + facts[1] + end);
           result = result.replace(/(<div class="page-intro">[\s\S]*?<\/div>)/, `$1${renderToolUsage(currentTool)}`);
         }
-        return result.replace('</head>', `${discoveryTags(path)}</head>`);
+        result = result.replace(/<meta name="theme-color" content="[^"]*">/, '<meta name="theme-color" content="#f5f5f7">');
+        for (const name of ['title', 'description', 'image']) {
+          const value = result.match(new RegExp(`<meta property="og:${name}" content="([^"]*)"`))?.[1];
+          if (value) result = result.replace('</head>', `<meta name="twitter:${name}" content="${value}"></head>`);
+        }
+        return result.replace('</head>', `<link rel="stylesheet" href="/src/site/premium.css"><script type="module" src="/src/site/experience.js"></script>${discoveryTags(path)}</head>`);
       },
     },
   };

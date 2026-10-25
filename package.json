@@ -24,7 +24,8 @@
     "test:finish": "node scripts/finish-tools-check.mjs",
     "test:scanner": "node scripts/scanner-check.mjs",
     "test:documents": "node scripts/document-tools-check.mjs",
-    "test:conversions": "node scripts/conversion-picker-check.mjs"
+    "test:conversions": "node scripts/conversion-picker-check.mjs",
+    "test:design": "node scripts/premium-site-check.mjs"
   },
   "dependencies": {
     "@aiden0z/pptx-renderer": "1.4.0",

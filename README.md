@@ -35,12 +35,15 @@ npm run preview
 - `projects/`, `downloads/` and `contact/` have project information and ways to get in touch.
 - `src/site/templates.js` expands shared navigation and footers into plain HTML at build time. Navigation works without JavaScript.
 - `src/site/personal.css` handles the personal pages and shared site shell. The artwork is CSS, SVG and existing project images; there are no external font requests.
+- `src/site/premium.css` refines the shared surfaces and project presentation. `experience.js` adds the mobile menu and short section reveals, with a reduced-motion option and no dependencies. The navigation remains available without JavaScript.
 - `src/fileforge/` contains the file-processing tools; `src/site/workspace.js` connects them.
 - `tools/` contains the tool directory, individual guides and workspace entry point.
 
 The directory starts with a conversion picker. It shows supported output formats and the same limits used by the tool guides, then opens the converter with that output selected. Files are chosen inside the tool; the picker makes no upload or preference-storage requests. The browser and Windows editions have different feature sets, compared on the FileForge project page.
 
 Run `npm run test:conversions` against the local preview to check picker routing, real JPEG/CSV exports, narrow screens and navigation without JavaScript.
+
+Run `npm run test:design` to check the shared navigation, keyboard controls, six screen widths, reduced motion, metadata and the static fallback. It saves screenshots in `.local/premium-check/`.
 
 ## New document tools
 
@@ -54,6 +57,8 @@ All five tools work in the connected workspace. Office engines load only after P
 ## Discovery
 
 The build publishes `/llms.txt`, a `/llm.txt` compatibility alias, `/llms-full.txt`, and Markdown summaries at each public page’s `index.md`. Pages link to these summaries and include structured person, website and tool metadata. Tool claims and limits come from the shared catalogue. These files help readers and crawlers understand the site; they don’t promise search placement.
+
+The home page title is “Umut Alisoglu — Software & personal projects”. Search engines can keep an older listing until they recrawl the page. Use Google Search Console’s URL inspection to request indexing of `https://alisoglu.com/` if the old title is still showing. The sitemap is at `/sitemap.xml`; its home-page modification date reflects the latest content update. `node scripts/render-site-icons.mjs` regenerates the PNG favicon and home-screen icon from the SVG monogram.
 
 ## A few notes on the tools
 

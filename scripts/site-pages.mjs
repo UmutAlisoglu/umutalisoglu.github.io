@@ -145,8 +145,8 @@ try {
   });
   await check('homepage shortcuts and the idea machine work', async () => {
     await page.goto(base); assert.equal(await page.locator('#quick-tools').count(), 0);
-    assert.equal(await page.locator('.personal-project').count(), 2);
-    await page.getByRole('link', { name: 'Explore my projects' }).click(); assert.equal(new URL(page.url()).hash, '#projects');
+    assert.equal(await page.locator('.premium-project').count(), 2);
+    await page.getByRole('link', { name: 'Explore my work' }).click(); assert.equal(new URL(page.url()).hash, '#projects');
     await page.goto(base + '/tools/'); assert.equal(await page.locator('.sample-jobs strong').count(), 3);
     assert.equal(await page.locator('header a[href="/games/"]').count(), 0);
     await page.goto(base); assert.equal(await page.locator('#prompt-form').count(), 0);
@@ -158,6 +158,7 @@ try {
       for (const path of sitePaths) {
         await page.goto(base + path);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${path} @ ${width}px`);
+        if (width <= 680) await page.getByRole('button', { name: 'Menu', exact: true }).click();
         assert.equal(await page.getByRole('navigation').getByRole('link', { name: 'Tools', exact: true }).isVisible(), true);
         const brokenImages = await page.locator('img[src]').evaluateAll(images => images.filter(image => image.complete && !image.naturalWidth).map(image => image.src)); assert.deepEqual(brokenImages, [], path);
       }

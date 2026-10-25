@@ -1,14 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#f5f3ec"/>
-  <path d="M65 115H1135M65 550H1135" stroke="#d8d9ce"/>
-  <circle cx="85" cy="65" r="23" fill="#304fd8"/>
-  <text x="70" y="79" font-family="Georgia,serif" font-style="italic" font-size="35" fill="white">u.</text>
-  <text x="125" y="76" font-family="Arial,sans-serif" font-size="24" font-weight="600" fill="#272923">umut alisoglu.</text>
-  <text x="65" y="203" font-family="Consolas,monospace" font-size="14" letter-spacing="2" fill="#62645b">SOFTWARE &amp; PERSONAL PROJECTS</text>
-  <text x="60" y="321" font-family="Arial,sans-serif" font-size="108" letter-spacing="-4" fill="#272923">Umut</text>
-  <text x="60" y="435" font-family="Georgia,serif" font-size="108" font-style="italic" letter-spacing="-4" fill="#304fd8">Alisoglu.</text>
-  <text x="65" y="503" font-family="Arial,sans-serif" font-size="21" fill="#565b52">Practical tools for everyday work.</text>
-  <g font-family="Arial,sans-serif"><rect x="785" y="167" width="305" height="330" rx="5" fill="#ebece2" stroke="#d8d9ce"/><text x="813" y="207" font-size="12" letter-spacing="1" fill="#565b52">SELECTED WORK</text><path d="M813 230H1062M813 332H1062" stroke="#cdd0c5"/><text x="813" y="275" font-size="29" fill="#272923">FileForge</text><text x="813" y="305" font-size="15" fill="#565b52">Local file tools</text><text x="813" y="377" font-size="29" fill="#272923">Repodock</text><text x="813" y="407" font-size="15" fill="#565b52">Local project dashboard</text><circle cx="818" cy="458" r="4" fill="#304fd8"/><text x="833" y="463" font-size="14" fill="#565b52">PCB AIO Tool · in progress</text></g>
-  <text x="65" y="592" font-family="Consolas,monospace" font-size="16" fill="#62645b">alisoglu.com</text>
-  <text x="1135" y="592" text-anchor="end" font-family="Arial,sans-serif" font-size="17" fill="#62645b">Have a look around. ↗</text>
+  <rect width="1200" height="630" fill="#f5f5f7"/>
+  <circle cx="82" cy="68" r="23" fill="#304fd8"/>
+  <text x="67" y="82" font-family="Georgia,serif" font-style="italic" font-size="35" fill="white">u.</text>
+  <text x="119" y="77" font-family="Arial,sans-serif" font-size="23" font-weight="600" fill="#1d1d1f">umut alisoglu.</text>
+  <text x="1136" y="76" text-anchor="end" font-family="Arial,sans-serif" font-size="17" fill="#616168">alisoglu.com</text>
+  <text x="600" y="195" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" letter-spacing="2" fill="#616168">SOFTWARE &amp; PERSONAL PROJECTS</text>
+  <text x="600" y="315" text-anchor="middle" font-family="Arial,sans-serif" font-size="95" letter-spacing="-4" fill="#1d1d1f">Umut <tspan font-family="Georgia,serif" font-style="italic" fill="#304fd8">Alisoglu.</tspan></text>
+  <text x="600" y="382" text-anchor="middle" font-family="Arial,sans-serif" font-size="28" fill="#616168">I make tools for everyday work.</text>
+  <g font-family="Arial,sans-serif" font-size="19" fill="#1d1d1f">
+    <rect x="196" y="460" width="240" height="64" rx="24" fill="#e9edf9"/><text x="316" y="499" text-anchor="middle">FileForge</text>
+    <rect x="456" y="460" width="240" height="64" rx="24" fill="#e9efef"/><text x="576" y="499" text-anchor="middle">Repodock</text>
+    <rect x="716" y="460" width="288" height="64" rx="24" fill="#fff"/><circle cx="749" cy="492" r="4" fill="#304fd8"/><text x="768" y="499">PCB AIO · in progress</text>
+  </g>
 </svg>
