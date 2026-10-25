@@ -8,7 +8,7 @@ export { toolPages } from './tool-catalog.js';
 
 export const sitePaths = [
   '/', '/tools/', '/tools/fileforge/', '/tools/workspace/', ...allToolPages.map(tool => `/tools/${tool.slug}/`),
-  '/projects/', '/projects/fileforge/', '/projects/repodock/', '/projects/skate-scape/',
+  '/projects/', '/projects/fileforge/', '/projects/repodock/', '/projects/rowglass/', '/projects/skate-scape/',
   '/games/', '/downloads/', '/privacy/', '/contact/', '/idea-machine/', '/about/',
 ];
 

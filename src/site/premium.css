@@ -79,6 +79,14 @@ html { scroll-padding-top: 104px; }
 .premium-project { display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.25fr); gap: 36px; min-height: 500px; align-items: center; overflow: hidden; border-radius: 28px; padding: 60px 0 60px 56px; }
 .premium-forge { background: #e9edf9; }
 .premium-repodock { background: #e9efef; }
+.premium-rowglass { background: #e8eee2; }
+.hero-stage-rowglass { background: linear-gradient(140deg,#e1e9d8,#edf1e7 50%,#e3eada); }
+.hero-stage-rowglass .hero-window img { object-position: center top; }
+.premium-rowglass .premium-project-image img { border-color: #bdcab5; }
+.rowglass-project-art { display: flex; flex-direction: column; align-items: flex-start; gap: 28px; padding: 42px; background: #e8eee2; border: 1px solid #d2dcc9; border-radius: 24px; }
+.rowglass-project-art strong { font-size: clamp(35px,4vw,53px); line-height: 1.15; font-weight: 550; letter-spacing: -1.5px; }
+.rowglass-project-art em { font-family: Georgia,serif; font-weight: 400; color: #5f7848; }
+.rowglass-project-art>span { font-size: 12px; color: #53664a; }
 .premium-project-copy { min-width: 0; }
 .premium-project-copy .eyebrow { margin-bottom: 13px; font-size: 9px; }
 .premium-project h3 { font-size: clamp(36px,4vw,50px); line-height: 1.15; letter-spacing: -2px; margin: 0 0 18px; font-weight: 600; }

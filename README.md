@@ -5,6 +5,7 @@ This is the source for [alisoglu.com](https://alisoglu.com/), my personal websit
 ## Have a look around
 
 - [About me](https://alisoglu.com/about/) — a little about the person behind the tabs.
+- [Rowglass](https://alisoglu.com/rowglass/) — compare two CSV/TSV exports privately, match records and keep a clear report. There’s a portable offline download, too.
 - [FileForge](https://alisoglu.com/tools/) — browser tools for images, PDFs, spreadsheets, video and text. There’s a connected workspace for passing results from one tool to another, too. Windows 0.3.0 bundles that workspace and its engines, alongside the native converters.
 - [Repodock](https://alisoglu.com/projects/repodock/) — a Windows app for running local GitHub projects and following their logs.
 - [Other experiments](https://alisoglu.com/projects/#experiments) — separate from the main software portfolio, including the unofficial Skate Scape fan project.
@@ -55,6 +56,8 @@ Run `npm run test:design` to check the shared navigation, keyboard controls, six
 All five tools work in the connected workspace. Office engines load only after Preview; an optional offline pack keeps them separate from the basic tools.
 
 ## Discovery
+
+Rowglass is a separate, dependency-free product. Its verified 1.0.0 build is checked in under `public/rowglass/`; it is copied unchanged to the published site. Source and release builds live at [UmutAlisoglu/rowglass](https://github.com/UmutAlisoglu/rowglass). To update the pinned copy, build that repository and run `node scripts/sync-rowglass.mjs <path-to-rowglass-dist>`. The script validates each manifest hash and copies only the public app files. Review the version pin before publishing a newer release. It does not add Rowglass to FileForge’s offline packs.
 
 The build publishes `/llms.txt`, a `/llm.txt` compatibility alias, `/llms-full.txt`, and Markdown summaries at each public page’s `index.md`. Pages link to these summaries and include structured person, website and tool metadata. Tool claims and limits come from the shared catalogue. These files help readers and crawlers understand the site; they don’t promise search placement.
 
