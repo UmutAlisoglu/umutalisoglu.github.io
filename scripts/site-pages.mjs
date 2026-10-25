@@ -145,7 +145,7 @@ try {
   });
   await check('homepage shortcuts and the idea machine work', async () => {
     await page.goto(base); assert.equal(await page.locator('#quick-tools').count(), 0);
-    assert.equal(await page.locator('.premium-project').count(), 3);
+    assert.equal(await page.locator('.premium-project').count(), 2);
     await page.getByRole('link', { name: 'Explore my work' }).click(); assert.equal(new URL(page.url()).hash, '#projects');
     await page.goto(base + '/tools/'); assert.equal(await page.locator('.sample-jobs strong').count(), 3);
     assert.equal(await page.locator('header a[href="/games/"]').count(), 0);
@@ -176,7 +176,7 @@ try {
       assert.equal(await staticPage.locator('noscript').isVisible(), true);
       assert.equal(await staticPage.locator('h1').count(), 1);
     }
-    await staticPage.getByRole('navigation').getByRole('link', { name: 'Projects', exact: true }).click(); assert.equal(await staticPage.locator('.project-row').count(), 6);
+    await staticPage.getByRole('navigation').getByRole('link', { name: 'Projects', exact: true }).click(); assert.equal(await staticPage.locator('.project-row').count(), 3);
     await staticPage.goto(base + '/contact/'); assert.equal(await staticPage.locator('#feedback-form').isVisible(), false); assert.equal(await staticPage.locator('a[href="mailto:umut@alisoglu.com"]').isVisible(), true); await staticContext.close();
   });
   assert.deepEqual(errors, [], 'No browser errors'); assert.deepEqual(outbound, [], 'No uploads or external runtime requests');
