@@ -5,6 +5,8 @@ This is the source for [alisoglu.com](https://alisoglu.com/), my personal websit
 ## Have a look around
 
 - [About me](https://alisoglu.com/about/) — a little about the person behind the tabs.
+- [Routeboard](https://alisoglu.com/routeboard/) — write branching guides, test the routes, and share a self-contained HTML file.
+- [Handback](https://alisoglu.com/handback/) — project context, next steps, decisions and screenshots in a portable handover packet.
 - [Rowglass](https://alisoglu.com/rowglass/) — compare two CSV/TSV exports privately, match records and keep a clear report. There’s a portable offline download, too.
 - [FileForge](https://alisoglu.com/tools/) — browser tools for images, PDFs, spreadsheets, video and text. There’s a connected workspace for passing results from one tool to another, too. Windows 0.3.0 bundles that workspace and its engines, alongside the native converters.
 - [Repodock](https://alisoglu.com/projects/repodock/) — a Windows app for running local GitHub projects and following their logs.
@@ -56,6 +58,8 @@ Run `npm run test:design` to check the shared navigation, keyboard controls, six
 All five tools work in the connected workspace. Office engines load only after Preview; an optional offline pack keeps them separate from the basic tools.
 
 ## Discovery
+
+Routeboard and Handback are separate local editors, published from verified 1.0.0 builds under `public/routeboard/` and `public/handback/`. Their source and portable releases live in their own GitHub repositories. Build a product repository, then use `node scripts/sync-product.mjs <routeboard|handback> <path-to-dist>` to update the website copy. This validates every file against the pinned manifest and copies only public app files. Review the version pin before updating a release. The editors are independent of FileForge’s offline packs.
 
 Rowglass is a separate, dependency-free product. Its verified 1.0.0 build is checked in under `public/rowglass/`; it is copied unchanged to the published site. Source and release builds live at [UmutAlisoglu/rowglass](https://github.com/UmutAlisoglu/rowglass). To update the pinned copy, build that repository and run `node scripts/sync-rowglass.mjs <path-to-rowglass-dist>`. The script validates each manifest hash and copies only the public app files. Review the version pin before publishing a newer release. It does not add Rowglass to FileForge’s offline packs.
 

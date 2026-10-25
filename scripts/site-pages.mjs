@@ -176,7 +176,7 @@ try {
       assert.equal(await staticPage.locator('noscript').isVisible(), true);
       assert.equal(await staticPage.locator('h1').count(), 1);
     }
-    await staticPage.getByRole('navigation').getByRole('link', { name: 'Projects', exact: true }).click(); assert.equal(await staticPage.locator('.project-row').count(), 4);
+    await staticPage.getByRole('navigation').getByRole('link', { name: 'Projects', exact: true }).click(); assert.equal(await staticPage.locator('.project-row').count(), 6);
     await staticPage.goto(base + '/contact/'); assert.equal(await staticPage.locator('#feedback-form').isVisible(), false); assert.equal(await staticPage.locator('a[href="mailto:umut@alisoglu.com"]').isVisible(), true); await staticContext.close();
   });
   assert.deepEqual(errors, [], 'No browser errors'); assert.deepEqual(outbound, [], 'No uploads or external runtime requests');
