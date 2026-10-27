@@ -48,7 +48,7 @@ A reproducible source defect was found: `package.json` containing `null` raises 
 
 [Repodock PR #1](https://github.com/UmutAlisoglu/repodock/pull/1) validates Node/Deno metadata before reading it, preserves valid Deno task objects, and lets other supported project types continue to be detected. It was merged as `053f22a67b88a10f5970765824ba3c6f80c09a5d` after all eight CI jobs passed.
 
-The published Windows download remains v0.2.1. The repository's main branch identifies itself as unreleased 0.3.0. This source fix does not silently patch an installed executable or justify relabelling an old download; distribution needs a separately built and published desktop release.
+The published Windows download remains v0.2.1. The repository's main branch identifies itself as unreleased 0.3.0. The patched Windows CI build has been saved alongside the delivered review as an installer and portable ZIP. This does not patch an installed copy or replace the public release; updating the public download still needs a published desktop release.
 
 ## Verification
 
@@ -56,6 +56,7 @@ The published Windows download remains v0.2.1. The repository's main branch iden
 - Product Kit: actual ZIP contents, nine image dimensions/byte sizes, JPEG output, real ONNX cutouts, alpha transparency, per-photo background selection, full-size and individual exports, previous-build preservation, model-load recovery, partial success, invalid files, saved settings and reset were checked.
 - Shared website: product media and keyboard tour, tool finder, URL-backed search, workspace recovery, page destinations, sitemap, six widths from 320–1440 px, reduced motion and JavaScript-disabled navigation passed. Processing checks observed same-origin GET requests and local blob/data activity, with no file uploads.
 - Repodock: local Windows/Python 3.14 suite ran 99 tests: 98 passed and one platform-specific test was skipped. All 31 detection tests passed after the final task-object compatibility update. GitHub CI passed Linux/Python 3.9–3.13, Windows/Python 3.9 and 3.13, and macOS/Python 3.13.
+- Repodock Windows build: [workflow run 40562867062](https://github.com/UmutAlisoglu/repodock/actions/runs/40562867062) succeeded after the merge, building the executables and installer and checking the CLI, browser mode, app window, single-instance handoff, clean quit and installer. The downloaded review artifacts are an unreleased 0.3.0 build, not a new stable release.
 - Deno task-object compatibility was checked against the [official task documentation](https://docs.deno.com/runtime/reference/cli/task/).
 
-These checks establish the covered behavior, not exhaustive compatibility or proven demand. No participant feedback, adoption figures, or fresh Windows installer validation is claimed.
+These checks establish the covered behavior, not exhaustive compatibility or proven demand. No participant feedback or adoption figures are claimed. The Windows build checks ran in GitHub CI; no desktop app was installed into the user's Windows environment during this review.
