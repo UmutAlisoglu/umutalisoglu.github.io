@@ -3,6 +3,7 @@ import { discoveryTags } from './discovery.js';
 import { renderConversionPicker } from './conversion-options.js';
 import { renderQuickJobs } from './quick-jobs.js';
 import { renderEditionChoice, renderProductDemo } from './product-content.js';
+const reviewStyles = '<link rel="stylesheet" href="/src/site/product-review.css">';
 
 import { toolPages, advancedTools, documentTools, allToolPages, renderToolDirectory } from './tool-catalog.js';
 import { toolUsage, renderToolUsage } from './tool-usage.js';
@@ -72,7 +73,7 @@ export function siteTemplates() {
           const value = result.match(new RegExp(`<meta property="og:${name}" content="([^"]*)"`))?.[1];
           if (value) result = result.replace('</head>', `<meta name="twitter:${name}" content="${value}"></head>`);
         }
-        return result.replace('</head>', `<link rel="stylesheet" href="/src/site/premium.css"><script type="module" src="/src/site/experience.js"></script>${discoveryTags(path)}</head>`);
+        return result.replace('</head>', `<link rel="stylesheet" href="/src/site/premium.css">${path.startsWith('/projects/') ? reviewStyles : ''}<script type="module" src="/src/site/experience.js"></script>${discoveryTags(path)}</head>`);
       },
     },
   };

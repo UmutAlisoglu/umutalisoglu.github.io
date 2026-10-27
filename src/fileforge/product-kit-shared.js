@@ -1,6 +1,7 @@
 export const KIT_LIMITS = { count: 12, fileBytes: 20_000_000, totalBytes: 80_000_000, pixels: 24_000_000 };
-export const KIT_DEFAULTS = { name: 'My product kit', background: 'paper', remove: true, padding: 12, size: 1600 };
+export const KIT_DEFAULTS = { name: 'My product kit', background: 'paper', remove: false, padding: 12, size: 1600 };
 export function kitSettings(value = {}) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) value = {};
   return {
     name: typeof value.name === 'string' ? value.name.trim().slice(0, 60) || KIT_DEFAULTS.name : KIT_DEFAULTS.name,
     background: ['white', 'paper', 'transparent'].includes(value.background) ? value.background : KIT_DEFAULTS.background,

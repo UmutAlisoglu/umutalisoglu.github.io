@@ -51,7 +51,9 @@ Run `npm run test:experience` to check the site-wide tool finder, shareable dire
 
 `/tools/product-kit/` turns up to 12 JPG/PNG/WebP photos into an organized ZIP. Each numbered product folder contains a square listing image (1000, 1600 or 2000 px; JPG or transparent PNG), a 1000 px WebP and a 480 px WebP thumbnail. `kit.json` records the settings, dimensions and actual sizes. Photos are processed sequentially in a dedicated worker; optional cutouts share one local ONNX session. Cancellation terminates the worker. No files or results are persisted; only explicitly saved settings use local storage. The studio is a browser feature and is not included in the existing Windows 0.3.0 package.
 
-Run `npm run test:product-kit` against the production preview (`TEST_URL`, default `http://127.0.0.1:8782`). This checks actual ZIP contents, image dimensions, JPEG output, transparent AI cutouts across multiple photos, cancellation, saved settings, invalid inputs, responsive layouts and same-origin GET-only requests.
+Background removal is opt-in, with a per-photo option to keep its original background. Each export can be inspected at full size or downloaded individually. Settings changes, cancellation and failed rebuilds preserve the previous completed kit. A failed photo is skipped with its reason included in the ZIP manifest, while successful photos are packaged. A failed model download offers a retry without background removal.
+
+Run `npm run test:product-kit` against the production preview (`TEST_URL`, default `http://127.0.0.1:8782`). This checks actual ZIP contents, image dimensions, JPEG output, transparent AI cutouts, per-photo background choices, full-size/individual downloads, previous-build preservation, partial failures, cancellation, saved settings, invalid inputs, responsive layouts and same-origin GET-only requests.
 
 ## Guided Quick Jobs
 

@@ -57,8 +57,9 @@ self.onmessage = async ({ data }) => {
   let engine;
   try {
     const { files } = data, settings = kitSettings(data.settings); validateKitFiles(files);
-    const entries = {}, manifest = { version: 1, settings, products: [] }; let totalBytes = 0;
-    if (settings.remove) { report(0, 0, 'Preparing the local background engine. First use downloads the model and engine…'); engine = await loadEngine(); }
+    const entries = {}, manifest = { version: 1, settings, products: [], skipped: [] }; let totalBytes = 0;
+    const keepBackground = new Set(Array.isArray(data.keepBackground) ? data.keepBackground : []);
+    if (settings.remove && files.some((_, index) => !keepBackground.has(index))) { report(0, 0, 'Preparing the local background engine. First use downloads the model and engine…'); engine = await loadEngine(); }
     for (let index = 0; index < files.length; index++) {
       const file = files[index]; let bitmap, source;
       try {
@@ -68,11 +69,13 @@ self.onmessage = async ({ data }) => {
         const scale = Math.min(1, 2400 / Math.max(bitmap.width, bitmap.height));
         source = surface(Math.max(1, Math.round(bitmap.width * scale)), Math.max(1, Math.round(bitmap.height * scale)));
         source.context.drawImage(bitmap, 0, 0, source.canvas.width, source.canvas.height); bitmap.close(); bitmap = null;
-        if (engine) { report(index, 0, `Finding the subject in ${file.name}…`); await cutout(source, engine); }
+        const backgroundRemoved = Boolean(engine) && !keepBackground.has(index);
+        if (backgroundRemoved) { report(index, 0, `Finding the subject in ${file.name}…`); await cutout(source, engine); }
         report(index, 1, `Matching the framing for ${file.name}…`);
         const bounds = subjectBounds(source), folder = `${String(index + 1).padStart(2, '0')}-${kitSlug(file.name.replace(/\.[^.]+$/, ''))}`;
         const variants = [{ id: 'listing', side: settings.size, type: settings.background === 'transparent' ? 'image/png' : 'image/jpeg', extension: settings.background === 'transparent' ? 'png' : 'jpg' }, { id: 'web', side: 1000, type: 'image/webp', extension: 'webp' }, { id: 'thumbnail', side: 480, type: 'image/webp', extension: 'webp' }];
-        const product = { original: file.name, folder, exports: [] }; let preview;
+        const product = { original: file.name, folder, backgroundRemoved, exports: [], warning: Math.max(bounds.width, bounds.height) < settings.size * (1 - settings.padding * 2 / 100) ? 'The listing image is enlarged from a smaller source; resizing does not add detail.' : null };
+        const productEntries = {}, outputs = []; let productBytes = 0;
         for (const variant of variants) {
           const output = surface(variant.side, variant.side);
           try {
@@ -80,21 +83,27 @@ self.onmessage = async ({ data }) => {
             const fit = fitProduct(bounds, variant.side, settings.padding);
             output.context.drawImage(source.canvas, bounds.x, bounds.y, bounds.width, bounds.height, fit.x, fit.y, fit.width, fit.height);
             const blob = await encode(output.canvas, variant.type), path = `${folder}/${variant.id}-${variant.side}.${variant.extension}`;
-            entries[path] = new Uint8Array(await blob.arrayBuffer()); totalBytes += blob.size;
+            productEntries[path] = new Uint8Array(await blob.arrayBuffer()); productBytes += blob.size;
             product.exports.push({ path, width: variant.side, height: variant.side, bytes: blob.size });
-            if (variant.id === 'thumbnail') preview = blob;
+            outputs.push({ ...variant, path, blob });
           } finally { output.canvas.width = output.canvas.height = 1; }
         }
-        if (totalBytes > 120_000_000) throw new Error('The kit exceeds 120 MB. Try fewer photos or a smaller listing size.');
+        if (totalBytes + productBytes > 120_000_000) throw new Error('Adding this photo would exceed the 120 MB kit limit. Try a smaller listing size.');
+        totalBytes += productBytes; Object.assign(entries, productEntries);
         manifest.products.push(product);
-        self.postMessage({ type: 'item', index, preview, product }); report(index, 2, `${file.name} is ready.`);
+        self.postMessage({ type: 'item', index, outputs, product }); report(index, 2, `${file.name} is ready.`);
+      } catch (error) {
+        const message = error.message || 'This photo could not be prepared.';
+        manifest.skipped.push({ original: file.name, error: message });
+        self.postMessage({ type: 'item-error', index, message });
       } finally { bitmap?.close(); if (source) source.canvas.width = source.canvas.height = 1; }
     }
+    if (!manifest.products.length) throw new Error(`No photos could be prepared. ${manifest.skipped[0]?.original || 'Photo'}: ${manifest.skipped[0]?.error || 'Try a different photo.'}`);
     entries['kit.json'] = strToU8(JSON.stringify(manifest, null, 2));
-    entries['READ-ME.txt'] = strToU8(`PRODUCT KIT / FILEFORGE\n\n${settings.name}\n\nEach numbered folder contains a square listing image, a 1000px WebP web image, and a 480px WebP thumbnail.\nOriginal photos are unchanged and are not included. Review cutout edges before publishing. Small sources may be enlarged. Photo metadata is removed.\n\nSettings and exact file sizes are in kit.json.\nBuilt on your device with https://alisoglu.com/tools/product-kit/\n`);
+    entries['READ-ME.txt'] = strToU8(`PRODUCT KIT / FILEFORGE\n\n${settings.name}\n\nEach numbered folder contains a square listing image, a 1000px WebP web image, and a 480px WebP thumbnail.\nOriginal photos are unchanged and are not included. Review cutout edges before publishing. Small sources may be enlarged. Photo metadata is removed. WebP is not always smaller than the original.\n\n${manifest.skipped.length} skipped photo(s). Settings, exact file sizes, enlargement warnings and skipped-file reasons are in kit.json.\nBuilt on your device with https://alisoglu.com/tools/product-kit/\n`);
     report(files.length - 1, 2, 'Packing your finished kit…');
     const bytes = zipSync(entries, { level: 0 });
-    self.postMessage({ type: 'result', bytes: bytes.buffer, count: files.length * 3, name: `${kitSlug(settings.name)}.zip` }, [bytes.buffer]);
+    self.postMessage({ type: 'result', bytes: bytes.buffer, count: manifest.products.length * 3, skipped: manifest.skipped.length, name: `${kitSlug(settings.name)}.zip` }, [bytes.buffer]);
   } catch (error) { self.postMessage({ type: 'error', message: error.message || 'The kit could not finish. Try fewer or smaller photos.' }); }
   finally { if (engine) await engine.session.release(); }
 };

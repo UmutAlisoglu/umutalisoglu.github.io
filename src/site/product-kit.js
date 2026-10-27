@@ -14,26 +14,31 @@ function updateSpec() {
 }
 function busy() {
   const active = Boolean(worker) || loading;
-  $('#kit-settings').disabled = active; $('#kit-input').disabled = active; $('#kit-sample').disabled = active;
+  $('#kit-settings').disabled = active; $('#kit-input').disabled = active; $('#kit-sample').disabled = active || Boolean(items.length);
   $('#kit-run').disabled = active || !items.length; $('#kit-reset').disabled = active || !items.length;
   $('#kit-save').disabled = active; $('#kit-load').disabled = active || !hasSaved(); $('#kit-forget').disabled = active || !hasSaved();
   $('#kit-cancel').hidden = !worker; $('.kit-studio').setAttribute('aria-busy', String(active));
   document.querySelectorAll('.kit-file-remove').forEach(button => { button.disabled = active; });
+  document.querySelectorAll('.kit-keep-background input').forEach(input => { input.disabled = active; });
 }
 function clearResult() {
   if (downloadURL) URL.revokeObjectURL(downloadURL); downloadURL = null;
   $('#kit-download').removeAttribute('href'); $('#kit-finished').hidden = true; $('#kit-progress').hidden = true; $('#kit-progress').value = 0;
-  for (const item of items) { if (item.outputURL) URL.revokeObjectURL(item.outputURL); item.outputURL = null; item.product = null; }
+  $('#kit-stale-note').hidden = true; $('#kit-errors').replaceChildren();
+  for (const item of items) { item.outputs?.forEach(output => URL.revokeObjectURL(output.url)); item.outputs = []; item.product = null; item.error = null; }
   document.querySelectorAll('[data-kit-stage]').forEach(node => { node.classList.remove('is-active', 'is-done'); });
   showPreview();
 }
 function showPreview() {
-  const item = items[selected], ready = Boolean(item?.outputURL);
+  const item = items[selected], ready = Boolean(item?.outputs?.length);
   $('#kit-placeholder').hidden = ready; $('#kit-comparison').hidden = !ready;
+  $('#kit-image-actions').hidden = !ready;
   if (ready) {
-    $('#kit-before').src = item.sourceURL; $('#kit-after').src = item.outputURL;
+    const output = item.outputs.find(output => output.id === $('#kit-variant').value) || item.outputs[0];
+    $('#kit-before').src = item.sourceURL; $('#kit-after').src = output.url;
     $('#kit-before').alt = `Original: ${item.file.name}`; $('#kit-after').alt = `Finished: ${item.file.name}`;
-    $('#kit-preview-caption').textContent = `${item.file.name} · preview of your 480 × 480 thumbnail`;
+    $('#kit-preview-caption').textContent = `${item.file.name} · ${output.side} × ${output.side} · ${formatBytes(output.blob.size)} · ${item.product.backgroundRemoved ? 'Background removed' : 'Original background kept'}${item.product.warning ? ` · ${item.product.warning}` : ''}`;
+    $('#kit-open-image').href = output.url; $('#kit-image-download').href = output.url; $('#kit-image-download').download = output.path.replaceAll('/', '-');
   } else { $('#kit-before').removeAttribute('src'); $('#kit-after').removeAttribute('src'); }
   document.querySelectorAll('[data-kit-index]').forEach(node => { const current = Number(node.dataset.kitIndex) === selected; node.classList.toggle('is-selected', current); node.querySelector('.kit-file-select').setAttribute('aria-pressed', String(current)); });
 }
@@ -44,14 +49,22 @@ function renderFiles() {
     const choose = document.createElement('button'); choose.type = 'button'; choose.className = 'kit-file-select'; choose.setAttribute('aria-label', `Inspect ${item.file.name}`);
     const image = document.createElement('img'); image.src = item.sourceURL; image.alt = ''; image.width = 40; image.height = 44;
     const text = document.createElement('span'), name = document.createElement('strong'), detail = document.createElement('small'); name.textContent = item.file.name;
-    detail.textContent = `${formatBytes(item.file.size)} · ${item.product ? '3 sizes ready ✓' : 'Ready to prepare'}`; text.append(name, detail); choose.append(image, text);
+    detail.textContent = `${formatBytes(item.file.size)} · ${item.product ? '3 sizes ready ✓' : item.error ? 'Skipped — see details below' : 'Ready to prepare'}`; text.append(name, detail); choose.append(image, text);
     choose.addEventListener('click', () => { selected = index; showPreview(); });
     const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'kit-file-remove'; remove.textContent = '×'; remove.setAttribute('aria-label', `Remove ${item.file.name}`);
     remove.addEventListener('click', () => {
       if (worker || loading) return; clearResult(); URL.revokeObjectURL(item.sourceURL); items.splice(index, 1); selected = Math.min(selected, Math.max(0, items.length - 1)); renderFiles(); busy(); report(items.length ? 'Photo removed. Ready to build your kit.' : 'Add photos to start. Everything happens on your device.');
-    }); row.append(choose, remove); list.append(row);
+    }); row.append(choose, remove);
+    if (settings().remove) {
+      const label = document.createElement('label'); label.className = 'kit-keep-background';
+      const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.checked = Boolean(item.keepBackground); checkbox.disabled = Boolean(worker) || loading; checkbox.setAttribute('aria-label', `Keep original background for ${item.file.name}`);
+      checkbox.addEventListener('change', () => { item.keepBackground = checkbox.checked; markStale(); report('Photo setting changed. Rebuild to apply it.'); });
+      label.append(checkbox, document.createTextNode('Keep this photo’s background')); row.append(label);
+    }
+    list.append(row);
   });
-  $('#kit-count').textContent = items.length ? `${items.length} photo${items.length === 1 ? '' : 's'} → ${items.length * 3} images` : 'No photos yet'; showPreview();
+  const prepared = items.filter(item => item.product).length;
+  $('#kit-count').textContent = items.length ? `${items.length} photo${items.length === 1 ? '' : 's'} · ${prepared ? `${prepared * 3} images ready` : `up to ${items.length * 3} images`}` : 'No photos yet'; showPreview();
 }
 async function thumbnail(file) {
   let bitmap, canvas;
@@ -105,13 +118,16 @@ $('#kit-sample').addEventListener('click', async () => {
   } catch (error) { report(error.message, true); } finally { loading = false; busy(); }
 });
 $('#kit-settings').addEventListener('input', () => {
-  clearResult(); renderFiles(); updateSpec(); if (items.length) report('Settings changed. Build the kit to apply your new finish.');
+  markStale(); updateSpec(); renderFiles(); if (items.length) report('Settings changed. Build the kit to apply your new finish.');
 });
+function markStale() { $('#kit-stale-note').hidden = !downloadURL; }
+$('#kit-variant').addEventListener('change', showPreview);
 $('#kit-compare').addEventListener('input', event => { $('#kit-before-layer').style.clipPath = `inset(0 ${100 - Number(event.target.value)}% 0 0)`; });
 function stopWorker() { worker?.terminate(); worker = null; busy(); }
 $('#kit-form').addEventListener('submit', event => {
   event.preventDefault(); if (worker || loading || !items.length) return;
-  clearResult(); renderFiles(); $('#kit-progress').hidden = false; report('Starting your product kit…');
+  const pending = [], failed = [], builtSettings = settings();
+  markStale(); $('#kit-retry').hidden = true; $('#kit-progress').value = 0; $('#kit-progress').hidden = false; report('Starting your product kit…');
   try { worker = new Worker(new URL('../fileforge/product-kit.worker.js', import.meta.url), { type: 'module' }); }
   catch { report('This browser could not start the local engine. Update your browser and try again.', true); busy(); return; }
   busy();
@@ -120,24 +136,32 @@ $('#kit-form').addEventListener('submit', event => {
       report(`${data.index + 1} of ${items.length} · ${data.message}`); $('#kit-progress').value = Math.min(97, (data.index + (data.stage + .2) / 3) / items.length * 100);
       document.querySelectorAll('[data-kit-stage]').forEach(node => { const stage = Number(node.dataset.kitStage); node.classList.toggle('is-active', stage === data.stage); node.classList.toggle('is-done', stage < data.stage); });
     } else if (data.type === 'item') {
-      const item = items[data.index]; if (!item) return; item.outputURL = URL.createObjectURL(data.preview); item.product = data.product; selected = data.index; renderFiles(); busy();
+      pending[data.index] = data;
+    } else if (data.type === 'item-error') {
+      failed.push(data);
     } else if (data.type === 'result') {
+      clearResult();
+      pending.forEach((entry, index) => { if (entry && items[index]) { items[index].outputs = entry.outputs.map(output => ({ ...output, url: URL.createObjectURL(output.blob) })); items[index].product = entry.product; } });
+      failed.forEach(entry => { if (items[entry.index]) items[entry.index].error = entry.message; const line = document.createElement('li'); line.textContent = `${items[entry.index]?.file.name || 'Photo'}: ${entry.message}`; $('#kit-errors').append(line); });
+      selected = pending.findIndex(Boolean); renderFiles();
       downloadURL = URL.createObjectURL(new Blob([data.bytes], { type: 'application/zip' })); const link = $('#kit-download'); link.href = downloadURL; link.download = data.name;
-      $('#kit-result-summary').textContent = `${data.count} finished images · ${formatBytes(data.bytes.byteLength)} · one organized ZIP`;
-      $('#kit-finished').hidden = false; $('#kit-progress').value = 100; report('Your kit is ready. Inspect each photo, then download your files.');
+      $('#kit-result-summary').textContent = `${builtSettings.name} · ${data.count} images · ${formatBytes(data.bytes.byteLength)}${data.skipped ? ` · ${data.skipped} skipped` : ''}`;
+      $('#kit-finished').hidden = false; $('#kit-progress').hidden = false; $('#kit-progress').value = 100; report(data.skipped ? 'Your kit contains the photos that finished. Skipped photos and reasons are listed below and in kit.json.' : 'Your kit is ready. Inspect the full-size images before publishing.');
       document.querySelectorAll('[data-kit-stage]').forEach(node => { node.classList.remove('is-active'); node.classList.add('is-done'); }); stopWorker();
       if (matchMedia('(max-width: 600px)').matches) $('#kit-finished').scrollIntoView({ behavior: 'instant', block: 'center' });
       link.focus({ preventScroll: true });
-    } else if (data.type === 'error') { stopWorker(); clearResult(); renderFiles(); report(data.message, true); }
+    } else if (data.type === 'error') { failedRun(data.message); }
   };
-  worker.onerror = event => { event.preventDefault(); stopWorker(); clearResult(); renderFiles(); report('The local engine stopped. Try fewer or smaller photos, or turn off background removal. Your originals are still here.', true); };
-  worker.postMessage({ files: items.map(item => item.file), settings: settings() });
+  worker.onerror = event => { event.preventDefault(); failedRun('The local engine stopped. Try fewer or smaller photos, or turn off background removal.'); };
+  worker.postMessage({ files: items.map(item => item.file), settings: builtSettings, keepBackground: items.flatMap((item, index) => item.keepBackground ? [index] : []) });
 });
-$('#kit-cancel').addEventListener('click', () => { stopWorker(); clearResult(); renderFiles(); report('Processing cancelled. Your original photos and settings are ready to try again.'); });
+function failedRun(message) { stopWorker(); $('#kit-progress').hidden = true; $('#kit-retry').hidden = !settings().remove; report(`${message}${downloadURL ? ' Your previous kit is still available to download.' : ' Your original photos are still here.'}`, true); }
+$('#kit-cancel').addEventListener('click', () => { stopWorker(); $('#kit-progress').hidden = true; report(`Processing cancelled. Your original photos and settings are ready to try again.${downloadURL ? ' Your previous kit is still available.' : ''}`); });
+$('#kit-retry').addEventListener('click', () => { $('#kit-remove').checked = false; updateSpec(); $('#kit-form').requestSubmit(); });
 $('#kit-reset').addEventListener('click', () => { if (worker || loading) return; ++revision; clearResult(); items.forEach(item => URL.revokeObjectURL(item.sourceURL)); items = []; selected = 0; renderFiles(); busy(); report('Workspace cleared. Add photos to start a fresh kit.'); $('#kit-input').focus(); });
 function hasSaved() { try { return Boolean(localStorage.getItem(storageKey)); } catch { return false; } }
 $('#kit-save').addEventListener('click', () => { try { localStorage.setItem(storageKey, JSON.stringify(settings())); $('#kit-save-status').textContent = 'Setup saved on this device. No photos were saved.'; } catch { $('#kit-save-status').textContent = 'Your browser blocked saving. You can still build a kit.'; } busy(); });
-$('#kit-load').addEventListener('click', () => { try { const saved = JSON.parse(localStorage.getItem(storageKey)); clearResult(); applySettings(saved); renderFiles(); $('#kit-save-status').textContent = 'Saved setup loaded. Build the kit to apply it.'; } catch { $('#kit-save-status').textContent = 'The saved setup could not be read. Save a new one.'; } });
+$('#kit-load').addEventListener('click', () => { try { const saved = JSON.parse(localStorage.getItem(storageKey)); applySettings(saved); markStale(); $('#kit-save-status').textContent = 'Saved setup loaded. Build the kit to apply it.'; } catch { $('#kit-save-status').textContent = 'The saved setup could not be read. Save a new one.'; } });
 $('#kit-forget').addEventListener('click', () => { try { localStorage.removeItem(storageKey); $('#kit-save-status').textContent = 'Saved setup forgotten.'; } catch { $('#kit-save-status').textContent = 'Your browser blocked the change.'; } busy(); });
-window.addEventListener('pagehide', () => { if (worker) { stopWorker(); clearResult(); renderFiles(); report('Processing stopped when you left. Your selected photos are ready to try again.'); } });
+window.addEventListener('pagehide', () => { if (worker) { stopWorker(); $('#kit-progress').hidden = true; report('Processing stopped when you left. Your selected photos and any previous kit are still here.'); } });
 applySettings(KIT_DEFAULTS); busy();

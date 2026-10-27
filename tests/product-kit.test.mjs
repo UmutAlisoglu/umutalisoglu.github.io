@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { kitSettings, validateKitFiles, kitSlug, fitProduct, KIT_DEFAULTS } from '../src/fileforge/product-kit-shared.js';
 const file = (name = 'photo.jpg', size = 1000) => ({ name, size });
 test('kit settings clamp untrusted saved values and keep explicit false', () => {
+  assert.equal(KIT_DEFAULTS.remove, false);
+  assert.deepEqual(kitSettings(null), KIT_DEFAULTS);
+  assert.deepEqual(kitSettings([]), KIT_DEFAULTS);
   assert.deepEqual(kitSettings({ size: 90000, padding: -1, background: '<script>', remove: false, name: '  Shop  ' }), { ...KIT_DEFAULTS, remove: false, name: 'Shop' });
   assert.equal(kitSettings({ name: 'x'.repeat(100) }).name.length, 60);
   assert.equal(kitSettings({ size: '2000', padding: '20', background: 'transparent' }).size, 2000);

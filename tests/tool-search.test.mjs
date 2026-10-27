@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { renderJobGroups } from '../src/site/tool-catalog.js';
 import assert from 'node:assert/strict';
 import { findTools, toolCatalog } from '../src/site/tool-catalog.js';
 
@@ -32,7 +33,7 @@ test('natural filler words do not hide supported tasks', () => {
   assert.deepEqual(ids('any image to svg'), ['svg']);
   assert.deepEqual(ids('can you convert my png to a pdf for me'), ['image-pdf']);
   assert.deepEqual(ids('can you convert it from JPEG to SVG'), ['svg']);
-  assert.deepEqual(ids('can you remove a background please'), ['product-kit', 'background']);
+  assert.deepEqual(ids('can you remove a background please'), ['background']);
   assert.deepEqual(ids('I want to make this video smaller'), ['video']);
 });
 
@@ -48,3 +49,9 @@ test('general discovery and category filtering remain available alongside direct
 });
 
 test('HEIC searches route only supported JPG conversion', () => { assert.deepEqual(ids('HEIC to JPG'), ['heic']); assert.deepEqual(ids('HEIF to JPEG'), ['heic']); assert.deepEqual(ids('HEIC to PDF'), []); });
+
+test('the unfiltered directory displays every catalogued tool exactly once', () => {
+  const displayed = [...renderJobGroups().matchAll(/data-tool-id="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(new Set(displayed).size, displayed.length);
+  assert.deepEqual(displayed.sort(), toolCatalog.map(tool => tool.id).sort());
+});
