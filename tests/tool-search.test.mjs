@@ -32,13 +32,14 @@ test('natural filler words do not hide supported tasks', () => {
   assert.deepEqual(ids('any image to svg'), ['svg']);
   assert.deepEqual(ids('can you convert my png to a pdf for me'), ['image-pdf']);
   assert.deepEqual(ids('can you convert it from JPEG to SVG'), ['svg']);
-  assert.deepEqual(ids('can you remove a background please'), ['background']);
+  assert.deepEqual(ids('can you remove a background please'), ['product-kit', 'background']);
   assert.deepEqual(ids('I want to make this video smaller'), ['video']);
 });
 
 test('general discovery and category filtering remain available alongside directional searches', () => {
   assert.equal(ids('').length, toolCatalog.length);
-  assert.deepEqual(ids('', 'Images'), ['background', 'image', 'svg', 'crop', 'screenshot', 'heic', 'metadata']);
+  assert.deepEqual(ids('', 'Images'), ['product-kit', 'background', 'image', 'svg', 'crop', 'screenshot', 'heic', 'metadata']);
+  assert.deepEqual(ids('product kit'), ['product-kit']);
   assert.deepEqual(ids('', 'PDFs'), ['image-pdf', 'pdf-images', 'merge', 'organize', 'compress', 'split']);
   assert.deepEqual(ids('remove bg'), ['background']);
   assert.deepEqual(ids('crop screenshot'), ['crop']);

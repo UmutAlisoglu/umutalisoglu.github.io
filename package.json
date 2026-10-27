@@ -28,7 +28,8 @@
     "test:design": "node scripts/premium-site-check.mjs",
     "test:experience": "node scripts/experience-check.mjs",
     "test:quick-jobs": "node scripts/quick-jobs-check.mjs",
-    "test:products": "node scripts/product-pages-check.mjs"
+    "test:products": "node scripts/product-pages-check.mjs",
+    "test:product-kit": "node scripts/product-kit-check.mjs"
   },
   "dependencies": {
     "@aiden0z/pptx-renderer": "1.4.0",

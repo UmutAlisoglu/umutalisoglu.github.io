@@ -32,7 +32,8 @@ export const documentTools = [
   { id: 'data', slug: 'csv-json', name: 'CSV ↔ JSON', symbol: '{}', short: 'Small data, less fiddling', description: 'Convert CSV rows to JSON objects or a JSON object array to CSV. Everything stays in this tab.', color: 'purple', category: 'Documents', keywords: 'csv json convert converter table data rows spreadsheet format' },
 ];
 export const allToolPages = [...toolPages, ...advancedTools, ...documentTools];
-export const toolCatalog = [imagePdf, advancedTools[0], toolPages[4], toolPages[0], advancedTools[1], advancedTools[2], advancedTools[3], toolPages[3], toolPages[1], toolPages[2], advancedTools[4], advancedTools[5], advancedTools[6], ...advancedTools.slice(7), ...documentTools];
+export const productKit = { id: 'product-kit', slug: 'product-kit', name: 'Product Kit Studio', symbol: '✳', short: 'A batch of photos → a finished kit', description: 'Match product photos, optionally remove backgrounds and download listing, web and thumbnail images in one ZIP.', color: 'blue', category: 'Images', keywords: 'product kit studio batch photo collection shop listing store ecommerce thumbnail web resize background zip package workflow' };
+export const toolCatalog = [productKit, imagePdf, advancedTools[0], toolPages[4], toolPages[0], advancedTools[1], advancedTools[2], advancedTools[3], toolPages[3], toolPages[1], toolPages[2], advancedTools[4], advancedTools[5], advancedTools[6], ...advancedTools.slice(7), ...documentTools];
 export const toolCategories = ['All tools', 'Images', 'PDFs', 'Video', 'Documents'];
 export const featuredTools = [toolPages[1], toolPages[0], toolPages[4], toolPages[2]];
 

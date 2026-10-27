@@ -47,6 +47,12 @@ Run `npm run test:design` to check the shared navigation, keyboard controls, six
 
 Run `npm run test:experience` to check the site-wide tool finder, shareable directory searches, compact active workspace, export progress, reset and recovery from a stalled tool. Screenshots go to `.local/experience-check/`. Run it against the production preview, like the other browser checks.
 
+## Product Kit Studio
+
+`/tools/product-kit/` turns up to 12 JPG/PNG/WebP photos into an organized ZIP. Each numbered product folder contains a square listing image (1000, 1600 or 2000 px; JPG or transparent PNG), a 1000 px WebP and a 480 px WebP thumbnail. `kit.json` records the settings, dimensions and actual sizes. Photos are processed sequentially in a dedicated worker; optional cutouts share one local ONNX session. Cancellation terminates the worker. No files or results are persisted; only explicitly saved settings use local storage. The studio is a browser feature and is not included in the existing Windows 0.3.0 package.
+
+Run `npm run test:product-kit` against the production preview (`TEST_URL`, default `http://127.0.0.1:8782`). This checks actual ZIP contents, image dimensions, JPEG output, transparent AI cutouts across multiple photos, cancellation, saved settings, invalid inputs, responsive layouts and same-origin GET-only requests.
+
 ## Guided Quick Jobs
 
 `/tools/workspace/?job=attachment`, `?job=product`, and `?job=document` open guided tasks using the existing local engines. Attachment preparation routes an image, HEIC, PDF or short video to an appropriate tool. Product images pass a cutout through a crop and PNG export. Document photos pass through the scanner and an image-to-PDF export. Each step requires review; no model or video engine starts automatically. The full toolbox remains available, and resetting returns to the original file.

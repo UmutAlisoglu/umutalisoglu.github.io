@@ -4,6 +4,7 @@ import { compatibleTools, validateWorkspaceFiles } from '../src/site/workspace-t
 const file = (name,size=1000)=>({name,size});
 const ids = files=>compatibleTools(files).map(tool=>tool.id);
 test('workspace accepts only tools matching the entire batch and practical size limits',()=>{
+  assert.ok(!ids([]).includes('product-kit'), 'standalone studio must not be offered as an embedded workspace engine');
   assert.deepEqual(ids([file('picture.PNG')]),['image-pdf','background','image','svg','crop','text','screenshot','scanner','metadata']);
   assert.deepEqual(ids([file('one.jpg'),file('two.webp')]),['image-pdf','image']);
   assert.deepEqual(ids([file('one.pdf'),file('two.pdf')]),['merge','organize']);

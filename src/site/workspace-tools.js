@@ -26,7 +26,8 @@ const inputs = {
   scanner: { extensions: raster, count: 1, each: 20e6 },
 };
 
-export const workspaceTools = toolCatalog.map(tool => ({ ...tool, ...inputs[tool.id], url: tool.href || `/tools/${tool.slug}/` }));
+// Standalone batch studios have their own selection lifecycle, not the iframe bridge.
+export const workspaceTools = toolCatalog.filter(tool => inputs[tool.id]).map(tool => ({ ...tool, ...inputs[tool.id], url: tool.href || `/tools/${tool.slug}/` }));
 export function compatibleTools(files) {
   if (!files.length) return workspaceTools;
   return workspaceTools.filter(tool => files.length <= tool.count && files.every(file => {
