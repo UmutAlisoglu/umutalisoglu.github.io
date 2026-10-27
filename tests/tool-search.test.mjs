@@ -39,8 +39,8 @@ test('natural filler words do not hide supported tasks', () => {
 
 test('general discovery and category filtering remain available alongside directional searches', () => {
   assert.equal(ids('').length, toolCatalog.length);
-  assert.deepEqual(ids('', 'Images'), ['product-kit', 'background', 'image', 'svg', 'crop', 'screenshot', 'heic', 'metadata']);
-  assert.deepEqual(ids('product kit'), ['product-kit']);
+  assert.deepEqual(ids('', 'Images'), ['background', 'image', 'svg', 'crop', 'screenshot', 'heic', 'metadata']);
+  assert.deepEqual(ids('product kit'), []);
   assert.deepEqual(ids('', 'PDFs'), ['image-pdf', 'pdf-images', 'merge', 'organize', 'compress', 'split']);
   assert.deepEqual(ids('remove bg'), ['background']);
   assert.deepEqual(ids('crop screenshot'), ['crop']);

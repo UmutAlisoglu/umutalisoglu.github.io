@@ -1,52 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Product Kit Studio — FileForge by Alisoglu</title>
-  <meta name="description" content="Turn a batch of product photos into matching listing images, web images and thumbnails. Optional background removal, one organized ZIP. Free, on your device.">
-  <meta name="theme-color" content="#f8f7f3"><link rel="canonical" href="https://alisoglu.com/tools/product-kit/">
-  <meta property="og:type" content="website"><meta property="og:title" content="Product Kit Studio — FileForge"><meta property="og:description" content="Bring the mess. Leave with a product kit. Matching images, one organized download, no uploads."><meta property="og:url" content="https://alisoglu.com/tools/product-kit/"><meta property="og:image" content="https://alisoglu.com/assets/social-card.png">
-  <link rel="icon" href="/assets/monogram.svg" type="image/svg+xml"><link rel="stylesheet" href="/hub.css"><link rel="stylesheet" href="/site.css"><link rel="stylesheet" href="/src/site/product-kit.css">
-  <script type="module" src="/src/site/product-kit.js"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Product Kit has been retired — FileForge</title>
+<meta name="description" content="Product Kit Studio has been retired. Use FileForge Image Studio for batch conversion and resizing, or refine a single photo with the guided editor.">
+<meta name="theme-color" content="#f8f7f3"><link rel="canonical" href="https://alisoglu.com/tools/product-kit/">
+<link rel="icon" href="/assets/monogram.svg" type="image/svg+xml"><link rel="stylesheet" href="/hub.css"><link rel="stylesheet" href="/site.css">
 </head>
-<body class="kit-page">
-  <site-header></site-header>
-  <main id="main" class="wrap kit-main">
-    <div class="kit-topline"><a href="/tools/">← All FileForge tools</a><span><i aria-hidden="true"></i> LOCAL WORKSPACE / 01</span></div>
-    <section class="kit-intro" aria-labelledby="kit-title"><div><p class="eyebrow">FILEFORGE / PRODUCT KIT STUDIO</p><h1 id="kit-title">Product photos.<br><em>A matching set.</em></h1><p>Make square listing images, web images and thumbnails.<br>For small product collections that need consistent framing and sizes.</p></div><div class="kit-intro-note"><span aria-hidden="true">✳</span><strong>One FileForge workflow.<br>Three useful sizes.</strong><p>No account. No uploads.<br>Your originals stay untouched.</p></div></section>
-    <noscript><p class="kit-message">Enable JavaScript to build a product kit. You can still <a href="/tools/">browse the tool directory</a>.</p></noscript>
-    <section class="kit-studio" aria-label="Build a product kit">
-      <header class="kit-toolbar"><div><span class="kit-live-dot" aria-hidden="true"></span><strong>Your workbench</strong><span id="kit-count">No photos yet</span></div><button type="button" id="kit-reset" disabled>Clear workspace ↺</button></header>
-      <div class="kit-grid">
-        <section class="kit-input-panel" aria-labelledby="kit-source-title"><div class="kit-panel-title"><span>01 / INPUT</span><h2 id="kit-source-title">The raw material.</h2></div>
-          <label class="kit-drop" id="kit-drop"><input type="file" id="kit-input" multiple accept=".jpg,.jpeg,.png,.webp"><span class="kit-drop-icon" aria-hidden="true">＋</span><strong>Drop your product photos</strong><span>or choose files from your device</span><small>JPG, PNG, WebP · up to 12 photos<br>20 MB each · 80 MB total · 24 megapixels each</small></label>
-          <button type="button" id="kit-sample" class="kit-sample">Try a sample collection <span aria-hidden="true">↗</span></button><p class="kit-sample-caption">Three arrangements of one sample photo. Uses the real image pipeline.</p>
-          <ul id="kit-files" class="kit-files" aria-label="Selected photos"></ul>
-        </section>
-        <section class="kit-recipe-panel" aria-labelledby="kit-recipe-title"><div class="kit-panel-title"><span>02 / THE RECIPE</span><h2 id="kit-recipe-title">Make it yours.</h2></div>
-          <form id="kit-form"><fieldset id="kit-settings"><legend class="kit-sr-only">Product kit settings</legend>
-            <label class="kit-field">Kit name<input id="kit-name" maxlength="60" value="My product kit" autocomplete="off"></label>
-            <label class="kit-toggle"><input type="checkbox" id="kit-remove"><span><strong>Remove backgrounds</strong><small>Optional. Keep it off to preserve the full photo.</small></span></label>
-            <p class="kit-engine-note">The local model and engine download on first use. Cutouts can need refinement; review the results.</p>
-            <label class="kit-field">Background<select id="kit-background"><option value="paper">Warm paper</option><option value="white">Clean white</option><option value="transparent">Transparent</option></select></label>
-            <div class="kit-field-pair"><label class="kit-field">Breathing room<select id="kit-padding"><option value="6">Close · 6%</option><option value="12" selected>Balanced · 12%</option><option value="20">Airy · 20%</option></select></label><label class="kit-field">Listing size<select id="kit-size"><option value="1000">1000 × 1000</option><option value="1600" selected>1600 × 1600</option><option value="2000">2000 × 2000</option></select></label></div>
-          </fieldset>
-          <div class="kit-output-spec"><strong>EVERY PHOTO BECOMES</strong><span><i aria-hidden="true">↗</i> A square listing image <small id="kit-listing-spec">1600 px · JPG</small></span><span><i aria-hidden="true">↗</i> A web image <small>1000 px · WebP</small></span><span><i aria-hidden="true">↗</i> A thumbnail <small>480 px · WebP</small></span></div>
-          <button class="button primary kit-run" id="kit-run" type="submit" disabled>Build my product kit <span aria-hidden="true">→</span></button><button class="kit-cancel" id="kit-cancel" type="button" hidden>Cancel processing</button>
-          </form>
-          <details class="kit-saved"><summary>Use this setup again</summary><p>Save settings on this device. Photos and results are never saved here.</p><div><button type="button" id="kit-save">Save setup</button><button type="button" id="kit-load" disabled>Load saved</button><button type="button" id="kit-forget" disabled>Forget</button></div><span id="kit-save-status" role="status"></span></details>
-        </section>
-        <section class="kit-result-panel" aria-labelledby="kit-result-title"><div class="kit-panel-title"><span>03 / REVIEW & DOWNLOAD</span><h2 id="kit-result-title">Check the details.</h2></div>
-          <div class="kit-preview" id="kit-preview"><div class="kit-placeholder" id="kit-placeholder"><div class="kit-orbit" aria-hidden="true"><span>✳</span></div><strong>A little order.<br>A lot of possibility.</strong><p>Your finished photos will appear here.</p></div><div id="kit-comparison" hidden><div class="kit-compare-stage"><img id="kit-after" alt="Finished product image"><div id="kit-before-layer"><img id="kit-before" alt="Original product photo"></div><span class="kit-before-tag">ORIGINAL</span><span class="kit-after-tag">FINISHED</span></div><label class="kit-compare-control">Compare original &amp; finished<input id="kit-compare" type="range" min="0" max="100" value="50"></label><p id="kit-preview-caption"></p></div></div>
-          <ol class="kit-flow" aria-label="Processing stages"><li data-kit-stage="0"><span>1</span>Find the subject</li><li data-kit-stage="1"><span>2</span>Match the framing</li><li data-kit-stage="2"><span>3</span>Make every size</li></ol>
-          <progress id="kit-progress" max="100" value="0" aria-label="Product kit progress" hidden></progress><p id="kit-status" class="kit-status" role="status" aria-live="polite">Add photos to start. Everything happens on your device.</p>
-          <div id="kit-image-actions" hidden><label for="kit-variant">Inspect an export</label><select id="kit-variant"><option value="listing">Listing image</option><option value="web">Web image</option><option value="thumbnail">Thumbnail</option></select><div><a id="kit-open-image" target="_blank" rel="noopener">Open full size ↗</a><a id="kit-image-download">Download this image ↓</a></div></div>
-          <button id="kit-retry" type="button" class="kit-cancel" hidden>Try again without background removal</button>
-          <div id="kit-finished" class="kit-finished" hidden><p id="kit-result-summary"></p><p id="kit-stale-note" hidden>Settings have changed. This download is your previous build. Rebuild to apply the new settings.</p><ul id="kit-errors" aria-label="Skipped photo details"></ul><a class="button primary" id="kit-download">Download product kit ↓</a><p>Includes organized folders, a file manifest and your settings. Download before closing this tab.</p></div>
-        </section>
-      </div>
-    </section>
-    <section class="kit-bottom"><div><p class="eyebrow">ONE DROP. THREE PLACES TO GO.</p><h2>Same product.<br><em>Everywhere it belongs.</em></h2></div><div><h3>Listing → website → thumbnail</h3><p>Consistent square framing and a background you choose. Three useful sizes for each photo, neatly named and packed together.</p><p>Small originals may be enlarged. Existing transparent edges are preserved. With background removal off, the full photo is fitted into the square.</p><a href="/tools/workspace/?job=product">Need to refine a single cutout? Open the guided editor →</a></div></section>
-  </main><site-footer></site-footer>
-</body>
+<body><site-header></site-header><main id="main" class="wrap directory-page"><div class="page-intro"><p class="eyebrow">FILEFORGE / SIMPLER IMAGE TOOLS</p><h1>Product Kit<br><em>has been retired.</em></h1><p>Its fixed export sizes and separate workflow added more complexity than value. You can still resize a batch, convert images, or refine a cutout with FileForge’s image tools.</p></div><section class="simple-callout"><div><h2>Convert or resize a batch</h2><p>Choose your image format, quality and maximum width. Multiple images download together in a ZIP.</p></div><a class="button primary" href="/tools/image-converter/">Open Image Studio →</a></section><section class="simple-callout"><div><h2>Refine one photo</h2><p>Remove a background, adjust the cutout by hand, crop and export.</p></div><a class="button secondary" href="/tools/workspace/?job=product">Open the guided editor →</a></section><p class="option-note"><a href="/tools/">Browse all FileForge tools →</a></p></main><site-footer></site-footer></body>
 </html>

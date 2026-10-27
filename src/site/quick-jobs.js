@@ -3,7 +3,7 @@ import { escapeHtml } from './tool-catalog.js';
 
 export const quickJobs = [
   { id: 'attachment', title: 'Prepare an attachment', symbol: '↗', short: 'A file ready to send.', description: 'Resize a photo, check a PDF for compression, or shrink a short video.', accepts: 'One image, PDF or short video', steps: ['Choose a file', 'Make it smaller', 'Download'] },
-  { id: 'product', title: 'Refine one product photo', symbol: '◐', short: 'Control the cutout and crop.', description: 'Edit the cutout edges, choose a crop and export one image. For batches, use Product Kit Studio.', accepts: 'One JPG, PNG, WebP, GIF or BMP', steps: ['Remove background', 'Choose a crop', 'Export image'] },
+  { id: 'product', title: 'Refine one product photo', symbol: '◐', short: 'Control the cutout and crop.', description: 'Edit the cutout edges, choose a crop and export one image with the settings you need.', accepts: 'One JPG, PNG, WebP, GIF or BMP', steps: ['Remove background', 'Choose a crop', 'Export image'] },
   { id: 'document', title: 'Clean up a document', symbol: '⌑', short: 'From a photo to a tidy PDF.', description: 'Set the page corners, straighten the photo and make a one-page PDF.', accepts: 'One JPG, PNG, WebP, GIF or BMP', steps: ['Straighten photo', 'Make a PDF', 'Download'] },
 ];
 

@@ -32,8 +32,7 @@ export const documentTools = [
   { id: 'data', slug: 'csv-json', name: 'CSV ↔ JSON', symbol: '{}', short: 'Small data, less fiddling', description: 'Convert CSV rows to JSON objects or a JSON object array to CSV. Everything stays in this tab.', color: 'purple', category: 'Documents', keywords: 'csv json convert converter table data rows spreadsheet format' },
 ];
 export const allToolPages = [...toolPages, ...advancedTools, ...documentTools];
-export const productKit = { id: 'product-kit', slug: 'product-kit', name: 'Product Kit Studio', symbol: '✳', short: 'A batch of photos → a finished kit', description: 'Match product photos, optionally remove backgrounds and download listing, web and thumbnail images in one ZIP.', color: 'blue', category: 'Images', keywords: 'product kit studio batch photo collection shop listing store ecommerce thumbnail web resize background zip package workflow' };
-export const toolCatalog = [productKit, imagePdf, advancedTools[0], toolPages[4], toolPages[0], advancedTools[1], advancedTools[2], advancedTools[3], toolPages[3], toolPages[1], toolPages[2], advancedTools[4], advancedTools[5], advancedTools[6], ...advancedTools.slice(7), ...documentTools];
+export const toolCatalog = [imagePdf, advancedTools[0], toolPages[4], toolPages[0], advancedTools[1], advancedTools[2], advancedTools[3], toolPages[3], toolPages[1], toolPages[2], advancedTools[4], advancedTools[5], advancedTools[6], ...advancedTools.slice(7), ...documentTools];
 export const toolCategories = ['All tools', 'Images', 'PDFs', 'Video', 'Documents'];
 export const featuredTools = [toolPages[1], toolPages[0], toolPages[4], toolPages[2]];
 
@@ -82,7 +81,6 @@ export function findTools(query = '', category = 'All tools') {
   return toolCatalog.filter(tool => {
     if (category !== 'All tools' && tool.category !== category) return false;
     if (direction && tool.id !== direction) return false;
-    if (tool.id === 'product-kit' && terms.length && !terms.some(term => /product|kit|batch|shop|store|listing|collection|ecommerce/.test(term))) return false;
     const haystack = normalizeSearch(`${tool.name} ${tool.short} ${tool.description} ${tool.keywords}`);
     return terms.every(term => haystack.includes(term));
   });
@@ -100,7 +98,7 @@ export const jobGroups = [
   { title: 'Documents, without the upload', description: 'Turn Word files, slides and notes into PDFs, pull out text or switch between CSV and JSON. Free to use. No account.', ids: ['word-pdf', 'powerpoint-pdf', 'text-pdf', 'pdf-text', 'data'] },
   { title: 'Make a PDF neater', description: 'Shrink image-heavy PDFs, extract pages, put them in order or combine documents.', ids: ['compress', 'split', 'organize', 'merge', 'image-pdf', 'pdf-images'] },
   { title: 'Fix a document photo', description: 'Straighten the page, read its text or share a spreadsheet as a PDF.', ids: ['scanner', 'text', 'spreadsheet'] },
-  { title: 'Make an image ready to share', description: 'Prepare a product collection, frame a screenshot, remove a background, crop, convert or trace.', ids: ['product-kit', 'heic', 'screenshot', 'background', 'crop', 'image', 'svg', 'metadata'] },
+  { title: 'Make an image ready to share', description: 'Convert a batch of photos, frame a screenshot, remove a background, crop or trace.', ids: ['heic', 'screenshot', 'background', 'crop', 'image', 'svg', 'metadata'] },
   { title: 'Shrink a short video', description: 'Turn a large attachment into a smaller MP4 on your device.', ids: ['video'] },
 ];
 

@@ -10,10 +10,11 @@ import { toolUsage, renderToolUsage } from './tool-usage.js';
 export { toolPages } from './tool-catalog.js';
 
 export const sitePaths = [
-  '/', '/tools/', '/tools/fileforge/', '/tools/workspace/', '/tools/product-kit/', ...allToolPages.map(tool => `/tools/${tool.slug}/`),
+  '/', '/tools/', '/tools/fileforge/', '/tools/workspace/', ...allToolPages.map(tool => `/tools/${tool.slug}/`),
   '/projects/', '/projects/fileforge/', '/projects/repodock/', '/projects/skate-scape/',
   '/games/', '/downloads/', '/privacy/', '/contact/', '/idea-machine/', '/about/',
 ];
+export const retiredPaths = ['/tools/product-kit/'];
 
 function header(path) {
   const navigation = [['/', 'Home'], ['/about/', 'About'], ['/projects/', 'Projects'], ['/tools/', 'Tools'], ['/downloads/', 'Downloads']];
@@ -45,7 +46,6 @@ export function siteTemplates() {
           .replace('<product-demo data-app="fileforge"></product-demo>', renderProductDemo('fileforge'))
           .replace('<product-demo data-app="repodock"></product-demo>', renderProductDemo('repodock'))
           .replace('<quick-jobs></quick-jobs>', renderQuickJobs())
-          .replace('<product-kit-feature></product-kit-feature>', '<section class="kit-feature" aria-labelledby="kit-feature-title"><div><p class="eyebrow">NEW / PRODUCT KIT STUDIO</p><h2 id="kit-feature-title">A whole collection. A finished kit.</h2><p>Turn up to 12 product photos into matching listing images, web images and thumbnails. Choose a background, save your setup, download one organized ZIP.</p></div><a class="button primary" href="/tools/product-kit/">Create a product kit ↗</a></section>')
           .replace('<tool-directory></tool-directory>', renderToolDirectory())
           .replace('<conversion-picker></conversion-picker>', renderConversionPicker())
           .replace('<tool-directory data-variant="home"></tool-directory>', renderToolDirectory({ compact: true, id: 'home-tools' }))

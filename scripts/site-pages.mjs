@@ -3,7 +3,7 @@ import { PDFDocument } from 'pdf-lib';
 import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { sitePaths, toolPages } from '../src/site/templates.js';
+import { sitePaths, retiredPaths, toolPages } from '../src/site/templates.js';
 import { advancedTools, documentTools } from '../src/site/tool-catalog.js';
 
 const base = process.env.TEST_URL || 'http://127.0.0.1:8780';
@@ -45,6 +45,25 @@ try {
       }
     }
   });
+  await check('retired bookmarks offer current tools without loading the removed studio', async () => {
+    for (const path of retiredPaths) {
+      const response = await page.goto(base + path); assert.equal(response.status(), 200);
+      assert.equal(await page.locator('meta[name=robots]').getAttribute('content'), 'noindex, follow');
+      assert.equal(await page.locator('a[href="/tools/image-converter/"]').count(), 1);
+      assert.equal(await page.locator('a[href="/tools/workspace/?job=product"]').count(), 1);
+      assert.equal(await page.locator('#kit-input, #kit-run').count(), 0);
+      assert.match(await page.locator('h1').textContent(), /has been retired/);
+      for (const width of [1440, 390, 320]) {
+        await page.setViewportSize({ width, height: 1000 });
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${path} at ${width}px`);
+      }
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    for (const path of ['/', '/tools/', '/projects/fileforge/']) {
+      const response = await page.goto(base + path);
+      assert.doesNotMatch(await response.text(), /Product Kit|href="\/tools\/product-kit\/"|product-kit-feature/);
+    }
+  });
   await check('internal destinations, fragments and sitemap entries resolve', async () => {
     for (const href of links) {
       const [path, fragment] = href.split('#');
@@ -55,6 +74,7 @@ try {
     }
     const sitemap = await (await context.request.get(base + '/sitemap.xml')).text();
     for (const path of sitePaths) assert.ok(sitemap.includes(`<loc>https://alisoglu.com${path}</loc>`), path);
+    for (const path of retiredPaths) assert.ok(!sitemap.includes(`<loc>https://alisoglu.com${path}</loc>`), path);
   });
   await check('dedicated URLs select the right tool and retain it through reload and anchor changes', async () => {
     for (const tool of toolPages) {

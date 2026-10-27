@@ -1,7 +1,8 @@
-import { allToolPages, productKit } from './tool-catalog.js';
+import { allToolPages } from './tool-catalog.js';
 export function discoveryTags(path) {
+  if (path === '/tools/product-kit/') return '<meta name="robots" content="noindex, follow">';
   const url = `https://alisoglu.com${path}`;
-  const tool = [...allToolPages, productKit].find(tool => path === `/tools/${tool.slug}/`);
+  const tool = allToolPages.find(tool => path === `/tools/${tool.slug}/`);
   const person = { '@type': 'Person', '@id': 'https://alisoglu.com/#umut', name: 'Umut Alisoglu', url: 'https://alisoglu.com/about/', sameAs: ['https://github.com/UmutAlisoglu'] };
   const site = { '@type': 'WebSite', '@id': 'https://alisoglu.com/#website', name: 'Umut Alisoglu', alternateName: ['Alisoglu', 'alisoglu.com'], url: 'https://alisoglu.com/', author: { '@id': person['@id'] }, description: 'Practical software by Umut Alisoglu: FileForge local file tools and Repodock for Windows. Currently building a PCB AIO Tool.' };
   const webpage = { '@type': path === '/about/' ? 'ProfilePage' : 'WebPage', '@id': `${url}#page`, url, isPartOf: { '@id': site['@id'] }, about: { '@id': person['@id'] }, ...(path === '/about/' || path === '/' ? { mainEntity: { '@id': person['@id'] } } : {}) };
