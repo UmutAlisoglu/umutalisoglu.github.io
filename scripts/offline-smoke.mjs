@@ -3,7 +3,7 @@ import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import { PDFDocument } from 'pdf-lib';
 
-const base = process.env.FILEFORGE_BASE_URL || 'http://127.0.0.1:8780';
+const base = process.env.TEST_URL || process.env.FILEFORGE_BASE_URL || 'http://127.0.0.1:8780';
 await mkdir('.qa/offline', { recursive: true });
 const browser = await chromium.launch({ headless: true, channel: process.env.BROWSER_CHANNEL || 'chrome' });
 const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -21,7 +21,7 @@ const report = [];
 let tool;
 try {
   await page.goto(`${base}/tools/workspace/`);
-  if (!await page.locator('[data-offline-panel]').count()) await page.locator('[data-open-offline]').first().click();
+  await page.locator('[data-open-offline]').first().click();
   await page.locator('[data-offline-group="core"]').waitFor();
   assert.equal(engines.length, 0, 'No heavy engines download before opt-in');
   assert.equal(await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).filter(reg => reg.scope.endsWith('/tools/')).length), 0, 'No service worker before opt-in');

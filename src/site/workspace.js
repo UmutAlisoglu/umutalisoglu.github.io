@@ -2,13 +2,114 @@ import { compatibleTools, validateWorkspaceFiles, workspaceTools } from './works
 import { findTools } from './tool-catalog.js';
 import { formatBytes, downloadName, isTextEditingTarget } from '../fileforge/shared.js';
 import './workspace.css';
+import './workspace-flow.css';
+import '../fileforge/tool-experience.css';
+import { quickJobs, resolveQuickJob, renderJobSteps } from './quick-jobs.js';
+import { fillOutputSummary } from '../fileforge/output-summary.js';
 
 const protocol = 'fileforge-workspace-v1';
 const session = document.querySelector('[data-workspace-session]');
 const $ = selector => session.querySelector(selector);
 const launchers = [...document.querySelectorAll('[data-workspace-launcher]')];
+const allFileTypes = launchers[0]?.querySelector('input').accept;
 let files = [], originals = [], frame = null, tool = null, busy = false, loading = false, output = null;
 let downloadURL, thumbURL, sourceMode = 'current', steps = [], favourites = new Set(), remembers = false, currentStep = 0;
+let frameTimer;
+let chosenJob = quickJobs.some(job => job.id === new URLSearchParams(location.search).get('job')) ? new URLSearchParams(location.search).get('job') : null;
+let guidedJob = null, comparisonRevision = 0, comparisonURLs = [];
+const resultDock = $('[data-workspace-result]');
+resultDock.tabIndex = -1; resultDock.setAttribute('aria-label', 'Your prepared file');
+$('[data-workspace-frame]').before(resultDock);
+const editor = document.createElement('details'); editor.className = 'workspace-editor'; editor.open = true;
+const editorSummary = document.createElement('summary'); editorSummary.textContent = 'Adjust or review this step';
+const frameContainer = $('[data-workspace-frame]'); frameContainer.before(editor); editor.append(editorSummary, frameContainer);
+const comparison = document.createElement('dl'); comparison.className = 'tool-output-summary'; comparison.dataset.workspaceComparison = '';
+resultDock.querySelector('.result-save-note').before(comparison);
+const preview = document.createElement('div'); preview.className = 'workspace-result-previews'; preview.hidden = true;
+comparison.after(preview);
+const nextStep = document.createElement('button'); nextStep.type = 'button'; nextStep.className = 'button primary'; nextStep.dataset.jobNext = ''; nextStep.hidden = true;
+resultDock.querySelector('.forge-result-label').append(nextStep);
+const cancelTask = document.createElement('button'); cancelTask.type = 'button'; cancelTask.className = 'button secondary'; cancelTask.textContent = 'Cancel task'; cancelTask.hidden = true;
+cancelTask.dataset.workspaceCancel = ''; $('[data-workspace-frame-status]').after(cancelTask);
+cancelTask.addEventListener('click', () => frame?.contentWindow.postMessage({ protocol, type: 'cancel' }, location.origin));
+
+function selectJob(id) {
+  chosenJob = id;
+  const url = new URL(location.href);
+  if (id) url.searchParams.set('job', id); else url.searchParams.delete('job');
+  history.replaceState(null, '', url);
+  document.querySelectorAll('[data-quick-job]').forEach(card => {
+    if (card.dataset.quickJob === id) card.setAttribute('aria-current', 'true'); else card.removeAttribute('aria-current');
+  });
+  const definition = quickJobs.find(job => job.id === id);
+  launchers.forEach(launcher => {
+    const input = launcher.querySelector('input'); input.multiple = !id;
+    input.accept = id === 'attachment' ? '.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.pdf,.mp4,.mov,.mkv,.webm,.avi,.m4v' : id ? '.jpg,.jpeg,.png,.webp,.gif,.bmp' : allFileTypes;
+    launcher.querySelector('h2').textContent = definition ? definition.title : 'Open a file. Keep going.';
+    launcher.querySelector('h2 + p').textContent = definition ? `${definition.accepts}. Choose your file to begin.` : 'Choose a file. The right tools will find you.';
+  });
+}
+function renderGuidedJob() {
+  $('[data-guided-job]').hidden = !guidedJob;
+  document.body.classList.toggle('workspace-guided', Boolean(guidedJob));
+  if (!guidedJob) { nextStep.hidden = true; return; }
+  $('#guided-job-title').textContent = guidedJob.title;
+  $('[data-job-steps]').innerHTML = renderJobSteps(guidedJob);
+  $('[data-job-hint]').textContent = guidedJob.steps[guidedJob.index].hint;
+}
+function exitJob() { guidedJob = null; selectJob(null); renderGuidedJob(); if (output) renderNext(); }
+$('[data-job-exit]').addEventListener('click', exitJob);
+$('[data-guided-reset]').addEventListener('click', () => { if (!busy && !loading && originals.length) void begin(Array.from(originals)); });
+document.querySelectorAll('[data-quick-job]').forEach(card => card.addEventListener('click', event => {
+  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || busy || loading) return;
+  event.preventDefault(); selectJob(card.dataset.quickJob);
+  if (!session.hidden && originals.length) void begin(Array.from(originals));
+  else { launchers[0]?.scrollIntoView({ behavior: reducedScroll(), block: 'center' }); launchers[0]?.querySelector('input').focus({ preventScroll: true }); }
+}));
+function reducedScroll() { return matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'; }
+
+async function renderComparison(blob) {
+  const revision = ++comparisonRevision;
+  const sources = files.length === 1 ? [['Input', files[0]], ['Result', blob]] : [];
+  preview.replaceChildren(); preview.hidden = true;
+  for (const [label, file] of sources) {
+    if (!/^image\/(png|jpeg|webp|gif|bmp)$/.test(file.type) || file.size > 25e6) continue;
+    let bitmap, canvas;
+    try {
+      bitmap = await createImageBitmap(file);
+      const width = bitmap.width, height = bitmap.height, scale = Math.min(1, 640 / Math.max(width, height));
+      canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(width * scale)); canvas.height = Math.max(1, Math.round(height * scale));
+      canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      const thumbnail = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      if (revision !== comparisonRevision || !thumbnail) return;
+      const figure = document.createElement('figure'), caption = document.createElement('figcaption'), image = document.createElement('img');
+      caption.textContent = `${label} · ${width} × ${height} px`;
+      const url = URL.createObjectURL(thumbnail); comparisonURLs.push(url); image.src = url; image.alt = `${label} image preview`;
+      figure.append(caption, image); preview.append(figure); preview.hidden = false;
+    } catch { /* A preview is optional. The real output remains downloadable. */ }
+    finally { bitmap?.close(); if (canvas) canvas.width = canvas.height = 1; }
+  }
+}
+const recovery = document.createElement('p');
+recovery.className = 'forge-frame-recovery'; recovery.hidden = true;
+const recoveryText = document.createElement('span');
+recoveryText.textContent = 'This tool is taking longer to open. You can wait, choose another task, or ';
+const recoveryLink = document.createElement('a'); recoveryLink.textContent = 'open the tool directly ↗';
+recoveryLink.target = '_blank'; recoveryLink.rel = 'noopener';
+recovery.append(recoveryText, recoveryLink);
+$('[data-workspace-frame]').before(recovery);
+
+function updateProgress() {
+  document.body.classList.toggle('workspace-active', !session.hidden);
+  const current = output ? 'download' : 'edit';
+  session.querySelectorAll('[data-workspace-step]').forEach(step => {
+    if (step.dataset.workspaceStep === current) step.setAttribute('aria-current', 'step');
+    else step.removeAttribute('aria-current');
+  });
+}
+function clearFrameWait() {
+  clearTimeout(frameTimer); recovery.hidden = true;
+}
 const stageHeading = $('[data-workspace-tool-name]'); stageHeading.tabIndex = -1;
 const renameLabel = document.createElement('label'); renameLabel.className = 'forge-rename'; renameLabel.textContent = 'Download name';
 const renameField = document.createElement('input'); renameField.type = 'text'; renameField.maxLength = 140; renameField.dataset.workspaceRename = ''; renameField.autocomplete = 'off';
@@ -31,14 +132,18 @@ function report(message, error = false) {
 function updateBusy(value) {
   busy = value;
   session.setAttribute('aria-busy', String(busy || loading));
-  document.querySelectorAll('[data-workspace-input],[data-workspace-demo],[data-workspace-reset],[data-workspace-clear]').forEach(control => { control.disabled = busy || loading; });
+  document.querySelectorAll('[data-workspace-input],[data-workspace-demo],[data-workspace-reset],[data-workspace-clear],[data-guided-reset],[data-job-exit]').forEach(control => { control.disabled = busy || loading; });
   renameField.disabled = busy || loading; renderActions(); renderNext(); renderSourcePicker();
+  nextStep.disabled = busy || loading;
+  if (!busy) cancelTask.hidden = true;
 }
 function clearOutput() {
+  document.body.classList.remove('workspace-result-ready');
+  comparisonRevision++; comparisonURLs.forEach(url => URL.revokeObjectURL(url)); comparisonURLs = []; preview.replaceChildren(); preview.hidden = true;
   output = null; if (downloadURL) URL.revokeObjectURL(downloadURL); downloadURL = null;
   $('[data-workspace-result]').hidden = true; $('[data-workspace-download]').removeAttribute('href');
   if (sourceMode === 'result') sourceMode = 'current';
-  renderSourcePicker();
+  renderSourcePicker(); updateProgress(); renderGuidedJob();
 }
 function routeFiles() {
   if (sourceMode === 'original') return originals;
@@ -108,9 +213,31 @@ function renderActions() {
 }
 function renderNext() {
   const target = $('[data-workspace-next]'); target.replaceChildren();
+  nextStep.hidden = true;
+  const download = $('[data-workspace-download]'); download.className = 'button primary';
   if (!output) return;
   const file = new File([output.blob], output.name, { type: output.blob.type });
   const options = compatibleTools([file]);
+  if (guidedJob) {
+    const next = guidedJob.steps[guidedJob.index + 1];
+    if (next && options.some(item => item.id === next.tool)) {
+      nextStep.textContent = `Next: ${next.label} →`; nextStep.hidden = false; nextStep.disabled = busy || loading;
+      download.className = 'button secondary';
+      $('[data-job-hint]').textContent = 'This step is ready. Review the output, then continue. You can also download this intermediate file.';
+    } else if (next && !(guidedJob.id === 'document' && output.blob.type === 'application/pdf')) {
+      $('[data-job-hint]').textContent = 'This output format cannot continue to the next step. Choose a raster image output, or use the full toolbox.';
+    } else {
+      $('[data-job-hint]').textContent = 'Your job is ready. Check the result and download it before leaving.';
+      $('[data-job-steps]').querySelector('[aria-current]')?.classList.add('is-complete');
+      if (next && guidedJob.id === 'document' && output.blob.type === 'application/pdf') {
+        const indicators = [...$('[data-job-steps]').children];
+        indicators.forEach(step => { step.classList.add('is-complete'); step.removeAttribute('aria-current'); });
+        indicators.at(-1)?.setAttribute('aria-current', 'step');
+      }
+    }
+    $('[data-workspace-result] .forge-next-row').hidden = true;
+    return;
+  }
   for (const item of options.filter(item => item.id !== tool?.id)) {
     const button = document.createElement('button'); button.type = 'button'; button.className = 'button secondary'; button.textContent = item.name; button.disabled = busy || loading;
     button.dataset.workspaceContinue = item.id; button.addEventListener('click', () => {
@@ -119,6 +246,13 @@ function renderNext() {
   }
   $('[data-workspace-result] .forge-next-row').hidden = !target.children.length;
 }
+nextStep.addEventListener('click', () => {
+  if (!guidedJob || !output || busy || loading) return;
+  const next = guidedJob.steps[guidedJob.index + 1];
+  const item = workspaceTools.find(item => item.id === next?.tool);
+  if (!item || !compatibleTools([new File([output.blob], output.name, { type: output.blob.type })]).some(candidate => candidate.id === item.id)) return;
+  guidedJob.index++; sourceMode = 'result'; openTool(item, true); renderGuidedJob();
+});
 function renderTrail() {
   const list = $('[data-workspace-steps]'); list.replaceChildren();
   for (const step of steps.slice(-6)) {
@@ -126,16 +260,20 @@ function renderTrail() {
   }
   $('[data-workspace-trail]').hidden = !steps.length;
 }
-function openTool(item) {
+function openTool(item, keepJob = false) {
   if (busy || loading) { report('Finish or cancel your current job before changing tools.'); return; }
   const nextFiles = routeFiles();
   if (nextFiles.length && !compatibleTools(nextFiles).some(candidate => candidate.id === item.id)) { report('Choose a tool that accepts the selected source.', true); return; }
+  if (!keepJob && guidedJob) exitJob();
+  editor.open = true;
   if (sourceMode === 'original') { steps = []; renderTrail(); }
   files = Array.from(nextFiles); sourceMode = 'current'; sourcePreview();
-  clearOutput(); tool = item; currentStep++;
+  clearFrameWait(); clearOutput(); tool = item; currentStep++;
   frame?.remove(); frame = document.createElement('iframe'); frame.title = `${item.name} — local FileForge tool`;
   frame.setAttribute('allow', 'clipboard-write');
   const url = new URL(item.url, location.origin); url.searchParams.set('workspace', '1'); frame.src = url.href;
+  recoveryLink.href = item.url;
+  frameTimer = setTimeout(() => { recovery.hidden = false; }, 20000);
   $('[data-workspace-frame]').replaceChildren(frame); $('[data-workspace-empty]').hidden = true;
   $('[data-workspace-tool-name]').textContent = item.name; $('[data-workspace-tool-icon]').textContent = item.symbol;
   const guide = $('[data-workspace-tool-guide]'); guide.href = item.url; guide.hidden = false;
@@ -143,23 +281,27 @@ function openTool(item) {
 }
 async function begin(nextFiles, preferred) {
   if (busy || loading) return;
-  try { validateWorkspaceFiles(nextFiles); }
+  let nextJob;
+  try { validateWorkspaceFiles(nextFiles); nextJob = resolveQuickJob(chosenJob, nextFiles); }
   catch (error) { report(error.message, true); return; }
-  frame?.remove(); frame = null; tool = null; clearOutput(); steps = []; currentStep = 0;
+  clearFrameWait(); frame?.remove(); frame = null; tool = null; clearOutput(); steps = []; currentStep = 0;
+  $('[data-workspace-search]').value = '';
   files = Array.from(nextFiles); originals = Array.from(nextFiles); sourceMode = 'current'; sourcePreview(); renderTrail();
-  $('[data-workspace-empty]').hidden = false; session.hidden = false;
+  guidedJob = nextJob; renderGuidedJob();
+  $('[data-workspace-empty]').hidden = false; session.hidden = false; updateProgress();
   $('[data-workspace-tool-name]').textContent = 'Choose a tool to begin'; $('[data-workspace-tool-guide]').hidden = true;
   const available = compatibleTools(files);
-  const first = available.find(item => item.id === preferred) || (available.length === 1 ? available[0] : null);
-  if (first) openTool(first); else {
+  const first = available.find(item => item.id === (guidedJob?.steps[0].tool || preferred)) || (available.length === 1 ? available[0] : null);
+  if (first) openTool(first, Boolean(guidedJob)); else {
     report(`${files.length === 1 ? 'Your file is' : 'Your files are'} ready. Choose a task to begin.`); renderActions();
     session.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
   }
 }
 function clearSession() {
   if (busy || loading) return;
-  frame?.remove(); frame = null; files = []; originals = []; tool = null; steps = []; clearOutput(); sourcePreview(); renderTrail();
-  session.hidden = true; document.querySelectorAll('[data-workspace-input]').forEach(input => { input.value = ''; });
+  clearFrameWait(); frame?.remove(); frame = null; files = []; originals = []; tool = null; steps = []; clearOutput(); sourcePreview(); renderTrail();
+  session.hidden = true; updateProgress(); document.querySelectorAll('[data-workspace-input]').forEach(input => { input.value = ''; });
+  guidedJob = null; renderGuidedJob();
   report('Cleared. Choose a file or try a sample.'); renderActions();
   const launcherInput = document.querySelector('[data-workspace-input]');
   if (launcherInput && launcherInput.getClientRects().length) {
@@ -192,6 +334,7 @@ $('[data-workspace-reset]').addEventListener('click', () => { if (originals.leng
 $('[data-workspace-clear]').addEventListener('click', clearSession);
 document.querySelectorAll('[data-workspace-source]').forEach(button => button.addEventListener('click', () => {
   if (busy || loading) return;
+  if (guidedJob) exitJob();
   sourceMode = button.dataset.workspaceSource; renderActions();
 }));
 renameField.addEventListener('input', () => {
@@ -218,9 +361,10 @@ window.addEventListener('message', event => {
   const data = event.data;
   if (data.type === 'find-tool') { document.dispatchEvent(new CustomEvent('fileforge:open-tool-finder')); }
   else if (data.type === 'ready') {
-    frame.contentWindow.postMessage({ protocol, type: 'files', files }, location.origin);
+    clearFrameWait();
+    frame.contentWindow.postMessage({ protocol, type: 'files', files, preset: guidedJob?.steps[guidedJob.index].preset }, location.origin);
     report('Ready. Adjust your settings and run the tool.');
-  } else if (data.type === 'busy') updateBusy(Boolean(data.busy));
+  } else if (data.type === 'busy') { updateBusy(Boolean(data.busy)); cancelTask.hidden = !busy || !data.canCancel; }
   else if (data.type === 'height' && Number.isFinite(data.height)) frame.style.height = `${Math.max(460, Math.min(6500, data.height))}px`;
   else if (data.type === 'error') report(String(data.message), true);
   else if (data.type === 'selection' && Array.isArray(data.files) && data.files.every(file => file instanceof File)) { files = data.files; sourceMode = 'current'; sourcePreview(); renderActions(); }
@@ -228,19 +372,23 @@ window.addEventListener('message', event => {
   else if (data.type === 'result' && data.blob instanceof Blob && data.blob.size && data.blob.size <= 150e6 && typeof data.name === 'string') {
     clearOutput(); output = { blob: data.blob, name: data.name, defaultName: data.name, detail: String(data.detail || '') }; sourceMode = 'result';
     downloadURL = URL.createObjectURL(data.blob); const link = $('[data-workspace-download]'); link.href = downloadURL; link.download = data.name;
-    $('[data-workspace-result-name]').textContent = data.name; $('[data-workspace-result-detail]').textContent = `${formatBytes(data.blob.size)} · ${output.detail}`;
+    $('[data-workspace-result-name]').textContent = data.name; $('[data-workspace-result-detail]').textContent = output.detail;
     $('[data-workspace-result]').hidden = false;
+    document.body.classList.add('workspace-result-ready');
+    fillOutputSummary(comparison, files, data.blob, data.name); void renderComparison(data.blob);
     renameField.value = data.name.replace(/\.[^.]+$/, ''); renameSuffix.textContent = `.${data.name.split('.').pop()}`;
     const entry = { id: currentStep, title: tool.name, size: data.blob.size };
     if (steps.at(-1)?.id === currentStep) steps[steps.length - 1] = entry; else steps.push(entry);
-    renderTrail(); renderNext(); renderActions(); report('Result ready. Your next tool will use this result. Choose Current file or Original to start another branch.');
+    updateProgress(); renderTrail(); renderNext(); renderActions(); report('Result ready. Download it below, or keep going with another tool.');
+    if (guidedJob) editor.open = false;
+    resultDock.focus({ preventScroll: true }); resultDock.scrollIntoView({ behavior: reducedScroll(), block: 'start' });
   }
 });
-window.addEventListener('pagehide', () => { frame?.remove(); frame = null; files = []; originals = []; clearOutput(); if (thumbURL) URL.revokeObjectURL(thumbURL); thumbURL = null; });
+window.addEventListener('pagehide', () => { clearFrameWait(); frame?.remove(); frame = null; files = []; originals = []; clearOutput(); if (thumbURL) URL.revokeObjectURL(thumbURL); thumbURL = null; });
 window.addEventListener('pageshow', event => { if (event.persisted) { busy = false; loading = false; clearSession(); updateBusy(false); } });
 if (new URLSearchParams(location.search).get('embed') === '1' && window.parent !== window) {
   document.body.classList.add('embedded-workspace'); window.parent.postMessage({ protocol, type: 'workspace-ready' }, location.origin);
 }
-renderActions(); persistFavourites();
+selectJob(chosenJob); renderActions(); persistFavourites();
 const params = new URLSearchParams(location.search);
 if (['photo', 'text', 'pdf'].includes(params.get('demo'))) void sample(params.get('demo'));

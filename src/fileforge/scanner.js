@@ -230,5 +230,7 @@ for (const name of ['dragenter', 'dragover']) drop.addEventListener(name, event 
 for (const name of ['dragleave', 'drop']) drop.addEventListener(name, event => { event.preventDefault(); drop.classList.remove('dragging'); });
 drop.addEventListener('drop', event => void selectFiles([...event.dataTransfer.files]));
 window.addEventListener('pagehide', () => { revision++; active?.controller.abort(); active?.worker?.terminate(); invalidatePreview(); releaseSource(); selected = null; });
-configureToolBridge({ selectFiles, busy, clear }); updateBusy();
+configureToolBridge({ selectFiles, busy, clear, applyPreset: preset => {
+  if (preset === 'document-photo') { $('#scanner-format').value = 'png'; $('#scanner-export').textContent = 'Prepare PNG ↓'; }
+} }); updateBusy();
 if (new URLSearchParams(location.search).get('sample') === '1') void sample();

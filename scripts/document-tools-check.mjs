@@ -68,7 +68,7 @@ try {
   await check('new formats enter the connected workspace and Office PDF output continues to page tools', async () => {
     await page.goto(base+'/tools/workspace/'); await page.locator('[data-workspace-input]').setInputFiles(resolve(fixtures,'sample.pptx'));
     const engine=page.frameLocator('[data-workspace-frame] iframe'); await engine.locator('#document-run:not(:disabled)').waitFor(); await engine.locator('#document-run').click(); await engine.locator('#document-preview').waitFor({timeout:90000}); await engine.locator('#document-export').click(); await page.locator('[data-workspace-result]').waitFor({timeout:90000}); assert.equal(await page.locator('[data-workspace-continue=organize]').isVisible(),true);
-    await page.locator('[data-workspace-continue=organize]').click(); await engine.locator('#files').waitFor(); assert.match(await engine.locator('#selection-summary').innerText(),/1 file/);
+    await page.locator('[data-workspace-continue=organize]').click(); await engine.locator('#file-list li').first().waitFor(); assert.match(await engine.locator('#selection-summary').innerText(),/1 file/);
   });
   await check('new pages fit phones and carry accessible navigation, metadata and discovery links', async () => {
     for(const width of [320,390,768,1440]) { await page.setViewportSize({width,height:1000}); for(const tool of documentTools){await page.goto(`${base}/tools/${tool.slug}/`); assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`${tool.slug} ${width}`);assert.equal(await page.locator('h1').count(),1); const schema=JSON.parse(await page.locator('script[type="application/ld+json"]').textContent());assert.ok(schema['@graph'].some(item=>item['@type']==='WebApplication'&&item.isAccessibleForFree));} }
@@ -82,6 +82,7 @@ try {
     try {
       const offlinePage = await offlineContext.newPage();
       await offlinePage.goto(base+'/tools/workspace/');
+      await offlinePage.locator('[data-open-offline]').first().click();
       await offlinePage.locator('[data-offline-group=office]').check();
       await offlinePage.locator('[data-offline-save]').click();
       await offlinePage.locator('[data-offline-badge]').filter({hasText:/^Offline ready$/}).waitFor({timeout:180000});

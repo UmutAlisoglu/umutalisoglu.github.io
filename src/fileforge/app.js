@@ -359,6 +359,13 @@ const requestedFormat = new URLSearchParams(location.search).get('format');
 if (currentTool === 'image' && ['pdf', 'png', 'jpg', 'webp'].includes(requestedFormat)) {
   $('[name=format]').value = requestedFormat; updateImageHint(); updateAction();
 }
-configureToolBridge({ selectFiles: addFiles, busy: () => Boolean(active), clear: () => {
+configureToolBridge({ selectFiles: addFiles, busy: () => Boolean(active), applyPreset: preset => {
+  const values = preset === 'attachment-image' ? presets.email : preset === 'product-image' ? { format: 'png', quality: 95, width: 1600 } : preset === 'document-pdf' ? presets.document : null;
+  if (currentTool === 'image' && values) {
+    imageControls.forEach(name => { $(`[name=${name}]`).value = values[name]; });
+    clearOutput(); updateImageHint(); updateAction();
+  }
+  if (currentTool === 'video' && preset === 'attachment-video') { $('[name=target]').value = 10; $('[name=height]').value = '720'; $('[name=removeAudio]').checked = false; }
+}, clear: () => {
   if (active) return; selected = []; selectionChanged(); report('Choose a file to start.');
 } });

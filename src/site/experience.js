@@ -4,6 +4,22 @@ const menu = document.querySelector('.site-menu-toggle');
 const nav = document.querySelector('#site-navigation');
 const mobile = window.matchMedia('(max-width: 680px)');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const shortcutHint = document.querySelector('.tool-switcher-trigger kbd');
+if (shortcutHint && /Mac|iPhone|iPad/.test(navigator.platform)) shortcutHint.textContent = '⌘ K';
+
+for (const tour of document.querySelectorAll('[data-product-tour]')) {
+  const captions = [
+    'Paste a GitHub repository link or username in the top bar. Download the project, then review its detected setup and run commands.',
+    'Each project card has run controls. Install the project’s runtime and dependencies, review the command, then start it from its card. Use Stop when finished.',
+    'A running card shows CPU, memory and uptime, with a link to open the app. Choose Log on a card to inspect its output; the log pane is not shown in this screenshot. Use Quit from the tray to stop apps when leaving.',
+  ];
+  tour.querySelectorAll('[data-tour-step]').forEach(button => button.addEventListener('click', () => {
+    const step = Number(button.dataset.tourStep);
+    tour.querySelectorAll('[data-tour-step]').forEach(control => control.setAttribute('aria-pressed', String(control === button)));
+    tour.querySelector('[data-tour-caption]').textContent = captions[step];
+    tour.querySelector('[data-tour-focus]').dataset.region = String(step);
+  }));
+}
 
 if (menu && nav) {
   function setMenu(open, restoreFocus = false) {
@@ -44,9 +60,9 @@ if ('IntersectionObserver' in window && !reducedMotion.matches) {
       observer.unobserve(entry.target);
       if (reducedMotion.matches) continue;
       entry.target.animate([
-        { opacity: 0.4, transform: 'translateY(20px)' },
+        { opacity: 0.75, transform: 'translateY(12px)' },
         { opacity: 1, transform: 'translateY(0)' },
-      ], { duration: 650, easing: 'cubic-bezier(.2,.65,.3,1)' });
+      ], { duration: 450, easing: 'cubic-bezier(.2,.65,.3,1)' });
     }
   }, { threshold: 0.08 });
   document.querySelectorAll('.hero-stage, .premium-project, .premium-tool-grid, .personal-current, .personal-about, .personal-contact, .about-intro, .story-section, .release-panel').forEach(element => observer.observe(element));

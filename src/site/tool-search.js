@@ -14,7 +14,7 @@ for (const directory of document.querySelectorAll('[data-tool-directory]')) {
   const compact = directory.dataset.compact === 'true';
   let category = 'All tools';
 
-  function update() {
+  function update(syncURL = true) {
     const query = search.value.trim();
     const initial = compact && !query && category === 'All tools';
     const tools = initial ? featuredTools : findTools(query, category);
@@ -26,6 +26,12 @@ for (const directory of document.querySelectorAll('[data-tool-directory]')) {
     clear.hidden = !search.value;
     count.textContent = initial ? 'Popular tools to get started' : `${tools.length} ${tools.length === 1 ? 'task' : 'tasks'}${query ? ' matching your search' : category === 'All tools' ? ' available' : ` in ${category.toLowerCase()}`}`;
     categories.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.toolCategory === category)));
+    if (syncURL && !compact) {
+      const url = new URL(location.href);
+      if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
+      if (category !== 'All tools') url.searchParams.set('category', category); else url.searchParams.delete('category');
+      history.replaceState(null, '', url);
+    }
   }
 
   function reset() {
@@ -44,8 +50,12 @@ for (const directory of document.querySelectorAll('[data-tool-directory]')) {
 
   // No requests are sent while searching. The input filters this local catalogue.
   discovery.hidden = false;
-  const params = new URLSearchParams(location.search);
-  const query = params.get('q');
-  if (query) search.value = query.slice(0, 120);
-  update();
+  function restoreSearch() {
+    const params = new URLSearchParams(location.search);
+    search.value = (params.get('q') || '').slice(0, 120);
+    category = categories.some(button => button.dataset.toolCategory === params.get('category')) ? params.get('category') : 'All tools';
+    update(false);
+  }
+  window.addEventListener('popstate', restoreSearch);
+  restoreSearch();
 }

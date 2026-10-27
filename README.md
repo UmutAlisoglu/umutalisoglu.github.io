@@ -45,6 +45,22 @@ Run `npm run test:conversions` against the local preview to check picker routing
 
 Run `npm run test:design` to check the shared navigation, keyboard controls, six screen widths, reduced motion, metadata and the static fallback. It saves screenshots in `.local/premium-check/`.
 
+Run `npm run test:experience` to check the site-wide tool finder, shareable directory searches, compact active workspace, export progress, reset and recovery from a stalled tool. Screenshots go to `.local/experience-check/`. Run it against the production preview, like the other browser checks.
+
+## Guided Quick Jobs
+
+`/tools/workspace/?job=attachment`, `?job=product`, and `?job=document` open guided tasks using the existing local engines. Attachment preparation routes an image, HEIC, PDF or short video to an appropriate tool. Product images pass a cutout through a crop and PNG export. Document photos pass through the scanner and an image-to-PDF export. Each step requires review; no model or video engine starts automatically. The full toolbox remains available, and resetting returns to the original file.
+
+The workspace shows one file picker, one shared result with actual size changes and bounded image previews, and an optional panel for original-file branching. Offline installation is a collapsed, optional section. Browser Quick Jobs are a website feature; the existing Windows 0.3.0 download is an independently published package.
+
+Run `npm run test:quick-jobs` against the production preview for real JPEG/PDF exports, the complete cutout/crop/PNG chain, alpha transparency, presets, invalid-file recovery and narrow screens. It saves screenshots to `.local/quick-jobs-check/`.
+
+The FileForge product demo is a real, silent browser recording. `node scripts/record-attachment-demo.mjs` regenerates it against `TEST_URL` using the original headphones sample; it needs Playwright's FFmpeg runtime (`node node_modules/playwright/cli.js install ffmpeg`). Repodock's demo is an explicitly labelled walkthrough of its existing dashboard screenshot. Neither product demo auto-plays. The recording has a text transcript and does not enter offline tool packs.
+
+The participant script and observation sheet in `docs/usability-session.md` are ready for 3–5 real users. No participant sessions or results are claimed by the automated checks.
+
+`npm run test:products` checks the product recording, keyboard walkthrough, lazy media, release notes, shared cancellation and responsive screenshots. Product media are deliberately excluded from offline processing packs.
+
 ## New document tools
 
 - Word → PDF and PowerPoint → PDF: preview DOCX/PPTX locally, then export flattened page images. Up to 10 MB and 20 pages/slides. Layout can differ from Office; use the original app when exact layout or tagged, accessible PDFs are required. Older DOC/PPT formats, macros and embedded OLE objects aren’t supported.

@@ -188,7 +188,7 @@ $('[data-offline-install]').addEventListener('click', async () => {
 });
 document.addEventListener('click', event => {
   if (!event.target.closest('[data-open-offline]')) return;
-  if (inline) { inline.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' }); }
+  if (inline) { const disclosure = inline.closest('details'); if (disclosure) disclosure.open = true; inline.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' }); }
   else { dialog.showModal(); }
   refresh().catch(error => report(error.message, true));
 });
@@ -197,5 +197,9 @@ window.addEventListener('online', () => { total(); report('Back online. You can 
 window.addEventListener('offline', () => { total(); report('You are offline. Only fully downloaded tools and language packs are available.'); });
 installState();
 if (!supportsOffline) { $('[data-offline-save]').disabled = true; $('[data-offline-update]').disabled = true; report('Offline packs need HTTPS and service-worker support. You can still use the online tools.', true); }
-else if (inline) refresh().catch(error => report(error.message, true));
+else if (inline) {
+  const disclosure = inline.closest('details');
+  if (disclosure) disclosure.addEventListener('toggle', () => { if (disclosure.open) refresh().catch(error => report(error.message, true)); });
+  if (!disclosure || disclosure.open) refresh().catch(error => report(error.message, true));
+}
 

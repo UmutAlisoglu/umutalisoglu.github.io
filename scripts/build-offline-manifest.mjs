@@ -32,6 +32,8 @@ for (const path of files.sort()) {
   if (/^(?:skate-scape|showcase)\//.test(rel) || /^(?:sw\.js|offline-manifest\.json)$/.test(rel)) continue;
   // Personal-site screenshots are not required by the offline file tools.
   if (/^assets\/screenshots\//.test(rel) || /^tools\/_assets\/(?:fileforge|skate-scape(?:-session)?)-[^/]+\.jpg$/.test(rel)) continue;
+  // Product-page recordings and posters are not required to process files offline.
+  if (/^assets\/demos\/(?:fileforge-attachment\.webm|attachment-poster\.png)$/.test(rel) || /^tools\/_assets\/(?:fileforge-attachment|attachment-poster)-/.test(rel)) continue;
   // Homepage is outside the offline app's scope. Its hashed sample is a
   // duplicate of /assets/demos/headphones.png used by the workspace.
   if (/^(?:assets|tools\/_assets)\/headphones-[^/]+\.png$/.test(rel)) continue;

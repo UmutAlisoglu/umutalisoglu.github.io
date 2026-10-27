@@ -293,7 +293,9 @@ function clearSelection() {
   publishToolSelection([]);
 }
 $('#advanced-clear').addEventListener('click', clearSelection);
-configureToolBridge({ selectFiles, busy: () => Boolean(active) || loading, clear: clearSelection });
+configureToolBridge({ selectFiles, busy: () => Boolean(active) || loading, clear: clearSelection, applyPreset: preset => {
+  if (kind === 'crop' && bitmap && preset === 'product-crop') { $('#crop-aspect').value = '1'; $('#crop-format').value = 'png'; resetCrop(); }
+} });
 run.addEventListener('click', event => { event.preventDefault(); void convert(); });
 cancel.addEventListener('click', () => { if (active) { report('Cancelling…'); cancel.disabled = true; active.controller.abort(); } });
 settings.addEventListener('change', event => {

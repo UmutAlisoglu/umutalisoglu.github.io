@@ -1,0 +1,25 @@
+/* A common result language around the existing, task-specific editors. */
+.tool-output-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; width:100%; margin:18px 0 0; padding:17px 0 0; border-top:1px solid #dbe2dd; font-family:var(--sans); }
+.tool-output-summary>div { min-width:0; }
+.tool-output-summary dt { font-size:10px; color:var(--muted,#606b77); font-weight:400; margin-bottom:5px; }
+.tool-output-summary dd { margin:0; font-size:13px; color:var(--ink,#202c3b); font-weight:600; overflow-wrap:anywhere; }
+.embedded-tool .tool-output-summary { display:none; }
+.embedded-tool #result,.embedded-tool #advanced-result,.embedded-tool #finish-result { display:none!important; }
+.embedded-tool.has-workspace-files #drop-zone,
+.embedded-tool.has-workspace-files #advanced-drop,
+.embedded-tool.has-workspace-files #finish-drop,
+.embedded-tool.has-workspace-files #document-drop,
+.embedded-tool.has-workspace-files #scanner-drop,
+.embedded-tool.has-workspace-files #screenshot-drop,
+.embedded-tool.has-workspace-files #ocr-drop { display:none!important; }
+.embedded-tool .site-header-band { display:none!important; }
+.embedded-tool .selection-bar,.embedded-tool .advanced-file { margin-top:0; }
+.embedded-tool .conversion-actions { position:sticky; bottom:0; z-index:4; background:#ffffffee; backdrop-filter:blur(8px); padding-block:13px; border-top:1px solid #e6e9ed; }
+.embedded-tool .tool-result,.embedded-tool .advanced-result-heading,.embedded-tool .scanner-result-heading,.embedded-tool .screenshot-result-heading { border-radius:12px; }
+.embedded-tool #scanner-download,.embedded-tool #screenshot-download,.embedded-tool #document-download,.embedded-tool #ocr-download { display:none!important; }
+.embedded-tool #cancel-job,.embedded-tool #advanced-cancel,.embedded-tool #finish-cancel,.embedded-tool #document-cancel,.embedded-tool #scanner-cancel,.embedded-tool #screenshot-cancel,.embedded-tool #ocr-cancel { display:none!important; }
+@media(max-width:600px) {
+  .tool-output-summary { grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; }
+  .tool-output-summary dd { font-size:13px; }
+  .embedded-tool .conversion-actions .button { min-height:46px; }
+}

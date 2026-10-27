@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { discoveryTags } from './discovery.js';
 import { renderConversionPicker } from './conversion-options.js';
+import { renderQuickJobs } from './quick-jobs.js';
+import { renderEditionChoice, renderProductDemo } from './product-content.js';
 
 import { toolPages, advancedTools, documentTools, allToolPages, renderToolDirectory } from './tool-catalog.js';
 import { toolUsage, renderToolUsage } from './tool-usage.js';
@@ -13,8 +15,8 @@ export const sitePaths = [
 ];
 
 function header(path) {
-  const navigation = [['/', 'Home'], ['/about/', 'About'], ['/projects/', 'Projects'], ['/tools/', 'Tools']];
-  const finder = path.startsWith('/tools/') ? '<button type="button" class="tool-switcher-trigger" data-open-tools hidden aria-haspopup="dialog" title="Find a tool (Ctrl or Command + K)">Find a tool</button>' : '';
+  const navigation = [['/', 'Home'], ['/about/', 'About'], ['/projects/', 'Projects'], ['/tools/', 'Tools'], ['/downloads/', 'Downloads']];
+  const finder = '<button type="button" class="tool-switcher-trigger" data-open-tools hidden aria-haspopup="dialog" title="Find a tool (Ctrl or Command + K)"><span aria-hidden="true">⌕</span> Find a tool <kbd aria-hidden="true">Ctrl K</kbd></button>';
   return `<a class="skip-link" href="#main">Skip to content</a>
 <div class="site-header-band"><header class="site-header wrap hub-header">
   <a class="wordmark" href="/" aria-label="Umut Alisoglu home"><span class="monogram">u.</span><span>umut alisoglu<span class="wordmark-dot">.</span><small>software &amp; projects</small></span></a>
@@ -38,6 +40,10 @@ export function siteTemplates() {
           .replace('</head>', '<link rel="stylesheet" href="/src/site/personal.css"><link rel="stylesheet" href="/src/fileforge/documents.css"><link rel="describedby" type="text/markdown" href="/llms.txt"><link rel="manifest" href="/manifest.webmanifest"><script type="module" src="/src/site/offline.js"></script><script type="module" src="/src/site/tool-switcher.js"></script></head>')
           .replace('<fileforge-launcher></fileforge-launcher>', readFileSync(new URL('./launcher-template.html', import.meta.url), 'utf8'))
           .replace('<fileforge-workbench></fileforge-workbench>', readFileSync(new URL('./workspace-template.html', import.meta.url), 'utf8'))
+          .replace('<edition-choice></edition-choice>', renderEditionChoice())
+          .replace('<product-demo data-app="fileforge"></product-demo>', renderProductDemo('fileforge'))
+          .replace('<product-demo data-app="repodock"></product-demo>', renderProductDemo('repodock'))
+          .replace('<quick-jobs></quick-jobs>', renderQuickJobs())
           .replace('<tool-directory></tool-directory>', renderToolDirectory())
           .replace('<conversion-picker></conversion-picker>', renderConversionPicker())
           .replace('<tool-directory data-variant="home"></tool-directory>', renderToolDirectory({ compact: true, id: 'home-tools' }))

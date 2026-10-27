@@ -28,13 +28,13 @@ try{
   assert.equal(await page.locator('[data-workspace-source=result]').getAttribute('aria-pressed'),'true');
   await page.locator('[data-workspace-rename]').fill('Blue portrait');
   assert.equal(await page.locator('[data-workspace-download]').getAttribute('download'),'Blue portrait.png');
-  await page.locator('[data-workspace-tool=image]').click();await frame().locator('#files').waitFor();
+  await page.locator('[data-workspace-tool=image]').click();await frame().locator('#file-list li').first().waitFor();
   assert.match(await frame().locator('#file-list').innerText(),/Blue portrait\.png/);
   await frame().locator('[name=format]').selectOption('png');await frame().locator('#conversion-form button[type=submit]').click();await output();assert.deepEqual(await size(),[100,60]);
   assert.doesNotMatch(await page.locator('[data-workspace-result-name]').innerText(),/fileforge-fileforge/);
  });
  await check('choosing Original starts a clearly separate branch using full source dimensions',async()=>{
-  await page.locator('[data-workspace-source=original]').click();await page.locator('[data-workspace-tool=crop]').click();await frame().locator('#crop-width').waitFor();
+  await page.locator('.forge-input-options > summary').click();await page.locator('[data-workspace-source=original]').click();await page.locator('[data-workspace-tool=crop]').click();await frame().locator('#crop-width').waitFor();
   assert.equal(await frame().locator('#crop-width').inputValue(),'240');assert.equal(await frame().locator('#crop-height').inputValue(),'160');
   assert.equal(await page.locator('[data-workspace-steps] li').count(),0);
   await frame().locator('#advanced-run').click();await output();assert.deepEqual(await size(),[240,160]);

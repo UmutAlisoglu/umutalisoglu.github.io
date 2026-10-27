@@ -18,7 +18,7 @@ const check = async (name, run) => { await run(); console.log(`PASS ${name}`); }
 const engine = () => page.frameLocator('[data-workspace-frame] iframe');
 async function selectTask(id, wait = '#files') {
   await page.locator(`[data-workspace-tool="${id}"]`).click();
-  await engine().locator(wait).waitFor();
+  await engine().locator(wait).waitFor({ state: wait === '#files' ? 'attached' : 'visible' });
 }
 async function result() { await page.locator('[data-workspace-result]').waitFor({ state: 'visible', timeout: 90_000 }); }
 async function bytes() { return Buffer.from(await page.evaluate(async () => Array.from(new Uint8Array(await (await fetch(document.querySelector('[data-workspace-download]').href)).arrayBuffer())))); }
@@ -52,15 +52,15 @@ try {
     await page.locator('[data-workspace-search]').fill('');
   });
   await check('crop → image conversion → PDF handoff preserves actual data without upload or reselection', async () => {
-    await selectTask('crop', '#advanced-input'); await engine().locator('#crop-source').waitFor({ state: 'visible' });
+    await selectTask('crop', '#advanced-filename'); await engine().locator('#crop-source').waitFor({ state: 'visible' });
     for (const [id, value] of [['x',120], ['y',80], ['width',100], ['height',60]]) await engine().locator(`#crop-${id}`).fill(String(value));
     await engine().locator('#advanced-run').click(); await result();
     assert.deepEqual(await pixels(await bytes()), { width: 100, height: 60, colour: [18,79,195,255] });
-    await page.locator('[data-workspace-continue=image]').click(); await engine().locator('#files').waitFor();
+    await page.locator('[data-workspace-continue=image]').click(); await engine().locator('#file-list li').first().waitFor();
     assert.match(await engine().locator('#selection-summary').innerText(), /1 file/);
     await engine().locator('[name=format]').selectOption('png'); await engine().locator('#conversion-form button[type=submit]').click(); await result();
     assert.deepEqual(await pixels(await bytes()), { width: 100, height: 60, colour: [18,79,195,255] });
-    await page.locator('[data-workspace-continue=image-pdf]').click(); await engine().locator('#files').waitFor();
+    await page.locator('[data-workspace-continue=image-pdf]').click(); await engine().locator('#file-list li').first().waitFor();
     await engine().locator('#conversion-form button[type=submit]').click(); await result();
     const pdf = await PDFDocument.load(await bytes()); assert.equal(pdf.getPageCount(), 1); assert.deepEqual(pdf.getPage(0).getSize(), { width: 841.89, height: 595.28 });
     assert.equal(await page.locator('[data-workspace-steps] li').count(), 3);
@@ -85,7 +85,7 @@ try {
     assert.equal(await page.locator('[data-workspace-thumb]').getAttribute('src'),null);
   });
   await check('sample PDF is generated locally and page operations export a real rotated PDF', async () => {
-    await page.locator('[data-workspace-demo=pdf]:visible').first().click(); await engine().locator('#files').waitFor();
+    await page.locator('[data-workspace-demo=pdf]:visible').first().click(); await engine().locator('#file-list li').first().waitFor();
     await engine().locator('#conversion-form button[type=submit]').click(); await engine().locator('.page-card').last().waitFor();
     assert.equal(await engine().locator('.page-card').count(),3);
     await engine().locator('.page-card').first().getByRole('button',{name:/Rotate clockwise/}).click();
@@ -99,12 +99,12 @@ try {
     const workspace = page.frameLocator('.workspace-dialog iframe'); await workspace.locator('[data-workspace-session]').waitFor({state:'visible'});
     assert.match(await workspace.locator('[data-workspace-file-name]').innerText(),/quadrants/);
     await workspace.locator('[data-workspace-tool=image-pdf]').click();
-    const nested = workspace.frameLocator('[data-workspace-frame] iframe'); await nested.locator('#files').waitFor();
+    const nested = workspace.frameLocator('[data-workspace-frame] iframe'); await nested.locator('#file-list li').first().waitFor();
     await nested.locator('#conversion-form button[type=submit]').click(); await workspace.locator('[data-workspace-result]').waitFor({state:'visible'});
     await page.getByRole('button',{name:'Close ✕'}).click(); await page.locator('.workspace-dialog').waitFor({state:'detached'}); assert.equal(await page.locator('.workspace-dialog').count(),0);
   });
   await check('photo and OCR demos open real engines and no heavy runtime loads before starting', async () => {
-    await page.goto(base+'/tools/workspace/?demo=text'); await engine().locator('#ocr-run').waitFor();
+    await page.goto(base+'/tools/workspace/?demo=text'); await engine().locator('#ocr-run:not(:disabled)').waitFor();
     assert.match(await engine().locator('#ocr-filename').innerText(),/sample/);
     await engine().locator('#ocr-run').click(); await result(); assert.match((await bytes()).toString('utf8'),/Your files stay on your device/i);
     await page.goto(base+'/tools/workspace/?demo=photo'); await engine().locator('#advanced-run').waitFor();
@@ -115,7 +115,7 @@ try {
   await check('clearing a child releases its result and switching tools cannot resurrect its file', async () => {
     await page.goto(base + '/tools/workspace/');
     await page.locator('[data-workspace-input]').setInputFiles(fixture);
-    await selectTask('crop', '#advanced-input'); await engine().locator('#crop-source').waitFor({ state: 'visible' });
+    await selectTask('crop', '#advanced-filename'); await engine().locator('#crop-source').waitFor({ state: 'visible' });
     await engine().locator('#advanced-run').click(); await result();
     const previousURL = await page.locator('[data-workspace-download]').getAttribute('href');
     await engine().locator('#advanced-clear').click();
@@ -131,7 +131,7 @@ try {
     await page.waitForFunction(() => document.querySelector('[data-workspace-file-name]').textContent === 'second.png');
     await engine().locator('#clear-files').click();
     await page.waitForFunction(() => document.querySelector('[data-workspace-file-name]').textContent === '0 selected files');
-    await selectTask('crop', '#advanced-input');
+    await selectTask('crop', '#advanced-filename');
     assert.equal(await engine().locator('#advanced-filename').innerText(), 'No file selected');
     assert.equal(await engine().locator('#advanced-run').isDisabled(), true);
   });
