@@ -69,6 +69,8 @@ The participant script and observation sheet in `docs/usability-session.md` are 
 
 `npm run test:products` checks the product recording, keyboard walkthrough, lazy media, release notes, shared cancellation and responsive screenshots. Product media are deliberately excluded from offline processing packs.
 
+Run `npm run check:releases` after publishing a desktop app or updating download links. It checks the pinned website versions against each public latest stable GitHub release, verifies that the expected assets exist, and checks the public download responses and sizes. This network check is separate from normal builds and unit tests.
+
 ## New document tools
 
 - Word → PDF and PowerPoint → PDF: preview DOCX/PPTX locally, then export flattened page images. Up to 10 MB and 20 pages/slides. Layout can differ from Office; use the original app when exact layout or tagged, accessible PDFs are required. Older DOC/PPT formats, macros and embedded OLE objects aren’t supported.

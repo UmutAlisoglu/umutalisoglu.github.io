@@ -60,3 +60,9 @@ The published Windows download remains v0.2.1. The repository's main branch iden
 - Deno task-object compatibility was checked against the [official task documentation](https://docs.deno.com/runtime/reference/cli/task/).
 
 These checks establish the covered behavior, not exhaustive compatibility or proven demand. No participant feedback or adoption figures are claimed. The Windows build checks ran in GitHub CI; no desktop app was installed into the user's Windows environment during this review.
+
+## Release follow-up — 27 October 2026
+
+[Repodock 0.3.0 is now published](https://github.com/UmutAlisoglu/repodock/releases/tag/v0.3.0), superseding the distribution status recorded above. It includes the detection fix, reviewed project links and the existing 0.3.0 link-handoff changes. The [release Windows workflow](https://github.com/UmutAlisoglu/repodock/actions/runs/40567258025) rebuilt and checked the CLI, app window, protocol handoff and installer successfully. Its automatic Scoop and winget manifest generation completed; winget manifests have not been submitted to Microsoft's package repository.
+
+The final installer, portable ZIP and optional extension were downloaded and matched to GitHub's SHA-256 digests. `SHA256SUMS.txt` is published with the release. The Alisoglu product/download pages now link to 0.3.0 with the final package sizes. The website's `npm run check:releases` maintenance command checks stable-version links, required assets and public download responses for both desktop apps.
