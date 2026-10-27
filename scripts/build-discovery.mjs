@@ -12,6 +12,7 @@ const summaries = {
   '/privacy/': ['Privacy and file handling', privacy + '\n\nRead the full privacy notes for image metadata, optional local storage, hosting, the separate game and external links. This site uses GitHub Pages. It adds no analytics or advertising scripts.'],
   '/projects/': ['Projects', 'FileForge: free browser file tools and a separate Windows app. Repodock: a Windows app to run local GitHub projects. Other experiments include Skate Scape, an unofficial fan skating project.'],
   '/projects/fileforge/': ['FileForge browser and Windows tools', 'Free browser file tools and FileForge Windows 0.3.0, released 23 October 2026. The Windows x64 ZIP bundles the connected workspace and its local engines, plus nine native converters for larger jobs. WebView2 is required; native video needs installed FFmpeg/FFprobe. Extract the full ZIP and keep the workspace folder beside FileForge.exe. Office PDF exports use flattened page images and may differ from Microsoft Office. Download: https://github.com/UmutAlisoglu/fileforge/releases/tag/v0.3.0.'],
+  '/projects/repodock/': ['Repodock — local project dashboard', 'Repodock 0.3.0, released 27 October 2026, manages local GitHub projects with reviewed run commands, process controls and logs. Windows x64 installer or portable ZIP; WebView2 is used for the app window, with browser fallback. Projects need their own runtimes and configuration. Project links ask before importing; they do not run code automatically. Release notes: https://github.com/UmutAlisoglu/repodock/releases/tag/v0.3.0'],
   '/projects/skate-scape/': ['Skate Scape — fan project', 'An unofficial fan-made browser skating game with tricks and combos. Best played on a computer with keyboard or gamepad. First use downloads game data from an external source; game data and progress use local browser storage. It is a fan project, not an official release or endorsement.'],
   '/contact/': ['Contact Umut Alisoglu', 'Email: umut@alisoglu.com. The feedback form prepares a draft locally. Visitors choose whether to send it using their own email app or review and submit it on GitHub. Public GitHub issues should not include private files or passwords.'],
 };
@@ -25,6 +26,8 @@ for (const path of sitePaths) {
   const facts = tool && toolUsage[tool.id];
   let content = `# ${title}\n\n${description}\n\nOriginal page: https://alisoglu.com${path}\n`;
   if (facts) content += `\n## Formats and limits\n\n${facts[0]}\n\n${facts[1]}\n`;
+  const related = tool && allToolPages.filter(candidate => candidate.id !== tool.id && candidate.category === tool.category).slice(0, 5);
+  if (related?.length) content += `\n## Related tools\n\n${related.map(candidate => `- [${candidate.name}](https://alisoglu.com/tools/${candidate.slug}/): ${candidate.description}`).join('\n')}\n`;
   if (path.startsWith('/tools/')) content += `\n## Cost and file handling\n\n${privacy}\n`;
   content += '\n## Links\n\n- [Privacy](https://alisoglu.com/privacy/)\n- [Contact](https://alisoglu.com/contact/)\n- [Tools](https://alisoglu.com/tools/)\n';
   await mkdir(`dist${path}`, { recursive: true }); await writeFile(`dist${path}index.md`, content);

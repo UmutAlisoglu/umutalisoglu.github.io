@@ -73,7 +73,8 @@ export function siteTemplates() {
           const value = result.match(new RegExp(`<meta property="og:${name}" content="([^"]*)"`))?.[1];
           if (value) result = result.replace('</head>', `<meta name="twitter:${name}" content="${value}"></head>`);
         }
-        return result.replace('</head>', `<link rel="stylesheet" href="/src/site/premium.css">${path.startsWith('/projects/') ? reviewStyles : ''}<script type="module" src="/src/site/experience.js"></script>${discoveryTags(path)}</head>`);
+        const metadata = { title: result.match(/<title>([\s\S]*?)<\/title>/)?.[1], description: result.match(/<meta name="description" content="([^"]*)"/)?.[1] };
+        return result.replace('</head>', `<link rel="stylesheet" href="/src/site/premium.css">${path.startsWith('/projects/') ? reviewStyles : ''}<script type="module" src="/src/site/experience.js"></script>${discoveryTags(path, metadata)}</head>`);
       },
     },
   };

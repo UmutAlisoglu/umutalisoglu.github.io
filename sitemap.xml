@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://alisoglu.com/</loc><lastmod>2026-10-25</lastmod></url>
-  <url><loc>https://alisoglu.com/tools/</loc></url>
+  <url><loc>https://alisoglu.com/</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://alisoglu.com/tools/</loc><lastmod>2026-10-27</lastmod></url>
   <url><loc>https://alisoglu.com/tools/fileforge/</loc></url>
   <url><loc>https://alisoglu.com/tools/workspace/</loc></url>
   <url><loc>https://alisoglu.com/tools/extract-text/</loc></url>
   <url><loc>https://alisoglu.com/tools/screenshot-studio/</loc></url>
   <url><loc>https://alisoglu.com/tools/document-scanner/</loc></url>
-  <url><loc>https://alisoglu.com/tools/image-converter/</loc></url>
+  <url><loc>https://alisoglu.com/tools/image-converter/</loc><lastmod>2026-10-27</lastmod></url>
   <url><loc>https://alisoglu.com/tools/pdf-organizer/</loc></url>
   <url><loc>https://alisoglu.com/tools/excel-to-pdf/</loc></url>
   <url><loc>https://alisoglu.com/tools/merge-pdf/</loc></url>
   <url><loc>https://alisoglu.com/tools/video-compressor/</loc></url>
   <url><loc>https://alisoglu.com/about/</loc></url>
   <url><loc>https://alisoglu.com/projects/</loc></url>
-  <url><loc>https://alisoglu.com/projects/fileforge/</loc></url>
-  <url><loc>https://alisoglu.com/projects/repodock/</loc></url>
+  <url><loc>https://alisoglu.com/projects/fileforge/</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://alisoglu.com/projects/repodock/</loc><lastmod>2026-10-27</lastmod></url>
   <url><loc>https://alisoglu.com/projects/skate-scape/</loc></url>
   <url><loc>https://alisoglu.com/games/</loc></url>
-  <url><loc>https://alisoglu.com/downloads/</loc></url>
+  <url><loc>https://alisoglu.com/downloads/</loc><lastmod>2026-10-27</lastmod></url>
   <url><loc>https://alisoglu.com/privacy/</loc></url>
   <url><loc>https://alisoglu.com/contact/</loc></url>
   <url><loc>https://alisoglu.com/tools/remove-background/</loc></url>

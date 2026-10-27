@@ -19,6 +19,8 @@ Umut is currently building a PCB AIO Tool (personal update, 23 October 2026).
 
 ## Windows desktop edition
 
+[Repodock 0.3.0](https://github.com/UmutAlisoglu/repodock/releases/tag/v0.3.0), released 27 October 2026, is a local project dashboard for Windows. It manages repository downloads, reviewed run commands, processes and logs. Projects still need their own runtimes and configuration. The app window uses WebView2 with browser fallback. Project links ask before importing and never run a project automatically. Installer and portable ZIP are available from the release.
+
 [FileForge Windows 0.3.0](https://github.com/UmutAlisoglu/fileforge/releases/tag/v0.3.0), released 23 October 2026, bundles the connected workspace and its engines plus nine native converters for larger jobs. Extract the complete ZIP and keep its workspace folder beside FileForge.exe. WebView2 is required; only native video needs separately installed FFmpeg/FFprobe. Workspace selections stay in page memory; native jobs use temporary copies on the same computer.
 
 ## Document tools

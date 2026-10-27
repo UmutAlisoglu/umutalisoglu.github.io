@@ -67,6 +67,8 @@ The participant script and observation sheet in `docs/usability-session.md` are 
 
 Run `npm run check:releases` after publishing a desktop app or updating download links. It checks the pinned website versions against each public latest stable GitHub release, verifies that the expected assets exist, and checks the public download responses and sizes. This network check is separate from normal builds and unit tests.
 
+After a production build, `npm run check:seo` validates unique page titles/descriptions, canonical URLs, sitemap coverage, linked structured-data entities, visible desktop download facts and Markdown summaries. Retired pages remain noindex. The existing machine-readable guides are supplemental references; no AI citation or search ranking is promised.
+
 ## New document tools
 
 - Word → PDF and PowerPoint → PDF: preview DOCX/PPTX locally, then export flattened page images. Up to 10 MB and 20 pages/slides. Layout can differ from Office; use the original app when exact layout or tagged, accessible PDFs are required. Older DOC/PPT formats, macros and embedded OLE objects aren’t supported.
