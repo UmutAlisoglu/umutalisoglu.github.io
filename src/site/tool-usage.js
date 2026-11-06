@@ -20,6 +20,7 @@ export const toolUsage = {
   'pdf-images': ['One unlocked PDF up to 25 MB · export up to 50 selected pages / 150 MB output.', 'Renders pages into pixels; this doesn’t edit the PDF’s text.', true],
   text: ['JPG, PNG, WebP, GIF or BMP ≤20 MB / 12 MP; PDF ≤25 MB / 10 selected pages.', 'English, German or Turkish. Exports editable text, not a searchable PDF.', false],
   screenshot: ['PNG, JPG or WebP · one image up to 20 MB / 20 megapixels.', 'Frames an image you choose; it doesn’t capture your screen.', false],
+  inspect: ['Any file type · one file up to 100 MB.', 'Reads the format, metadata and embedded data without changing the file. It is not a virus scanner, and encrypted parts stay unreadable.', false],
   scanner: ['JPG, PNG, WebP, GIF or BMP · one photo up to 20 MB / 12 megapixels.', 'Manual page corners. PDF export is an image page, not searchable text.', false],
 };
 

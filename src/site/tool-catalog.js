@@ -20,6 +20,7 @@ export const advancedTools = [
   { id: 'compress', slug: 'compress-pdf', name: 'Compress PDF', symbol: '⇲', short: 'Smaller images. Text intact.', description: 'Reduce supported JPEG images inside a PDF while keeping selectable text.', color: 'purple', category: 'PDFs', keywords: 'pdf compress compression shrink smaller reduce size jpeg images' },
   { id: 'split', slug: 'split-pdf', name: 'Split PDF', symbol: '⋮', short: 'Just the pages you need', description: 'Extract page numbers or ranges into a separate PDF, ready for the next task.', color: 'yellow', category: 'PDFs', keywords: 'pdf split extract separate pages range document' },
   { id: 'metadata', slug: 'remove-metadata', name: 'Remove image metadata', symbol: '◈', short: 'Keep the picture. Leave the GPS.', description: 'Remove location, camera tags and comments from JPG or PNG without recompressing pixels.', color: 'mint', category: 'Images', keywords: 'metadata exif gps location privacy camera remove strip jpg jpeg png image photo' },
+  { id: 'inspect', slug: 'file-inspector', name: 'File inspector', symbol: '⌕', short: 'What is this file, really?', description: 'See a file’s real format from its bytes, its metadata, embedded files and hidden data, with a hex view.', color: 'blue', category: 'Documents', keywords: 'file inspector inspect analyse analyze identify type format real extension magic bytes signature header hex viewer hexdump binary metadata exif gps xmp properties author hidden data embedded steganography check safe suspicious malware macro unknown what is this file checksum hash sha256 strings' },
 ];
 
 const imagePdf = { id: 'image-pdf', slug: 'image-converter', name: 'Images → PDF', symbol: '▧', short: 'One image or a whole document', description: 'Turn PNG, JPG or WebP images into one PDF, in the order you choose.', color: 'purple', category: 'PDFs', keywords: 'image images photo picture png jpg jpeg webp bmp gif pdf convert converter conversion scan document combine', href: '/tools/image-converter/?format=pdf' };
@@ -99,6 +100,7 @@ export const jobGroups = [
   { title: 'Make a PDF neater', description: 'Shrink image-heavy PDFs, extract pages, put them in order or combine documents.', ids: ['compress', 'split', 'organize', 'merge', 'image-pdf', 'pdf-images'] },
   { title: 'Fix a document photo', description: 'Straighten the page, read its text or share a spreadsheet as a PDF.', ids: ['scanner', 'text', 'spreadsheet'] },
   { title: 'Make an image ready to share', description: 'Convert a batch of photos, frame a screenshot, remove a background, crop or trace.', ids: ['heic', 'screenshot', 'background', 'crop', 'image', 'svg', 'metadata'] },
+  { title: 'Check a file before you trust it', description: 'See what a file really is, which metadata it carries and whether anything is hidden inside. Nothing is changed or uploaded.', ids: ['inspect'] },
   { title: 'Shrink a short video', description: 'Turn a large attachment into a smaller MP4 on your device.', ids: ['video'] },
 ];
 

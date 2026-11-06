@@ -118,6 +118,11 @@ try {
         assert.equal(await page.locator('#scanner-run').isDisabled(), true);
         assert.equal(await page.locator('#scanner-input').isVisible(), true);
         assert.equal(await page.locator('#scanner-sample').isVisible(), true);
+      } else if (tool.id === 'inspect') {
+        assert.equal(await page.locator('body').getAttribute('data-advanced-tool'), 'inspect');
+        assert.equal(await page.locator('#inspector-input').isVisible(), true);
+        assert.equal(await page.locator('#inspector-sample').isVisible(), true);
+        assert.equal(await page.locator('#inspector-result').isVisible(), false);
       } else if (['heic','compress','split','metadata'].includes(tool.id)) {
         assert.equal(await page.locator('body').getAttribute('data-finish-tool'), tool.id);
         assert.equal(await page.locator('#finish-run').isDisabled(), true);
