@@ -22,7 +22,7 @@ function header(path) {
   const finder = '<button type="button" class="tool-switcher-trigger" data-open-tools hidden aria-haspopup="dialog" title="Find a tool (Ctrl or Command + K)"><span aria-hidden="true">⌕</span> Find a tool <kbd aria-hidden="true">Ctrl K</kbd></button>';
   return `<a class="skip-link" href="#main">Skip to content</a>
 <div class="site-header-band"><header class="site-header wrap hub-header">
-  <a class="wordmark" href="/" aria-label="Umut Alisoglu home"><span class="monogram">u.</span><span>umut alisoglu<span class="wordmark-dot">.</span><small>software &amp; projects</small></span></a>
+  <a class="wordmark" href="/"><span class="monogram" aria-hidden="true">u.</span><span>umut alisoglu<span class="wordmark-dot">.</span><small>software &amp; projects</small></span></a>
   <button class="site-menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" hidden><span>Menu</span><span class="menu-lines" aria-hidden="true"></span></button>
   <nav id="site-navigation" aria-label="Main navigation">${navigation.map(([href, label]) => `<a href="${href}"${(href === '/' ? path === '/' : path.startsWith(href)) ? ` aria-current="${path === href ? 'page' : 'true'}"` : ''}>${label}</a>`).join('')}${finder}<a href="/contact/" class="nav-contact"${path === '/contact/' ? ' aria-current="page"' : ''}>Say hello <span aria-hidden="true">↗</span></a></nav>
 </header></div>`;
