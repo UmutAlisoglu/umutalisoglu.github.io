@@ -20,6 +20,14 @@ const presets = {
   square: { label: 'Square tile', width: 80, height: 80, shape: 'rounded', radius: 2 },
 };
 
+const sideIds = ['front', 'back'];
+const sideLabels = { front: 'Front', back: 'Back' };
+// Per-side settings that live in the form while that side is being edited.
+const sideFields = ['fit', 'zoom', 'offsetX', 'offsetY', 'levels', 'brightness', 'contrast', 'invert', 'dither', 'cleanup'];
+const ZOOM_MIN = 0.2, ZOOM_MAX = 6, OFFSET_LIMIT = 300;
+const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
+
 const root = document.querySelector('[data-pcb-studio]');
 if (root) start(root);
 
@@ -27,13 +35,21 @@ function start(root) {
   const $ = selector => root.querySelector(selector);
   const form = $('form'), fileInput = $('#pcb-file'), drop = $('.pcb-drop'), canvas = $('#pcb-preview'), stage = $('.pcb-stage'), levelList = $('.pcb-levels');
   const status = $('#pcb-status'), warnings = $('#pcb-warnings'), download = $('#pcb-download'), savePreview = $('#pcb-save-preview');
+  const cropTools = $('.pcb-crop-tools'), subbar = $('.pcb-subbar'), panel = $('#pcb-side-panel');
   const work = document.createElement('canvas'), workContext = work.getContext('2d', { willReadFrequently: true });
-  let source = sampleArtwork(), sourceName = 'business-card', levelFinishes = [...defaultLevelFinishes[4]], result = null, timer = 0;
+  let version = 0;
+  const makeSide = (source, name, extra = {}) => ({ source, name, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0, levels: 4, brightness: 0, contrast: 0, invert: false, dither: false, cleanup: true, finishes: [...defaultLevelFinishes[4]], ...extra });
+  const sampleSides = () => ({ front: makeSide(sampleArtwork(), 'Sample business card'), back: makeSide(sampleBack(), 'Sample back side') });
+  let sides = sampleSides(), editing = 'front', show = 'front', mode = 'preview';
+  const results = { front: null, back: null };
+  let geometryNow = null, timer = 0, cropView = null, cropFrame = 0;
 
   for (const [id, preset] of Object.entries(presets)) form.preset.append(new Option(`${preset.label} · ${preset.shape === 'circle' ? `⌀ ${preset.width}` : `${preset.width} × ${preset.height}`} mm`, id));
   form.preset.append(new Option('Custom size', 'custom'));
   for (const [id, mask] of Object.entries(maskColors)) form.mask.append(new Option(mask.label, id));
   for (const [id, surface] of Object.entries(surfaces)) form.surface.append(new Option(surface.label, id));
+  form.zoom.min = ZOOM_MIN; form.zoom.max = ZOOM_MAX;
+  for (const name of ['offsetX', 'offsetY']) { form[name].min = -OFFSET_LIMIT; form[name].max = OFFSET_LIMIT; }
   applyPreset('card');
   form.mask.value = 'blue'; form.surface.value = 'hasl'; form.detail.value = '0.1';
 
@@ -41,25 +57,76 @@ function start(root) {
     const preset = presets[id]; if (!preset) return;
     form.preset.value = id; form.width.value = preset.width; form.height.value = preset.height; form.shape.value = preset.shape; form.radius.value = preset.radius ?? 3;
   }
+  /** Settings shared by both sides of the board. */
   function settings() {
-    const pixelChoice = Number(form.detail.value), dither = form.dither.checked;
     return {
       width: Number(form.width.value), height: Number(form.height.value), shape: form.shape.value, radius: Number(form.radius.value), holes: form.holes.checked,
-      fit: form.fit.value, zoom: Number(form.zoom.value), offsetX: Number(form.offsetX.value), offsetY: Number(form.offsetY.value),
-      levels: Number(form.levels.value), brightness: Number(form.brightness.value), contrast: Number(form.contrast.value), invert: form.invert.checked, dither, cleanup: form.cleanup.checked,
-      pixel: dither ? Math.max(0.2, pixelChoice) : pixelChoice, pixelChoice, mask: form.mask.value, surface: form.surface.value, view: form.view.value,
+      pixelChoice: Number(form.detail.value), mask: form.mask.value, surface: form.surface.value, view: form.view.value,
     };
   }
-  function renderLevels(count) {
-    if (levelFinishes.length !== count) levelFinishes = [...defaultLevelFinishes[count]];
-    levelList.replaceChildren(...levelFinishes.map((finish, index) => {
+  const pixelFor = (side, shared) => side.dither ? Math.max(0.2, shared.pixelChoice) : shared.pixelChoice;
+  const current = () => sides[editing];
+
+  /** Where the image lands inside a box of the board's proportions (any unit). */
+  function imageRect(side, boxW, boxH) {
+    const sw = side.source.width, sh = side.source.height;
+    const ratio = side.fit === 'cover' ? Math.max(boxW / sw, boxH / sh) : Math.min(boxW / sw, boxH / sh);
+    const w = sw * ratio * side.zoom, h = sh * ratio * side.zoom;
+    return { x: (boxW - w) / 2 + side.offsetX / 100 * boxW, y: (boxH - h) / 2 + side.offsetY / 100 * boxH, w, h };
+  }
+
+  // ---- Form <-> side state ----
+  function writeForm() {
+    const side = current();
+    for (const name of sideFields) {
+      const field = form[name];
+      if (field.type === 'checkbox') field.checked = side[name]; else field.value = side[name];
+    }
+    renderLevels();
+    updateOutputs();
+    $('.pcb-drop-name').textContent = side.name;
+    $('[data-side-label]').textContent = sideLabels[editing].toLowerCase();
+    $('#pcb-plain').hidden = !side.source;
+    for (const control of root.querySelectorAll('[data-mode-switch="crop"], .pcb-crop-tools [data-crop]')) control.disabled = !side.source;
+    for (const tab of root.querySelectorAll('[data-side]')) {
+      const active = tab.dataset.side === editing;
+      tab.setAttribute('aria-selected', String(active)); tab.tabIndex = active ? 0 : -1;
+    }
+    panel.setAttribute('aria-labelledby', `pcb-tab-${editing}`);
+    updateSummaries();
+  }
+  function readField(target) {
+    const side = current(), name = target.name;
+    if (target.type === 'checkbox') side[name] = target.checked;
+    else if (name === 'fit') side[name] = target.value;
+    else side[name] = Number(target.value);
+    if (name === 'levels' && side.finishes.length !== side.levels) side.finishes = [...defaultLevelFinishes[side.levels]];
+    if (name === 'fit') { side.zoom = 1; side.offsetX = 0; side.offsetY = 0; writePlacement(); }
+  }
+  function writePlacement() {
+    const side = current();
+    form.zoom.value = side.zoom; form.offsetX.value = side.offsetX; form.offsetY.value = side.offsetY; form.fit.value = side.fit;
+    updateOutputs();
+  }
+  function updateOutputs() {
+    for (const output of form.querySelectorAll('output[data-for]')) output.textContent = formatValue(output.dataset.for, current()[output.dataset.for] ?? form[output.dataset.for].value);
+  }
+  function updateSummaries() {
+    for (const id of sideIds) {
+      const side = sides[id];
+      $(`[data-side-summary="${id}"]`).textContent = side.source ? `${side.levels} tones` : 'Plain';
+    }
+  }
+  function renderLevels() {
+    const side = current(), count = side.finishes.length;
+    levelList.replaceChildren(...side.finishes.map((finish, index) => {
       const row = document.createElement('label'); row.className = 'pcb-level';
       const tone = Math.round(((index + 0.5) / count) * 255);
       const swatch = document.createElement('span'); swatch.className = 'pcb-level-tone'; swatch.style.background = `rgb(${tone},${tone},${tone})`; swatch.setAttribute('aria-hidden', 'true');
       const name = document.createElement('span'); name.className = 'pcb-level-name'; name.textContent = index === 0 ? 'Darkest' : index === count - 1 ? 'Lightest' : `Tone ${index + 1}`;
       const select = document.createElement('select'); select.dataset.level = index; select.setAttribute('aria-label', `Finish for ${name.textContent.toLowerCase()} areas`);
       for (const id of finishIds) select.append(new Option(finishes[id].label, id));
-      select.value = finish;
+      select.value = finish; select.disabled = !side.source;
       const chip = document.createElement('span'); chip.className = 'pcb-level-chip'; chip.dataset.finish = finish; chip.setAttribute('aria-hidden', 'true');
       row.append(swatch, name, chip, select);
       return row;
@@ -71,40 +138,80 @@ function start(root) {
     for (const chip of levelList.querySelectorAll('.pcb-level-chip')) chip.style.background = `rgb(${finishColor(chip.dataset.finish, mask, surface).join(',')})`;
   }
 
-  function schedule() { clearTimeout(timer); timer = setTimeout(process, 60); }
+  // ---- Image processing ----
+  function schedule() { clearTimeout(timer); timer = setTimeout(process, mode === 'crop' ? 350 : 60); }
+  function computeSide(id, geometry, shared) {
+    const side = sides[id], pixel = pixelFor(side, shared);
+    const key = JSON.stringify([geometry, pixel, side.version, side.source ? sideFields.map(name => side[name]) : 0, side.source ? side.finishes : 0]);
+    if (results[id]?.key === key) return;
+    const gw = Math.ceil(geometry.width / pixel), gh = Math.ceil(geometry.height / pixel);
+    let levels, levelFinishes;
+    if (!side.source) { levels = new Uint8Array(gw * gh); levelFinishes = ['maskSubstrate']; }
+    else {
+      work.width = gw; work.height = gh;
+      workContext.fillStyle = '#fff'; workContext.fillRect(0, 0, gw, gh);
+      const rect = imageRect(side, gw, gh);
+      workContext.imageSmoothingQuality = 'high';
+      workContext.drawImage(side.source, rect.x, rect.y, rect.w, rect.h);
+      const gray = adjustTone(luminance(workContext.getImageData(0, 0, gw, gh).data, gw * gh), { brightness: side.brightness, contrast: side.contrast, invert: side.invert });
+      levels = quantize(gray, gw, gh, side.levels, { dither: side.dither });
+      if (side.cleanup && !side.dither) { removeSlivers(levels, gw, gh, 2); despeckle(levels, gw, gh, Math.ceil((0.3 / pixel) ** 2)); }
+      levelFinishes = side.finishes;
+    }
+    results[id] = { key, pixel, geometry, plain: !side.source, layers: buildLayers(levels, gw, gh, levelFinishes, geometry, pixel) };
+  }
   function process() {
-    const s = settings();
+    const shared = settings();
     let geometry;
-    try { geometry = boardGeometry(s); } catch (error) { status.textContent = error.message; download.disabled = true; return; }
-    const gw = Math.ceil(geometry.width / s.pixel), gh = Math.ceil(geometry.height / s.pixel);
-    work.width = gw; work.height = gh;
-    workContext.fillStyle = '#fff'; workContext.fillRect(0, 0, gw, gh);
-    const sw = source.width, sh = source.height, ratio = s.fit === 'cover' ? Math.max(gw / sw, gh / sh) : Math.min(gw / sw, gh / sh);
-    const dw = sw * ratio * s.zoom, dh = sh * ratio * s.zoom;
-    workContext.imageSmoothingQuality = 'high';
-    workContext.drawImage(source, (gw - dw) / 2 + s.offsetX / 100 * gw, (gh - dh) / 2 + s.offsetY / 100 * gh, dw, dh);
-    const gray = adjustTone(luminance(workContext.getImageData(0, 0, gw, gh).data, gw * gh), { brightness: s.brightness, contrast: s.contrast, invert: s.invert });
-    const levels = quantize(gray, gw, gh, s.levels, { dither: s.dither });
-    if (s.cleanup && !s.dither) { removeSlivers(levels, gw, gh, 2); despeckle(levels, gw, gh, Math.ceil((0.3 / s.pixel) ** 2)); }
-    const layers = buildLayers(levels, gw, gh, levelFinishes, geometry, s.pixel);
-    result = { s, geometry, layers };
+    try { geometry = boardGeometry(shared); } catch (error) { status.textContent = error.message; download.disabled = true; return; }
+    geometryNow = geometry;
+    for (const id of sideIds) computeSide(id, geometry, shared);
     draw(); report();
   }
 
+  // ---- Drawing ----
   function draw() {
-    if (!result) return;
-    const { geometry, layers } = result, { width: gw, height: gh, finish } = layers;
-    const live = settings(), s = { ...result.s, mask: live.mask, surface: live.surface, view: live.view };
-    const mask = maskColors[s.mask];
-    const layerView = { copper: layers.copper, mask: layers.opening, silk: layers.silk }[s.view];
+    if (mode === 'crop') { drawCrop(); return; }
+    if (!results.front || !results.back) return;
+    const shared = settings(), geometry = results.front.geometry, mask = maskColors[shared.mask];
+    const ids = show === 'both' ? sideIds : [show];
     const box = stage.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
     const maxW = Math.max(240, box.width - 48), maxH = Math.max(240, Math.min(window.innerHeight * 0.7, 760) - 48);
-    const scale = Math.min(maxW / geometry.width, maxH / geometry.height);
-    const cssW = geometry.width * scale, cssH = geometry.height * scale;
+    const { width: w, height: h } = geometry;
+    const caption = ids.length > 1 ? 26 : 0, gap = ids.length > 1 ? 28 : 0;
+    let layout = 'row', scale = Math.min(maxW / w, maxH / h);
+    if (ids.length > 1) {
+      const row = Math.min((maxW - gap) / (2 * w), (maxH - caption) / h), column = Math.min(maxW / w, (maxH - gap - 2 * caption) / (2 * h));
+      layout = row >= column ? 'row' : 'column'; scale = Math.max(row, column);
+    }
+    const cssW = layout === 'row' ? ids.length * w * scale + gap * (ids.length - 1) : w * scale;
+    const cssH = layout === 'row' ? h * scale + caption : 2 * (h * scale + caption) + gap;
     canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
     canvas.style.width = `${cssW}px`; canvas.style.height = `${cssH}px`;
-    const ctx = canvas.getContext('2d'), k = canvas.width / geometry.width, W = canvas.width, H = canvas.height;
-    const drawW = gw * s.pixel * k, drawH = gh * s.pixel * k, px = k / 10; // px: one tenth of a millimetre on screen
+    const ctx = canvas.getContext('2d'), k = scale * dpr;
+    stage.style.setProperty('--pcb-edge', `rgb(${mask.substrate.map(v => Math.max(0, v - 30)).join(',')})`);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ids.forEach((id, index) => {
+      const board = renderBoard(results[id], shared, k);
+      const x = layout === 'row' ? index * (w * scale + gap) * dpr : 0, y = layout === 'column' ? index * (h * scale + caption + gap) * dpr : 0;
+      ctx.drawImage(board, x, y);
+      if (caption) {
+        ctx.fillStyle = '#4c5866'; ctx.font = `600 ${12 * dpr}px system-ui, -apple-system, "Segoe UI", Arial, sans-serif`; ctx.textAlign = 'center';
+        ctx.fillText(id === 'front' ? 'Front' : 'Back · turned over', x + board.width / 2, y + board.height + 19 * dpr);
+      }
+    });
+    const sideText = ids.length > 1 ? 'front and back' : `${show} side`;
+    canvas.setAttribute('aria-label', `Preview of the ${sideText} of a ${geometry.shape === 'circle' ? `${w} mm round` : `${w} by ${h} mm`} board with ${mask.label.toLowerCase()} solder mask`);
+  }
+
+  /** Draws one side of the board at `k` canvas pixels per millimetre, like a product photo. */
+  function renderBoard(result, s, k) {
+    const { geometry, layers, pixel } = result, { width: gw, height: gh, finish } = layers;
+    const mask = maskColors[s.mask];
+    const layerView = { copper: layers.copper, mask: layers.opening, silk: layers.silk }[s.view];
+    const out = document.createElement('canvas'); out.width = Math.round(geometry.width * k); out.height = Math.round(geometry.height * k);
+    const ctx = out.getContext('2d'), W = out.width, H = out.height;
+    const drawW = gw * pixel * k, drawH = gh * pixel * k, px = k / 10; // px: one tenth of a millimetre on screen
 
     // Upscales one finish to screen resolution with smooth, crisp edges instead of square pixels.
     const maskFor = test => {
@@ -132,8 +239,6 @@ function start(root) {
     const rgb = color => `rgb(${color.map(Math.round).join(',')})`;
     const shade = (color, amount) => color.map(v => Math.max(0, Math.min(255, v + amount)));
 
-    stage.style.setProperty('--pcb-edge', rgb(shade(mask.substrate, -30)));
-    ctx.clearRect(0, 0, W, H);
     ctx.save(); outlinePath(ctx, geometry, k); ctx.clip();
     if (layerView) {
       ctx.fillStyle = 'rgb(250,250,247)'; ctx.fillRect(0, 0, W, H);
@@ -180,30 +285,144 @@ function start(root) {
       ctx.strokeStyle = rim; ctx.stroke(); ctx.restore();
       for (const hole of geometry.holes) { ctx.save(); ctx.beginPath(); ctx.arc(hole.x * k, (geometry.height - hole.y) * k, hole.d / 2 * k, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = px * 2; ctx.stroke(); ctx.restore(); }
     }
-    canvas.setAttribute('aria-label', `Preview of a ${geometry.shape === 'circle' ? `${geometry.width} mm round` : `${geometry.width} by ${geometry.height} mm`} board with ${maskColors[s.mask].label.toLowerCase()} solder mask`);
+    return out;
   }
 
+  /** Crop view: the full image, the board cut-out on top, and everything outside dimmed. */
+  function drawCrop() {
+    const geometry = geometryNow; if (!geometry) return;
+    const side = current(), shared = settings(), mask = maskColors[shared.mask];
+    const box = stage.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    const { width: w, height: h } = geometry, accent = getComputedStyle(root).getPropertyValue('--pcb-accent').trim() || '#3159d9';
+    const cssW = Math.max(260, box.width - 32), maxH = Math.max(280, Math.min(window.innerHeight * 0.7, 760) - 32);
+    const scale = Math.min(cssW * 0.76 / w, (maxH - 40) * 0.82 / h);
+    // Leave room around the board so the parts of the image outside it stay visible.
+    const cssH = Math.min(maxH, Math.max(240, h * scale / 0.7 + 40));
+    canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+    canvas.style.width = `${cssW}px`; canvas.style.height = `${cssH}px`;
+    const bw = w * scale, bh = h * scale, bx = (cssW - bw) / 2, by = (cssH - bh) / 2 + 10;
+    cropView = { bx, by, bw, bh };
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+    ctx.fillStyle = '#e9ecf1'; ctx.beginPath(); ctx.roundRect(0, 0, cssW, cssH, 14); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.roundRect(0, 0, cssW, cssH, 14); ctx.clip();
+    if (side.source) {
+      const r = imageRect(side, bw, bh);
+      ctx.imageSmoothingQuality = 'high';
+      ctx.globalAlpha = 0.32; ctx.drawImage(side.source, bx + r.x, by + r.y, r.w, r.h); ctx.globalAlpha = 1;
+      ctx.save(); ctx.translate(bx, by); outlinePath(ctx, geometry, scale); ctx.clip();
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, bw, bh);
+      ctx.drawImage(side.source, r.x, r.y, r.w, r.h);
+      // Rule-of-thirds guides help to place a logo or a face.
+      ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+      for (const f of [1 / 3, 2 / 3]) { ctx.beginPath(); ctx.moveTo(bw * f, 0); ctx.lineTo(bw * f, bh); ctx.moveTo(0, bh * f); ctx.lineTo(bw, bh * f); ctx.stroke(); }
+      ctx.strokeStyle = 'rgba(32,44,59,.35)'; ctx.lineDashOffset = 4;
+      for (const f of [1 / 3, 2 / 3]) { ctx.beginPath(); ctx.moveTo(bw * f, 0); ctx.lineTo(bw * f, bh); ctx.moveTo(0, bh * f); ctx.lineTo(bw, bh * f); ctx.stroke(); }
+      ctx.restore();
+    } else {
+      ctx.save(); ctx.translate(bx, by); outlinePath(ctx, geometry, scale); ctx.fillStyle = `rgb(${mask.substrate.join(',')})`; ctx.fill(); ctx.restore();
+      ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.font = '600 14px system-ui, -apple-system, "Segoe UI", Arial, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('This side is plain. Choose an image to crop it here.', bx + bw / 2, by + bh / 2 + 5);
+    }
+    ctx.restore();
+    // Board edge, hole positions and the size label.
+    ctx.save(); ctx.translate(bx, by); ctx.setLineDash([]);
+    outlinePath(ctx, geometry, scale); ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.stroke();
+    outlinePath(ctx, geometry, scale); ctx.lineWidth = 2; ctx.strokeStyle = accent; ctx.stroke();
+    for (const hole of geometry.holes) { ctx.beginPath(); ctx.arc(hole.x * scale, (h - hole.y) * scale, hole.d / 2 * scale, 0, Math.PI * 2); ctx.fillStyle = 'rgba(233,236,241,.9)'; ctx.fill(); ctx.strokeStyle = accent; ctx.lineWidth = 1; ctx.stroke(); }
+    ctx.restore();
+    const label = `${sideLabels[editing]} · ${geometry.shape === 'circle' ? `⌀ ${w} mm` : `${w} × ${h} mm`}`;
+    ctx.font = '700 12px system-ui, -apple-system, "Segoe UI", Arial, sans-serif'; ctx.textAlign = 'center';
+    const lw = ctx.measureText(label).width + 20, lx = bx + bw / 2 - lw / 2, ly = by - 30;
+    ctx.fillStyle = accent; ctx.beginPath(); ctx.roundRect(lx, ly, lw, 22, 11); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillText(label, bx + bw / 2, ly + 15);
+    canvas.setAttribute('aria-label', `Crop view: ${side.source ? 'drag to move the image, scroll or pinch to zoom, or use the arrow keys and plus or minus' : 'this side is plain'}`);
+  }
+  const requestCrop = () => { if (cropFrame) return; cropFrame = requestAnimationFrame(() => { cropFrame = 0; drawCrop(); }); };
+  function placementChanged() { writePlacement(); requestCrop(); schedule(); }
+  function zoomAt(fx, fy, factor) {
+    const side = current(); if (!side.source) return;
+    const zoom = clamp(side.zoom * factor, ZOOM_MIN, ZOOM_MAX), f = zoom / side.zoom;
+    const cx = 0.5 + side.offsetX / 100, cy = 0.5 + side.offsetY / 100;
+    side.offsetX = clamp(((fx + (cx - fx) * f) - 0.5) * 100, -OFFSET_LIMIT, OFFSET_LIMIT);
+    side.offsetY = clamp(((fy + (cy - fy) * f) - 0.5) * 100, -OFFSET_LIMIT, OFFSET_LIMIT);
+    side.zoom = zoom;
+  }
+  /** Converts a pointer position to a fraction of the board (0..1 inside it). */
+  function boardPoint(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    return [(clientX - rect.left - cropView.bx) / cropView.bw, (clientY - rect.top - cropView.by) / cropView.bh];
+  }
+  function moveBy(dxFraction, dyFraction) {
+    const side = current();
+    side.offsetX = clamp(side.offsetX + dxFraction * 100, -OFFSET_LIMIT, OFFSET_LIMIT);
+    side.offsetY = clamp(side.offsetY + dyFraction * 100, -OFFSET_LIMIT, OFFSET_LIMIT);
+  }
+
+  // ---- Modes and sides ----
+  function setMode(next) {
+    if (next === 'crop' && !current().source) return;
+    mode = next;
+    for (const button of root.querySelectorAll('[data-mode]')) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+    cropTools.hidden = mode !== 'crop'; subbar.hidden = mode === 'crop';
+    stage.classList.toggle('is-cropping', mode === 'crop');
+    if (mode === 'crop') { canvas.style.transform = ''; stage.classList.remove('is-tilted'); canvas.tabIndex = 0; }
+    else { canvas.removeAttribute('tabindex'); stage.classList.toggle('is-tilted', form.tilt.checked); canvas.style.transform = form.tilt.checked ? 'rotateX(18deg) rotateY(-14deg)' : ''; }
+    if (mode === 'preview') process(); else draw();
+  }
+  function setShow(next) {
+    if (next === show) return;
+    const previous = show; show = next;
+    for (const button of root.querySelectorAll('[data-show]')) button.setAttribute('aria-pressed', String(button.dataset.show === show));
+    if (mode !== 'preview' || previous === 'both' || next === 'both' || reducedMotion() || !canvas.animate) { draw(); return; }
+    // Turn the board over: rotate to edge-on, swap the side, rotate back.
+    const base = canvas.style.transform || '';
+    const out = canvas.animate([{ transform: `${base} rotateY(0deg)` }, { transform: `${base} rotateY(90deg)` }], { duration: 150, easing: 'ease-in', fill: 'forwards' });
+    out.finished.then(() => { draw(); canvas.animate([{ transform: `${base} rotateY(-90deg)` }, { transform: `${base} rotateY(0deg)` }], { duration: 190, easing: 'ease-out' }); out.cancel(); }).catch(() => draw());
+  }
+  function setEditing(id) {
+    if (id !== editing) { editing = id; writeForm(); }
+    if (show !== 'both') setShow(id);
+    if (mode === 'crop') { if (current().source) draw(); else setMode('preview'); }
+  }
+
+  // ---- Report and files ----
   function report() {
-    const { s, geometry, layers } = result, counts = new Map();
-    for (const id of layers.finish) if (id !== 255) counts.set(id, (counts.get(id) || 0) + 1);
-    const used = [...counts.keys()].map(id => finishIds[id]);
-    const notes = [];
-    if (s.dither && s.pixelChoice < 0.2) notes.push('Dithering uses 0.2 mm dots, the smallest size most makers print reliably.');
-    if (!s.dither && s.pixel < 0.15 && !s.cleanup) notes.push('Turn on “Clean up specks” so tiny details are not lost in production.');
-    if (used.includes('gold')) notes.push(`Order with ${surfaces[s.surface].label} as surface finish to get the metal look.`);
-    if (!used.includes('silk') && levelFinishes.includes('silk')) notes.push('No silkscreen areas left with the current tones.');
-    if (s.holes && !geometry.holes.length) notes.push(geometry.shape === 'circle' ? 'Mounting holes are only added to rectangular boards.' : 'Mounting holes need a board of at least 20 × 20 mm.');
+    const geometry = geometryNow, shared = settings(), notes = [];
+    const twoSided = !!sides.back.source && !!sides.front.source;
+    const usedOn = id => new Set([...results[id].layers.finish].filter(v => v !== 255).map(v => finishIds[v]));
+    let anyGold = false;
+    for (const id of sideIds) {
+      const side = sides[id], result = results[id]; if (!side.source) continue;
+      const prefix = twoSided || id === 'back' ? `${sideLabels[id]}: ` : '';
+      const used = usedOn(id);
+      if (used.has('gold')) anyGold = true;
+      if (side.dither && shared.pixelChoice < 0.2) notes.push(`${prefix}Dithering uses 0.2 mm dots, the smallest size most makers print reliably.`);
+      if (!side.dither && result.pixel < 0.15 && !side.cleanup) notes.push(`${prefix}Turn on “Clean up specks” so tiny details are not lost in production.`);
+      if (!used.has('silk') && side.finishes.includes('silk')) notes.push(`${prefix}No silkscreen areas left with the current tones.`);
+      const rect = imageRect(side, geometry.width, geometry.height), perMm = side.source.width / rect.w;
+      if (perMm < 0.5 / result.pixel) notes.push(`${prefix}The image is enlarged a lot (${perMm.toFixed(1)} pixels per mm), so edges may look soft. A larger image gives crisper lines.`);
+    }
+    if (anyGold) notes.push(`Order with ${surfaces[shared.surface].label} as surface finish to get the metal look.`);
+    if (shared.holes && !geometry.holes.length) notes.push(geometry.shape === 'circle' ? 'Mounting holes are only added to rectangular boards.' : 'Mounting holes need a board of at least 20 × 20 mm.');
     warnings.replaceChildren(...notes.map(text => Object.assign(document.createElement('li'), { textContent: text })));
     const shapeText = geometry.shape === 'circle' ? `⌀ ${geometry.width} mm` : `${geometry.width} × ${geometry.height} mm`;
-    status.textContent = `${shapeText} · ${s.pixel} mm detail · ${s.levels} tones`;
+    const sideText = id => sides[id].source ? `${sides[id].levels} tones` : 'plain';
+    status.textContent = mode === 'crop'
+      ? 'Drag to move · scroll or pinch to zoom · arrow keys and + / − work too'
+      : `${shapeText} · ${results.front.pixel} mm detail · front ${sideText('front')} · back ${sideText('back')}`;
+    for (const label of root.querySelectorAll('[data-board-size]')) label.textContent = shapeText;
+    updateSummaries();
     download.disabled = false;
   }
 
   function buildZip() {
-    const { geometry, layers } = result, live = settings(), s = { ...result.s, mask: live.mask, surface: live.surface };
-    const used = new Set([...layers.finish].filter(id => id !== 255).map(id => finishIds[id]));
-    const notes = orderNotes({ geometry, pixel: s.pixel, maskColor: maskColors[s.mask].label, surface: surfaces[s.surface].label, usesGold: used.has('gold'), usesBare: used.has('bare') });
-    const { files, stats } = fabricationFiles(layers, geometry, s.pixel, { name: 'pcb-art', notes });
+    const geometry = geometryNow, shared = settings(), front = results.front, back = results.back.plain ? null : results.back;
+    const used = new Set();
+    for (const result of [front, back]) if (result) for (const v of result.layers.finish) if (v !== 255) used.add(finishIds[v]);
+    const notes = orderNotes({ geometry, pixel: front.pixel, maskColor: maskColors[shared.mask].label, surface: surfaces[shared.surface].label, usesGold: used.has('gold'), usesBare: used.has('bare'), backPixel: back ? back.pixel : null, frontArt: !front.plain });
+    const { files, stats } = fabricationFiles(front.layers, geometry, front.pixel, { name: 'pcb-art', notes, back: back && { layers: back.layers, pixel: back.pixel } });
     const zipped = zipSync(Object.fromEntries(Object.entries(files).map(([name, text]) => [name, strToU8(text)])), { level: 9 });
     return { zipped, stats };
   }
@@ -212,8 +431,9 @@ function start(root) {
     document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
   function baseName() {
-    const { geometry } = result, safe = sourceName.toLowerCase().replace(/\.[a-z0-9]+$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'art';
-    return `pcb-art-${safe}-${geometry.width}x${geometry.height}mm`;
+    const named = sides.front.source ? sides.front : sides.back;
+    const safe = named.name.toLowerCase().replace(/\.[a-z0-9]+$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'art';
+    return `pcb-art-${safe}-${geometryNow.width}x${geometryNow.height}mm`;
   }
 
   async function loadFile(file) {
@@ -223,62 +443,168 @@ function start(root) {
     image.decoding = 'async'; image.src = url;
     try {
       await image.decode();
-      if (!image.naturalWidth) { image.width = 1000; image.height = 1000; }
-      const canvasCopy = document.createElement('canvas'), longest = Math.max(image.naturalWidth || 1000, image.naturalHeight || 1000), fit = Math.min(1, 3000 / longest);
-      canvasCopy.width = Math.max(1, Math.round((image.naturalWidth || 1000) * fit)); canvasCopy.height = Math.max(1, Math.round((image.naturalHeight || 1000) * fit));
-      canvasCopy.getContext('2d').drawImage(image, 0, 0, canvasCopy.width, canvasCopy.height);
-      source = canvasCopy; sourceName = file.name;
-      $('.pcb-drop-name').textContent = file.name;
+      const naturalW = image.naturalWidth || 1000, naturalH = image.naturalHeight || 1000;
+      const copy = document.createElement('canvas'), fit = Math.min(1, 3000 / Math.max(naturalW, naturalH));
+      copy.width = Math.max(1, Math.round(naturalW * fit)); copy.height = Math.max(1, Math.round(naturalH * fit));
+      copy.getContext('2d').drawImage(image, 0, 0, copy.width, copy.height);
+      // A new picture starts centred and filling the board; tone choices of this side are kept.
+      Object.assign(current(), { source: copy, name: file.name, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0 });
+      writeForm();
+      if (show !== 'both') setShow(editing);
+      setMode('crop');
       schedule();
     } catch { status.textContent = 'This image could not be opened. Try another file.'; }
     finally { URL.revokeObjectURL(url); }
   }
+  function rotateSource() {
+    const side = current(); if (!side.source) return;
+    const src = side.source, turned = document.createElement('canvas'); turned.width = src.height; turned.height = src.width;
+    const t = turned.getContext('2d'); t.translate(turned.width, 0); t.rotate(Math.PI / 2); t.drawImage(src, 0, 0);
+    // The image turns around its own centre, so its position on the board stays the same.
+    Object.assign(side, { source: turned, version: ++version });
+    placementChanged();
+  }
 
+  // ---- Events ----
   form.addEventListener('input', event => {
     const target = event.target;
     if (target.name === 'preset') applyPreset(target.value);
     else if (['width', 'height', 'shape', 'radius'].includes(target.name)) form.preset.value = 'custom';
-    if (target.dataset.level) { levelFinishes[target.dataset.level] = target.value; target.parentElement.querySelector('.pcb-level-chip').dataset.finish = target.value; paintChips(); }
-    if (target.name === 'levels') renderLevels(Number(target.value));
+    if (target.dataset.level) { current().finishes[target.dataset.level] = target.value; target.parentElement.querySelector('.pcb-level-chip').dataset.finish = target.value; paintChips(); }
+    if (sideFields.includes(target.name)) readField(target);
+    if (target.name === 'levels') renderLevels();
     if (target.name === 'mask' || target.name === 'surface') paintChips();
+    if (target.name === 'tilt') return;
     form.radius.closest('label').hidden = form.shape.value !== 'rounded';
-    for (const output of form.querySelectorAll('output[data-for]')) output.textContent = formatValue(output.dataset.for, form[output.dataset.for].value);
+    updateOutputs();
+    if (['zoom', 'offsetX', 'offsetY', 'fit'].includes(target.name) && mode === 'crop') requestCrop();
     if (target.name === 'view' || target.name === 'mask' || target.name === 'surface') draw(); else schedule();
   });
   form.addEventListener('submit', event => event.preventDefault());
-  fileInput.addEventListener('change', () => loadFile(fileInput.files[0]));
+  fileInput.addEventListener('change', () => { loadFile(fileInput.files[0]); fileInput.value = ''; });
   $('#pcb-sample').addEventListener('click', () => {
-    source = sampleArtwork(); sourceName = 'business-card'; $('.pcb-drop-name').textContent = 'Sample business card';
-    applyPreset('card'); form.mask.value = 'blue'; form.surface.value = 'hasl'; form.detail.value = '0.1'; form.fit.value = 'cover'; form.zoom.value = 1; form.offsetX.value = 0; form.offsetY.value = 0;
-    form.levels.value = 4; levelFinishes = [...defaultLevelFinishes[4]]; renderLevels(4); form.dither.checked = false; form.invert.checked = false; form.brightness.value = 0; form.contrast.value = 0;
-    form.dispatchEvent(new Event('input')); schedule();
+    sides = sampleSides();
+    applyPreset('card'); form.mask.value = 'blue'; form.surface.value = 'hasl'; form.detail.value = '0.1';
+    form.radius.closest('label').hidden = form.shape.value !== 'rounded';
+    writeForm(); setMode('preview');
   });
+  $('#pcb-plain').addEventListener('click', () => {
+    Object.assign(current(), { source: null, name: 'Plain, no artwork', version: ++version });
+    writeForm(); setMode('preview');
+  });
+  const tabs = [...root.querySelectorAll('[data-side]')];
+  for (const tab of tabs) {
+    tab.addEventListener('click', () => setEditing(tab.dataset.side));
+    tab.addEventListener('keydown', event => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      const next = tabs[(tabs.indexOf(tab) + 1) % tabs.length]; next.focus(); setEditing(next.dataset.side);
+    });
+  }
+  for (const button of root.querySelectorAll('[data-show]')) button.addEventListener('click', () => {
+    const next = button.dataset.show;
+    if (next !== 'both') { editing = next; writeForm(); }
+    if (mode === 'crop' && next !== 'both' && !current().source) setMode('preview');
+    setShow(next);
+    if (mode === 'crop') draw();
+  });
+  for (const button of root.querySelectorAll('[data-mode]')) button.addEventListener('click', () => setMode(button.dataset.mode));
+  for (const button of root.querySelectorAll('[data-mode-switch]')) button.addEventListener('click', () => {
+    setMode(button.dataset.modeSwitch);
+    if (button.dataset.modeSwitch === 'crop') stage.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
+  });
+  cropTools.addEventListener('click', event => {
+    const action = event.target.closest('[data-crop]')?.dataset.crop; if (!action) return;
+    const side = current(); if (!side.source) return;
+    if (action === 'fill' || action === 'fit') Object.assign(side, { fit: action === 'fill' ? 'cover' : 'contain', zoom: 1, offsetX: 0, offsetY: 0 });
+    else if (action === 'center') Object.assign(side, { offsetX: 0, offsetY: 0 });
+    else if (action === 'rotate') { rotateSource(); return; }
+    else zoomAt(0.5, 0.5, action === 'in' ? 1.2 : 1 / 1.2);
+    placementChanged();
+  });
+
   for (const type of ['dragenter', 'dragover']) drop.addEventListener(type, event => { event.preventDefault(); drop.classList.add('is-over'); });
   for (const type of ['dragleave', 'drop']) drop.addEventListener(type, () => drop.classList.remove('is-over'));
   drop.addEventListener('drop', event => { event.preventDefault(); loadFile(event.dataTransfer.files[0]); });
+  // Dropping an image straight onto the board also works, for the side being edited.
+  stage.addEventListener('dragover', event => { if ([...(event.dataTransfer?.types || [])].includes('Files')) event.preventDefault(); });
+  stage.addEventListener('drop', event => { event.preventDefault(); loadFile(event.dataTransfer.files[0]); });
   window.addEventListener('paste', event => { const item = [...(event.clipboardData?.items || [])].find(entry => entry.type.startsWith('image/')); if (item) loadFile(item.getAsFile()); });
   download.addEventListener('click', () => {
-    if (!result) return;
+    if (!results.front) return;
     const { zipped } = buildZip();
     save(new Blob([zipped], { type: 'application/zip' }), `${baseName()}-gerbers.zip`);
     status.textContent = `Gerber ZIP ready · ${(zipped.length / 1024).toFixed(zipped.length > 102400 ? 0 : 1)} KB. Upload it unchanged to your PCB maker.`;
   });
-  savePreview.addEventListener('click', () => canvas.toBlob(blob => blob && save(blob, `${baseName()}-preview.png`), 'image/png'));
+  savePreview.addEventListener('click', () => canvas.toBlob(blob => blob && save(blob, `${baseName()}-${mode === 'crop' ? 'crop' : show}.png`), 'image/png'));
 
-  // Gentle 3D tilt while dragging over the board; resets on release.
-  let tilt = null;
+  // Pointer input: crop (drag, pinch, wheel) or a gentle 3D tilt in the preview.
+  const pointers = new Map();
+  let tilt = null, pinch = null;
   const tiltBoard = (x, y) => { canvas.style.transform = `rotateX(${y}deg) rotateY(${x}deg)`; };
-  stage.addEventListener('pointerdown', event => { if (!form.tilt.checked) return; tilt = { x: event.clientX, y: event.clientY }; stage.setPointerCapture(event.pointerId); });
-  stage.addEventListener('pointermove', event => { if (!tilt) return; tiltBoard(Math.max(-35, Math.min(35, (event.clientX - tilt.x) / 6)), Math.max(-35, Math.min(35, -(event.clientY - tilt.y) / 6))); });
-  const release = () => { if (!tilt) return; tilt = null; canvas.style.transform = form.tilt.checked ? 'rotateX(18deg) rotateY(-14deg)' : ''; };
+  stage.addEventListener('pointerdown', event => {
+    if (mode === 'crop') {
+      if (!current().source || !cropView) return;
+      event.preventDefault(); stage.setPointerCapture(event.pointerId);
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      stage.classList.add('is-dragging');
+      if (pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        pinch = { distance: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      }
+      return;
+    }
+    if (!form.tilt.checked) return;
+    tilt = { x: event.clientX, y: event.clientY }; stage.setPointerCapture(event.pointerId);
+  });
+  stage.addEventListener('pointermove', event => {
+    if (mode === 'crop') {
+      const last = pointers.get(event.pointerId); if (!last) return;
+      const point = { x: event.clientX, y: event.clientY };
+      pointers.set(event.pointerId, point);
+      if (pointers.size === 1) moveBy((point.x - last.x) / cropView.bw, (point.y - last.y) / cropView.bh);
+      else if (pinch && pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        const distance = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+        moveBy((mx - pinch.x) / cropView.bw, (my - pinch.y) / cropView.bh);
+        const [fx, fy] = boardPoint(mx, my); zoomAt(fx, fy, distance / (pinch.distance || distance));
+        pinch = { distance, x: mx, y: my };
+      }
+      placementChanged();
+      return;
+    }
+    if (!tilt) return;
+    tiltBoard(Math.max(-35, Math.min(35, (event.clientX - tilt.x) / 6)), Math.max(-35, Math.min(35, -(event.clientY - tilt.y) / 6)));
+  });
+  const release = event => {
+    if (pointers.delete(event.pointerId)) { if (pointers.size < 2) pinch = null; if (!pointers.size) stage.classList.remove('is-dragging'); return; }
+    if (!tilt) return; tilt = null; canvas.style.transform = form.tilt.checked ? 'rotateX(18deg) rotateY(-14deg)' : '';
+  };
   stage.addEventListener('pointerup', release); stage.addEventListener('pointercancel', release);
+  stage.addEventListener('wheel', event => {
+    if (mode !== 'crop' || !current().source || !cropView) return;
+    event.preventDefault();
+    const [fx, fy] = boardPoint(event.clientX, event.clientY);
+    zoomAt(fx, fy, Math.exp(-clamp(event.deltaY, -120, 120) * 0.0018));
+    placementChanged();
+  }, { passive: false });
+  canvas.addEventListener('keydown', event => {
+    if (mode !== 'crop' || !current().source) return;
+    const step = event.shiftKey ? 0.05 : 0.01;
+    const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    if (moves[event.key]) moveBy(...moves[event.key]);
+    else if (event.key === '+' || event.key === '=') zoomAt(0.5, 0.5, 1.1);
+    else if (event.key === '-') zoomAt(0.5, 0.5, 1 / 1.1);
+    else if (event.key === 'Enter' || event.key === 'Escape') { setMode('preview'); return; }
+    else return;
+    event.preventDefault(); placementChanged();
+  });
   form.tilt.addEventListener('change', () => { stage.classList.toggle('is-tilted', form.tilt.checked); canvas.style.transform = form.tilt.checked ? 'rotateX(18deg) rotateY(-14deg)' : ''; });
 
   let resizeTimer = 0;
   new ResizeObserver(() => { clearTimeout(resizeTimer); resizeTimer = setTimeout(draw, 80); }).observe(stage);
-  renderLevels(Number(form.levels.value));
   form.radius.closest('label').hidden = form.shape.value !== 'rounded';
-  for (const output of form.querySelectorAll('output[data-for]')) output.textContent = formatValue(output.dataset.for, form[output.dataset.for].value);
+  writeForm();
   root.classList.add('is-ready');
   process();
 }
@@ -302,7 +628,7 @@ function outlinePath(ctx, geometry, k) {
 function formatValue(name, value) {
   const number = Number(value);
   if (name === 'zoom') return `${Math.round(number * 100)} %`;
-  if (name === 'offsetX' || name === 'offsetY') return `${number > 0 ? '+' : ''}${number} %`;
+  if (name === 'offsetX' || name === 'offsetY') { const rounded = Math.round(number); return `${rounded > 0 ? '+' : ''}${rounded} %`; }
   if (name === 'brightness' || name === 'contrast') return `${number > 0 ? '+' : ''}${Math.round(number * 100)}`;
   return value;
 }
@@ -361,5 +687,34 @@ function sampleArtwork() {
 
   // Footer.
   text('FILEFORGE  •  REPODOCK  •  PCB ART STUDIO', 6, 49.4, `700 1.9px ${sans}`, SILK, 0.2);
+  return canvas;
+}
+
+/** Original sample back: a centred monogram plate with traces fanning out to both ends. */
+function sampleBack() {
+  const mm = 20, canvas = document.createElement('canvas'); canvas.width = 85 * mm; canvas.height = 55 * mm;
+  const ctx = canvas.getContext('2d');
+  const BOARD = '#000', COPPER = '#505050', METAL = '#afafaf', SILK = '#fff';
+  const sans = 'system-ui, -apple-system, "Segoe UI", Arial, sans-serif';
+  ctx.scale(mm, mm); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.fillStyle = BOARD; ctx.fillRect(0, 0, 85, 55);
+  const cx = 42.5, cy = 23;
+  const via = (x, y) => { ctx.fillStyle = METAL; ctx.beginPath(); ctx.arc(x, y, 0.95, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = BOARD; ctx.beginPath(); ctx.arc(x, y, 0.42, 0, Math.PI * 2); ctx.fill(); };
+  ctx.strokeStyle = COPPER; ctx.lineWidth = 0.45;
+  for (let i = 0; i < 6; i++) {
+    const y = cy - 7.5 + i * 3, out = i < 3 ? -(3 - i) * 1.6 : (i - 2) * 1.6, bend = 4 + Math.abs(i - 2.5) * 2.4, end = 9 + (i % 2) * 3;
+    for (const dir of [-1, 1]) {
+      const x0 = cx + dir * 12.6, x1 = x0 + dir * bend, x2 = x1 + dir * Math.abs(out), xe = dir < 0 ? end : 85 - end;
+      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.lineTo(x2, y + out); ctx.lineTo(xe, y + out); ctx.stroke();
+      via(xe, y + out);
+    }
+  }
+  ctx.strokeStyle = METAL; ctx.lineWidth = 0.35; ctx.beginPath(); ctx.roundRect(cx - 12.6, cy - 12.6, 25.2, 25.2, 5.6); ctx.stroke();
+  ctx.beginPath(); ctx.roundRect(2.4, 2.4, 80.2, 50.2, 1.6); ctx.stroke();
+  ctx.fillStyle = METAL; ctx.beginPath(); ctx.roundRect(cx - 10, cy - 10, 20, 20, 4.2); ctx.fill();
+  ctx.textAlign = 'center';
+  ctx.fillStyle = BOARD; ctx.font = `700 15px ${sans}`; ctx.fillText('u.', cx + 0.4, cy + 5);
+  ctx.fillStyle = SILK; ctx.font = `700 4px ${sans}`; ctx.fillText('alisoglu.com', cx, 44);
+  ctx.font = `700 1.8px ${sans}`; ctx.letterSpacing = '0.3px'; ctx.fillText('MADE WITH PCB ART STUDIO', cx, 49.2); ctx.letterSpacing = '0px';
   return canvas;
 }

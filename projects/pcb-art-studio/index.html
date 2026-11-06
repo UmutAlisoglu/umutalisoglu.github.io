@@ -21,81 +21,96 @@
 <body>
   <site-header></site-header>
   <main id="main" class="wrap project-page pcb-page"><div class="breadcrumbs"><a href="/projects/">Projects</a><span aria-hidden="true">/</span><span>PCB Art Studio</span></div>
-    <section class="pcb-intro"><div><p class="eyebrow">BROWSER TOOL / IMAGE TO GERBER</p><h1>PCB Art Studio<span class="accent-dot">.</span><br><em>Your picture, on a real board.</em></h1></div><p>Drop in an image, decide which tones become copper, gold, solder mask or white print, and see the finished board before you order it. Business cards, badges, coasters or wall art: download the Gerber files and upload them to your PCB maker. Your image stays on your device.</p></section>
+    <section class="pcb-intro"><div><p class="eyebrow">BROWSER TOOL / IMAGE TO GERBER</p><h1>PCB Art Studio<span class="accent-dot">.</span><br><em>Your picture, on a real board.</em></h1></div><p>Drop in an image, crop it to your board, decide which tones become copper, gold, solder mask or white print, and see the finished board before you order it. Design the front and the back separately. Business cards, badges, coasters or wall art: download the Gerber files and upload them to your PCB maker. Your image stays on your device.</p></section>
 
     <section class="pcb-studio" data-pcb-studio aria-label="PCB Art Studio">
       <form class="pcb-layout" autocomplete="off"><div class="pcb-controls">
         <fieldset class="pcb-group">
-          <legend>1 · Image</legend>
-          <label class="pcb-drop"><input id="pcb-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/bmp"><span class="pcb-drop-icon" aria-hidden="true">⇪</span><span><strong>Choose or drop an image</strong><small class="pcb-drop-name">Sample business card</small></span></label>
-          <p class="pcb-hint">PNG, JPG, WebP, GIF or SVG. You can also paste an image. High contrast logos and drawings work best. <button type="button" id="pcb-sample" class="pcb-link">Back to the sample card</button></p>
-        </fieldset>
-
-        <fieldset class="pcb-group">
-          <legend>2 · Board</legend>
+          <legend>1 · Board</legend>
           <label class="pcb-field pcb-wide">Size<select name="preset"></select></label>
+          <div class="pcb-row">
+            <label class="pcb-field">Width<span class="pcb-unit"><input name="width" type="number" min="5" max="300" step="0.5" value="85"><span>mm</span></span></label>
+            <label class="pcb-field">Height<span class="pcb-unit"><input name="height" type="number" min="5" max="300" step="0.5" value="55"><span>mm</span></span></label>
+          </div>
           <div class="pcb-row">
             <label class="pcb-field">Shape<select name="shape"><option value="rectangle">Rectangle</option><option value="rounded">Rounded corners</option><option value="circle">Circle</option></select></label>
             <label class="pcb-field">Corner radius<span class="pcb-unit"><input name="radius" type="number" min="0.5" max="40" step="0.5" value="3"><span>mm</span></span></label>
           </div>
           <div class="pcb-row">
-            <label class="pcb-field">Width<span class="pcb-unit"><input name="width" type="number" min="5" max="300" step="1" value="85"><span>mm</span></span></label>
-            <label class="pcb-field">Height<span class="pcb-unit"><input name="height" type="number" min="5" max="300" step="1" value="55"><span>mm</span></span></label>
-          </div>
-          <label class="pcb-check"><input name="holes" type="checkbox"> Four 3.2 mm mounting holes</label>
-        </fieldset>
-
-        <fieldset class="pcb-group">
-          <legend>3 · Placement &amp; tone</legend>
-          <div class="pcb-row">
-            <label class="pcb-field">Fit<select name="fit"><option value="cover">Fill the board</option><option value="contain">Show whole image</option></select></label>
-            <label class="pcb-field">Tones<select name="levels"><option value="2">2 tones</option><option value="3">3 tones</option><option value="4" selected>4 tones</option><option value="5">5 tones</option></select></label>
-          </div>
-          <label class="pcb-slider">Zoom <output data-for="zoom"></output><input name="zoom" type="range" min="1" max="3" step="0.05" value="1"></label>
-          <div class="pcb-row">
-            <label class="pcb-slider">Move left / right <output data-for="offsetX"></output><input name="offsetX" type="range" min="-50" max="50" step="1" value="0"></label>
-            <label class="pcb-slider">Move up / down <output data-for="offsetY"></output><input name="offsetY" type="range" min="-50" max="50" step="1" value="0"></label>
-          </div>
-          <div class="pcb-row">
-            <label class="pcb-slider">Brightness <output data-for="brightness"></output><input name="brightness" type="range" min="-0.5" max="0.5" step="0.01" value="0"></label>
-            <label class="pcb-slider">Contrast <output data-for="contrast"></output><input name="contrast" type="range" min="-0.5" max="0.9" step="0.01" value="0"></label>
-          </div>
-          <div class="pcb-checks">
-            <label class="pcb-check"><input name="invert" type="checkbox"> Invert</label>
-            <label class="pcb-check"><input name="dither" type="checkbox"> Dither for photos</label>
-            <label class="pcb-check"><input name="cleanup" type="checkbox" checked> Clean up specks</label>
-          </div>
-          <label class="pcb-field pcb-wide">Detail<select name="detail"><option value="0.1">Fine · 0.1 mm</option><option value="0.15" selected>Balanced · 0.15 mm</option><option value="0.2">Bold · 0.2 mm</option><option value="0.3">Chunky · 0.3 mm</option></select></label>
-        </fieldset>
-
-        <fieldset class="pcb-group">
-          <legend>4 · Finishes</legend>
-          <p class="pcb-hint">Choose what each tone becomes on the board, from darkest to lightest.</p>
-          <div class="pcb-levels"></div>
-          <div class="pcb-row">
             <label class="pcb-field">Solder mask<select name="mask"></select></label>
             <label class="pcb-field">Metal finish<select name="surface"></select></label>
           </div>
+          <label class="pcb-field pcb-wide">Detail<select name="detail"><option value="0.1">Fine · 0.1 mm</option><option value="0.15" selected>Balanced · 0.15 mm</option><option value="0.2">Bold · 0.2 mm</option><option value="0.3">Chunky · 0.3 mm</option></select></label>
+          <label class="pcb-check"><input name="holes" type="checkbox"> Four 3.2 mm mounting holes</label>
         </fieldset>
+
+        <div class="pcb-sides" role="tablist" aria-label="Board side to design">
+          <button type="button" role="tab" id="pcb-tab-front" data-side="front" aria-selected="true" aria-controls="pcb-side-panel"><span class="pcb-side-icon" aria-hidden="true">◧</span>Front side<small data-side-summary="front"></small></button>
+          <button type="button" role="tab" id="pcb-tab-back" data-side="back" aria-selected="false" aria-controls="pcb-side-panel" tabindex="-1"><span class="pcb-side-icon" aria-hidden="true">◨</span>Back side<small data-side-summary="back"></small></button>
+        </div>
+
+        <div class="pcb-side-panel" id="pcb-side-panel" role="tabpanel" aria-labelledby="pcb-tab-front">
+          <fieldset class="pcb-group">
+            <legend>2 · Image for the <span data-side-label>front</span></legend>
+            <label class="pcb-drop"><input id="pcb-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/bmp"><span class="pcb-drop-icon" aria-hidden="true">⇪</span><span><strong>Choose or drop an image</strong><small class="pcb-drop-name">Sample business card</small></span></label>
+            <p class="pcb-hint">PNG, JPG, WebP, GIF or SVG. You can also paste an image. High contrast logos and drawings work best. <button type="button" id="pcb-plain" class="pcb-link">Leave this side plain</button> · <button type="button" id="pcb-sample" class="pcb-link">Back to the sample card</button></p>
+          </fieldset>
+
+          <fieldset class="pcb-group">
+            <legend>3 · Crop &amp; tone</legend>
+            <button type="button" class="pcb-crop-open" data-mode-switch="crop"><span aria-hidden="true">⤧</span><span><strong>Crop on the board</strong><small>Drag the image into place and zoom until it fits <span data-board-size>85 × 55 mm</span></small></span></button>
+            <div class="pcb-row">
+              <label class="pcb-field">Fit<select name="fit"><option value="cover">Fill the board</option><option value="contain">Show whole image</option></select></label>
+              <label class="pcb-field">Tones<select name="levels"><option value="2">2 tones</option><option value="3">3 tones</option><option value="4" selected>4 tones</option><option value="5">5 tones</option></select></label>
+            </div>
+            <label class="pcb-slider">Zoom <output data-for="zoom"></output><input name="zoom" type="range" min="0.2" max="6" step="0.01" value="1"></label>
+            <div class="pcb-row">
+              <label class="pcb-slider">Move left / right <output data-for="offsetX"></output><input name="offsetX" type="range" min="-100" max="100" step="0.5" value="0"></label>
+              <label class="pcb-slider">Move up / down <output data-for="offsetY"></output><input name="offsetY" type="range" min="-100" max="100" step="0.5" value="0"></label>
+            </div>
+            <div class="pcb-row">
+              <label class="pcb-slider">Brightness <output data-for="brightness"></output><input name="brightness" type="range" min="-0.5" max="0.5" step="0.01" value="0"></label>
+              <label class="pcb-slider">Contrast <output data-for="contrast"></output><input name="contrast" type="range" min="-0.5" max="0.9" step="0.01" value="0"></label>
+            </div>
+            <div class="pcb-checks">
+              <label class="pcb-check"><input name="invert" type="checkbox"> Invert</label>
+              <label class="pcb-check"><input name="dither" type="checkbox"> Dither for photos</label>
+              <label class="pcb-check"><input name="cleanup" type="checkbox" checked> Clean up specks</label>
+            </div>
+          </fieldset>
+
+          <fieldset class="pcb-group">
+            <legend>4 · Finishes</legend>
+            <p class="pcb-hint">Choose what each tone becomes on this side, from darkest to lightest.</p>
+            <div class="pcb-levels"></div>
+          </fieldset>
+        </div>
       </div>
 
       <div class="pcb-output">
         <div class="pcb-toolbar">
+          <div class="pcb-segment" role="group" aria-label="Side shown in the preview"><button type="button" data-show="front" aria-pressed="true">Front</button><button type="button" data-show="back" aria-pressed="false">Back</button><button type="button" data-show="both" aria-pressed="false">Both sides</button></div>
+          <div class="pcb-segment" role="group" aria-label="What the stage shows"><button type="button" data-mode="preview" aria-pressed="true">Preview</button><button type="button" data-mode="crop" aria-pressed="false">Crop image</button></div>
+        </div>
+        <div class="pcb-stage"><canvas id="pcb-preview" role="img" aria-label="Board preview"></canvas></div>
+        <div class="pcb-crop-tools" hidden>
+          <button type="button" data-crop="fill">Fill board</button><button type="button" data-crop="fit">Whole image</button><button type="button" data-crop="center">Center</button><button type="button" data-crop="rotate">Rotate 90°</button><button type="button" data-crop="out" aria-label="Zoom out">−</button><button type="button" data-crop="in" aria-label="Zoom in">+</button><button type="button" class="is-primary" data-mode-switch="preview">Done</button>
+        </div>
+        <div class="pcb-toolbar pcb-subbar">
           <label class="pcb-field pcb-inline">View<select name="view"><option value="board">Finished board</option><option value="copper">Copper layer</option><option value="mask">Mask openings</option><option value="silk">Silkscreen</option></select></label>
           <label class="pcb-check"><input name="tilt" type="checkbox"> Tilt in 3D</label>
         </div>
-        <div class="pcb-stage"><canvas id="pcb-preview" role="img" aria-label="Board preview"></canvas></div>
         <p id="pcb-status" class="pcb-status" role="status" aria-live="polite">Preparing the preview…</p>
         <ul id="pcb-warnings" class="pcb-warnings"></ul>
         <div class="pcb-actions"><button type="button" id="pcb-download" class="button primary" disabled>Download Gerber ZIP <span aria-hidden="true">↓</span></button><button type="button" id="pcb-save-preview" class="button secondary">Save preview PNG</button></div>
-        <p class="pcb-hint">The ZIP holds top copper, solder mask, silkscreen, board outline, optional drill holes and order notes.</p>
+        <p class="pcb-hint">The ZIP holds copper, solder mask and silkscreen for the front and the back, the board outline, optional drill holes and order notes.</p>
       </div></form>
       <noscript><p class="pcb-hint">PCB Art Studio needs JavaScript to read your image and draw the board.</p></noscript>
     </section>
 
     <section class="story-section"><div><p class="eyebrow">HOW IT WORKS</p><h2>Four materials.<br>One picture.</h2></div><div><p>A circuit board is made of only a few visible materials. PCB Art Studio sorts your image into tones and gives each tone one of them.</p><h3>Solder mask over bare board</h3><p>The darkest look: the coloured lacquer sits directly on the board.</p><h3>Solder mask over copper</h3><p>The same colour, a shade brighter, because copper shines through the mask.</p><h3>Exposed metal</h3><p>No mask, so the copper is plated: gold with ENIG, silver with HASL.</p><h3>Silkscreen and bare board</h3><p>White (or black) print on top, or bare board material with nothing on it.</p></div></section>
 
-    <section class="release-panel" id="order"><div><p class="eyebrow">FROM FILE TO BOARD</p><h2>Ready to order.</h2><p>The ZIP uses the common Gerber layer names that board makers recognise. Every board is a two-layer board with the artwork on top.<br>Copper stays 0.3 mm away from the edge.<br>Details smaller than about 0.15 mm can be simplified by the maker.</p></div><div><ol class="steps-list"><li><h3>Download the Gerber ZIP</h3><p>Pick your shape, tones and colours. Then download. Nothing is uploaded while you design.</p></li><li><h3>Upload it to a board maker</h3><p>For example JLCPCB, PCBWay or Aisler. Keep the ZIP as it is and check their Gerber viewer before ordering.</p></li><li><h3>Match the preview</h3><p>Choose the same solder mask colour and, if you used exposed metal, ENIG for gold or HASL for silver.</p></li></ol></div></section>
+    <section class="release-panel" id="order"><div><p class="eyebrow">FROM FILE TO BOARD</p><h2>Ready to order.</h2><p>The ZIP uses the common Gerber layer names that board makers recognise. Every board is a two-layer board: artwork on the front, and on the back if you want.<br>The back is designed the way you see it after turning the board over; the bottom files are mirrored for the maker automatically.<br>Copper stays 0.3 mm away from the edge.<br>Details smaller than about 0.15 mm can be simplified by the maker.</p></div><div><ol class="steps-list"><li><h3>Download the Gerber ZIP</h3><p>Pick your shape, crop your images and choose tones and colours for each side. Then download. Nothing is uploaded while you design.</p></li><li><h3>Upload it to a board maker</h3><p>For example JLCPCB, PCBWay or Aisler. Keep the ZIP as it is and check their Gerber viewer before ordering.</p></li><li><h3>Match the preview</h3><p>Choose the same solder mask colour and, if you used exposed metal, ENIG for gold or HASL for silver.</p></li></ol></div></section>
 
     <section class="story-section"><div><p class="eyebrow">GOOD TO KNOW</p><h2>Art first,<br>not electronics.</h2></div><div><p>These boards have no circuit. They are made to look good. Thin lines and very small dots are where things can go wrong, so start with a bold image and the Balanced detail setting.</p><p>Makers print the colours slightly differently, so treat the preview as a close guide. The order notes in the ZIP list the settings you previewed.</p><div class="inline-links"><a class="text-link" href="/contact/">Share a board you made →</a><a class="text-link" href="/projects/">More projects →</a></div></div></section>
   </main>

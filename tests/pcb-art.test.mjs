@@ -91,3 +91,24 @@ test('sliver removal turns a one-pixel outline into its surroundings but keeps s
   assert.equal(labels[5 * width + 5], 2);
   for (let y = 1; y < 11; y++) assert.equal(labels[y * width + 11], 2, 'thin strokes of real artwork stay');
 });
+
+test('back artwork goes to mirrored bottom layers', () => {
+  const geometry = boardGeometry({ width: 10, height: 6 }), pixel = 0.5, width = 20, height = 12;
+  const front = buildLayers(new Uint8Array(width * height), width, height, ['maskSubstrate'], geometry, pixel);
+  // A silkscreen block near the left edge of the back, as seen when the board is turned over.
+  const levels = new Uint8Array(width * height);
+  for (let y = 4; y < 8; y++) for (let x = 2; x < 5; x++) levels[y * width + x] = 1;
+  const back = buildLayers(levels, width, height, ['maskSubstrate', 'silk'], geometry, pixel);
+  const notes = orderNotes({ geometry, pixel, maskColor: 'Blue', surface: 'HASL', usesGold: false, usesBare: false, backPixel: pixel });
+  const { files, stats } = fabricationFiles(front, geometry, pixel, { notes, back: { layers: back, pixel } });
+  assert.deepEqual(Object.keys(files).sort(), ['README.txt', 'pcb-art.GBL', 'pcb-art.GBO', 'pcb-art.GBS', 'pcb-art.GKO', 'pcb-art.GTL', 'pcb-art.GTO', 'pcb-art.GTS']);
+  assert.match(files['pcb-art.GBO'], /%TF.FileFunction,Legend,Bot\*%/);
+  assert.match(files['pcb-art.GBS'], /%TF.FileFunction,Soldermask,Bot\*%/);
+  assert.equal(stats.bottomSilk, 1);
+  // Seen from the top the block sits near the right edge: x from 10 - 2.5 to 10 - 1 mm.
+  const mirrored = new Uint8Array(width * height);
+  for (let y = 4; y < 8; y++) for (let x = width - 5; x < width - 2; x++) mirrored[y * width + x] = 1;
+  assert.deepEqual([...rasterize(files['pcb-art.GBO'], width, height, pixel, geometry.height)], [...mirrored]);
+  assert.match(files['README.txt'], /artwork on the front and on the back/);
+  assert.match(files['README.txt'], /bottom files are mirrored/);
+});

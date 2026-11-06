@@ -248,8 +248,13 @@ function gerberHeader(fileFunction, polarity = 'Positive') {
   ];
 }
 
-/** RS-274X layer made of rectangle flashes; one aperture per rectangle size. */
-export function bitmapGerber(bitmap, width, height, pixel, boardHeight, fileFunction, polarity) {
+/**
+ * RS-274X layer made of rectangle flashes; one aperture per rectangle size.
+ * With `mirrorWidth` the layer is flipped left to right around a board of that width. Bottom
+ * layers need this: Gerber files always look at the board from the top, while the back artwork
+ * is designed as you see it after turning the board over.
+ */
+export function bitmapGerber(bitmap, width, height, pixel, boardHeight, fileFunction, polarity, mirrorWidth = 0) {
   const rectangles = bitmapRectangles(bitmap, width, height);
   const apertures = new Map(), body = [];
   let current = null;
@@ -259,7 +264,7 @@ export function bitmapGerber(bitmap, width, height, pixel, boardHeight, fileFunc
     if (!apertures.has(key)) apertures.set(key, { code: 10 + apertures.size, w: rect.w * pixel + OVERLAP, h: rect.h * pixel + OVERLAP });
     const { code } = apertures.get(key);
     if (code !== current) { body.push(`D${code}*`); current = code; }
-    const cx = (rect.x + rect.w / 2) * pixel, cy = boardHeight - (rect.y + rect.h / 2) * pixel;
+    const x = (rect.x + rect.w / 2) * pixel, cx = mirrorWidth ? mirrorWidth - x : x, cy = boardHeight - (rect.y + rect.h / 2) * pixel;
     body.push(`X${coordinate(cx)}Y${coordinate(cy)}D03*`);
   }
   const definitions = [...apertures.values()].map(a => `%ADD${a.code}R,${decimal(a.w)}X${decimal(a.h)}*%`);
@@ -298,43 +303,55 @@ export function drillFile(holes) {
   return lines.join('\n');
 }
 
-/** Every fabrication file, keyed by file name. Uses the widely recognised Protel extensions. */
-export function fabricationFiles(layers, geometry, pixel, { name = 'pcb-art', notes = '' } = {}) {
-  const { width, height } = layers;
-  const copper = bitmapGerber(layers.copper, width, height, pixel, geometry.height, 'Copper,L1,Top', 'Positive');
-  const mask = bitmapGerber(layers.opening, width, height, pixel, geometry.height, 'Soldermask,Top', 'Negative');
-  const silk = bitmapGerber(layers.silk, width, height, pixel, geometry.height, 'Legend,Top', 'Positive');
+/**
+ * Every fabrication file, keyed by file name. Uses the widely recognised Protel extensions.
+ * `back` ({ layers, pixel }) adds artwork on the bottom side, given as seen from the back;
+ * without it the bottom copper and mask stay empty.
+ */
+export function fabricationFiles(layers, geometry, pixel, { name = 'pcb-art', notes = '', back = null } = {}) {
+  const side = (source, size, suffix, mirror) => ({
+    copper: bitmapGerber(source.copper, source.width, source.height, size, geometry.height, suffix === 'Top' ? 'Copper,L1,Top' : 'Copper,L2,Bot', 'Positive', mirror),
+    mask: bitmapGerber(source.opening, source.width, source.height, size, geometry.height, `Soldermask,${suffix}`, 'Negative', mirror),
+    silk: bitmapGerber(source.silk, source.width, source.height, size, geometry.height, `Legend,${suffix}`, 'Positive', mirror),
+  });
+  const top = side(layers, pixel, 'Top', 0);
+  const bottom = back ? side(back.layers, back.pixel, 'Bot', geometry.width) : null;
   const files = {
-    [`${name}.GTL`]: copper.text,
-    [`${name}.GTS`]: mask.text,
-    [`${name}.GTO`]: silk.text,
-    [`${name}.GBL`]: emptyGerber('Copper,L2,Bot', 'Positive'),
-    [`${name}.GBS`]: emptyGerber('Soldermask,Bot', 'Negative'),
-    [`${name}.GKO`]: outlineGerber(geometry),
+    [`${name}.GTL`]: top.copper.text,
+    [`${name}.GTS`]: top.mask.text,
+    [`${name}.GTO`]: top.silk.text,
+    [`${name}.GBL`]: bottom ? bottom.copper.text : emptyGerber('Copper,L2,Bot', 'Positive'),
+    [`${name}.GBS`]: bottom ? bottom.mask.text : emptyGerber('Soldermask,Bot', 'Negative'),
   };
+  if (bottom) files[`${name}.GBO`] = bottom.silk.text;
+  files[`${name}.GKO`] = outlineGerber(geometry);
   const drill = drillFile(geometry.holes);
   if (drill) files[`${name}-NPTH.DRL`] = drill;
   files['README.txt'] = notes;
-  return { files, stats: { copper: copper.rectangles, mask: mask.rectangles, silk: silk.rectangles } };
+  const stats = { copper: top.copper.rectangles, mask: top.mask.rectangles, silk: top.silk.rectangles };
+  if (bottom) Object.assign(stats, { bottomCopper: bottom.copper.rectangles, bottomMask: bottom.mask.rectangles, bottomSilk: bottom.silk.rectangles });
+  return { files, stats };
 }
 
 /** Plain-language order notes placed in the ZIP. */
-export function orderNotes({ geometry, pixel, maskColor, surface, usesGold, usesBare }) {
+export function orderNotes({ geometry, pixel, maskColor, surface, usesGold, usesBare, backPixel = null, frontArt = true }) {
+  const twoSided = backPixel !== null;
   const size = geometry.shape === 'circle' ? `${geometry.width} mm diameter circle` : `${geometry.width} x ${geometry.height} mm ${geometry.shape === 'rounded' ? `rectangle with ${geometry.radius} mm corners` : 'rectangle'}`;
   return [
     'PCB Art Studio - order notes',
     '============================',
     '',
     `Board: ${size}`,
-    'Layers: 2 (all artwork is on the top side, the bottom stays plain)',
+    twoSided ? `Layers: 2 (artwork on ${frontArt ? 'the front and on the back' : 'the back only'})` : 'Layers: 2 (all artwork is on the top side, the bottom stays plain)',
     `Solder mask colour you previewed: ${maskColor}`,
     `Surface finish you previewed: ${surface}${usesGold ? ', used on the exposed metal areas' : ''}`,
-    `Detail size: ${pixel} mm per pixel`,
+    twoSided && !frontArt ? `Detail size: ${backPixel} mm per pixel` : twoSided && backPixel !== pixel ? `Detail size: ${pixel} mm per pixel on the front, ${backPixel} mm on the back` : `Detail size: ${pixel} mm per pixel`,
     geometry.holes.length ? `Mounting holes: ${geometry.holes.length} x ${HOLE_DIAMETER} mm, non-plated` : 'Mounting holes: none',
     '',
     'Files',
     '- .GTL top copper   - .GTS top solder mask openings   - .GTO top silkscreen',
-    '- .GBL / .GBS empty bottom copper and mask   - .GKO board outline',
+    twoSided ? '- .GBL bottom copper   - .GBS bottom solder mask openings   - .GBO bottom silkscreen' : '- .GBL / .GBS empty bottom copper and mask',
+    '- .GKO board outline',
     geometry.holes.length ? '- -NPTH.DRL non-plated drill holes' : null,
     '',
     'Ordering',
@@ -342,6 +359,9 @@ export function orderNotes({ geometry, pixel, maskColor, surface, usesGold, uses
     '2. Check their online Gerber viewer before paying: it should look like the preview.',
     `3. Pick the same solder mask colour${usesGold ? ' and ENIG (gold) or HASL (silver) as surface finish' : ''}.`,
     usesBare ? '4. Areas with neither mask nor copper show the bare board material.' : null,
+    twoSided ? '' : null,
+    twoSided ? 'The bottom files are mirrored, as Gerber files always look at the board from the top.' : null,
+    twoSided ? 'In the maker\'s viewer, the back looks right once you flip the board over.' : null,
     '',
     'Copper keeps 0.3 mm away from the board edge. Details smaller than about 0.15 mm',
     'may be simplified by the manufacturer. This is art, not a tested electrical design.',
