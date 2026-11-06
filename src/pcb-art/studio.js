@@ -31,6 +31,9 @@ const looks = {
 };
 const presetIcons = { card: 'M2 5h20v14H2z', badge: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', coaster: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z', bookmark: 'M8 1h8v22H8z', square: 'M3 3h18v18H3z', custom: 'M3 3h18v18H3zM3 9h18M9 3v18' };
 
+// Icons for the sample card, drawn in a 24 × 24 box. The GitHub mark is GitHub's own logo
+// (Octicons, MIT licence), used here only to point to a GitHub profile.
+const GITHUB_MARK = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z';
 const sideIds = ['front', 'back'];
 const sideLabels = { front: 'Front', back: 'Back' };
 // Per-side settings that live in the form while that side is being edited.
@@ -39,8 +42,6 @@ const ZOOM_MIN = 0.2, ZOOM_MAX = 6, OFFSET_LIMIT = 300;
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 
-const root = document.querySelector('[data-pcb-studio]');
-if (root) start(root);
 
 function start(root) {
   const $ = selector => root.querySelector(selector);
@@ -195,25 +196,40 @@ function start(root) {
 
   // ---- Image processing ----
   function schedule() { clearTimeout(timer); timer = setTimeout(process, mode === 'crop' ? 350 : 60); }
+  /** Turns one side into tone levels on a grid of `pixel` mm; cleanup sizes stay in millimetres. */
+  function rasterize(side, geometry, pixel, cleanupPixel = pixel) {
+    const gw = Math.ceil(geometry.width / pixel), gh = Math.ceil(geometry.height / pixel);
+    work.width = gw; work.height = gh;
+    workContext.fillStyle = '#fff'; workContext.fillRect(0, 0, gw, gh);
+    const rect = imageRect(side, gw, gh);
+    workContext.imageSmoothingQuality = 'high';
+    workContext.drawImage(side.source, rect.x, rect.y, rect.w, rect.h);
+    const gray = adjustTone(luminance(workContext.getImageData(0, 0, gw, gh).data, gw * gh), { brightness: side.brightness, contrast: side.contrast, invert: side.invert });
+    const levels = quantize(gray, gw, gh, side.levels, { dither: side.dither });
+    if (side.cleanup && !side.dither) { removeSlivers(levels, gw, gh, Math.max(2, Math.round(2 * cleanupPixel / pixel))); despeckle(levels, gw, gh, Math.ceil((0.3 / pixel) ** 2)); }
+    return { levels, gw, gh };
+  }
   function computeSide(id, geometry, shared) {
     const side = sides[id], pixel = pixelFor(side, shared);
     const key = JSON.stringify([geometry, pixel, side.version, side.source ? sideFields.map(name => side[name]) : 0, side.source ? side.finishes : 0]);
     if (results[id]?.key === key) return;
-    const gw = Math.ceil(geometry.width / pixel), gh = Math.ceil(geometry.height / pixel);
-    let levels, levelFinishes;
-    if (!side.source) { levels = new Uint8Array(gw * gh); levelFinishes = ['maskSubstrate']; }
-    else {
-      work.width = gw; work.height = gh;
-      workContext.fillStyle = '#fff'; workContext.fillRect(0, 0, gw, gh);
-      const rect = imageRect(side, gw, gh);
-      workContext.imageSmoothingQuality = 'high';
-      workContext.drawImage(side.source, rect.x, rect.y, rect.w, rect.h);
-      const gray = adjustTone(luminance(workContext.getImageData(0, 0, gw, gh).data, gw * gh), { brightness: side.brightness, contrast: side.contrast, invert: side.invert });
-      levels = quantize(gray, gw, gh, side.levels, { dither: side.dither });
-      if (side.cleanup && !side.dither) { removeSlivers(levels, gw, gh, 2); despeckle(levels, gw, gh, Math.ceil((0.3 / pixel) ** 2)); }
-      levelFinishes = side.finishes;
+    let layers, preview;
+    if (!side.source) {
+      const gw = Math.ceil(geometry.width / pixel), gh = Math.ceil(geometry.height / pixel);
+      layers = buildLayers(new Uint8Array(gw * gh), gw, gh, ['maskSubstrate'], geometry, pixel);
+      preview = { layers, pixel };
+    } else {
+      const fab = rasterize(side, geometry, pixel);
+      layers = buildLayers(fab.levels, fab.gw, fab.gh, side.finishes, geometry, pixel);
+      // The board photo is drawn from a finer grid (about 1800 px across) so curves and small
+      // text look smooth; the Gerber files keep the chosen detail size. Dithered dots stay 1:1.
+      const finePixel = side.dither ? pixel : Math.max(pixel / 3, Math.max(geometry.width, geometry.height) / 1800);
+      if (finePixel < pixel * 0.9) {
+        const fine = rasterize(side, geometry, finePixel, pixel);
+        preview = { layers: buildLayers(fine.levels, fine.gw, fine.gh, side.finishes, geometry, finePixel), pixel: finePixel };
+      } else preview = { layers, pixel };
     }
-    results[id] = { key, pixel, geometry, plain: !side.source, layers: buildLayers(levels, gw, gh, levelFinishes, geometry, pixel) };
+    results[id] = { key, pixel, geometry, plain: !side.source, layers, preview };
   }
   function process() {
     const shared = settings();
@@ -263,9 +279,10 @@ function start(root) {
 
   /** Draws one side of the board at `k` canvas pixels per millimetre, like a product photo. */
   function renderBoard(result, s, k) {
-    const { geometry, layers, pixel } = result, { width: gw, height: gh, finish } = layers;
-    const mask = maskColors[s.mask];
-    const layerView = { copper: layers.copper, mask: layers.opening, silk: layers.silk }[s.view];
+    const { geometry } = result, mask = maskColors[s.mask];
+    const layerView = { copper: result.layers.copper, mask: result.layers.opening, silk: result.layers.silk }[s.view];
+    // Layer views show the fabrication grid as it is; the board photo uses the finer preview grid.
+    const { layers, pixel } = layerView ? result : result.preview, { width: gw, height: gh, finish } = layers;
     const out = document.createElement('canvas'); out.width = Math.round(geometry.width * k); out.height = Math.round(geometry.height * k);
     const ctx = out.getContext('2d'), W = out.width, H = out.height;
     const drawW = gw * pixel * k, drawH = gh * pixel * k, px = k / 10; // px: one tenth of a millimetre on screen
@@ -305,6 +322,9 @@ function start(root) {
       const base = ctx.createLinearGradient(0, 0, W, H);
       base.addColorStop(0, rgb(shade(mask.substrate, 14))); base.addColorStop(1, rgb(shade(mask.substrate, -10)));
       ctx.fillStyle = base; ctx.fillRect(0, 0, W, H);
+      // The glass weave of the board shows faintly through the lacquer.
+      ctx.save(); ctx.globalAlpha = 0.07; ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = ctx.createPattern(weaveTile(k), 'repeat'); ctx.fillRect(0, 0, W, H); ctx.restore();
+      const grain = ctx.createPattern(noiseTile(), 'repeat');
       const id = name => finishIds.indexOf(name);
       const bare = maskFor(i => finish[i] === id('bare'));
       if (bare) { const fr4 = ctx.createLinearGradient(0, 0, W, H); fr4.addColorStop(0, '#d8c99a'); fr4.addColorStop(1, '#b9a675'); ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 1.5 * px; ctx.drawImage(paint(bare, fr4), 0, 0); ctx.restore(); }
@@ -321,9 +341,11 @@ function start(root) {
         stops.forEach((color, index) => sheenMetal.addColorStop(index / (stops.length - 1), color));
         // Exposed metal sits in an opening of the lacquer, so the lacquer casts a thin dark lip.
         ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 1.6 * px; ctx.drawImage(paint(metal, sheenMetal), 0, 0); ctx.restore();
+        // Plated metal has a fine satin grain and a bright rim where it catches the light.
+        ctx.save(); ctx.globalAlpha = 0.22; ctx.globalCompositeOperation = 'overlay'; ctx.drawImage(paint(metal, grain), 0, 0); ctx.restore();
       }
       const silk = maskFor(i => finish[i] === id('silk'));
-      if (silk) { ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 0.9 * px; ctx.shadowOffsetY = 0.45 * px; ctx.drawImage(paint(silk, rgb(mask.silk)), 0, 0); ctx.restore(); }
+      if (silk) { ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 0.9 * px; ctx.shadowOffsetY = 0.45 * px; ctx.drawImage(paint(silk, rgb(mask.silk)), 0, 0); ctx.restore(); ctx.save(); ctx.globalAlpha = 0.18; ctx.globalCompositeOperation = 'multiply'; ctx.drawImage(paint(silk, grain), 0, 0); ctx.restore(); }
       // Studio light: a broad reflection across the glossy lacquer and a soft vignette.
       const sheen = ctx.createLinearGradient(0, 0, W * 0.75, H);
       sheen.addColorStop(0, 'rgba(255,255,255,.20)'); sheen.addColorStop(0.28, 'rgba(255,255,255,.06)'); sheen.addColorStop(0.45, 'rgba(255,255,255,0)'); sheen.addColorStop(1, 'rgba(0,0,0,.12)');
@@ -331,6 +353,7 @@ function start(root) {
       const glow = ctx.createRadialGradient(W * 0.28, H * 0.12, 0, W * 0.28, H * 0.12, Math.max(W, H) * 0.45);
       glow.addColorStop(0, 'rgba(255,255,255,.14)'); glow.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+      ctx.save(); ctx.globalAlpha = 0.05; ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = grain; ctx.fillRect(0, 0, W, H); ctx.restore();
     }
     ctx.globalCompositeOperation = 'destination-out';
     for (const hole of geometry.holes) { ctx.beginPath(); ctx.arc(hole.x * k, (geometry.height - hole.y) * k, hole.d / 2 * k, 0, Math.PI * 2); ctx.fill(); }
@@ -643,7 +666,22 @@ function start(root) {
   downloadMini.addEventListener('click', () => download.click());
   $('[data-goto-preview]').addEventListener('click', () => stage.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' }));
   new MutationObserver(() => { downloadMini.disabled = download.disabled; }).observe(download, { attributes: true, attributeFilter: ['disabled'] });
-  savePreview.addEventListener('click', () => canvas.toBlob(blob => blob && save(blob, `${baseName()}-${mode === 'crop' ? 'crop' : show}.png`), 'image/png'));
+  /** A print-quality picture of the board (about 2400 px per side), independent of the screen size. */
+  function exportPreview() {
+    const shared = settings(), ids = show === 'both' ? sideIds : [show], geometry = results.front.geometry;
+    const k = Math.min(40, 2400 / Math.max(geometry.width, geometry.height)), gap = ids.length > 1 ? Math.round(6 * k) : 0;
+    const boards = ids.map(id => renderBoard(results[id], shared, k));
+    const out = document.createElement('canvas');
+    out.width = boards.reduce((sum, board) => sum + board.width, 0) + gap * (boards.length - 1); out.height = boards[0].height;
+    const ctx = out.getContext('2d');
+    boards.forEach((board, index) => ctx.drawImage(board, index * (boards[0].width + gap), 0));
+    return out;
+  }
+  savePreview.addEventListener('click', () => {
+    if (mode === 'crop' || !results.front) { canvas.toBlob(blob => blob && save(blob, `${baseName()}-crop.png`), 'image/png'); return; }
+    status.textContent = 'Rendering a high-resolution picture…';
+    setTimeout(() => exportPreview().toBlob(blob => { if (blob) save(blob, `${baseName()}-${show}.png`); report(); }, 'image/png'), 30);
+  });
 
   // Pointer input: crop (drag, pinch, wheel) or a gentle 3D tilt in the preview.
   const pointers = new Map();
@@ -719,6 +757,36 @@ function start(root) {
   process();
 }
 
+let noiseCanvas = null;
+/** A tile of soft random grain, shared by all renders. */
+function noiseTile() {
+  if (noiseCanvas) return noiseCanvas;
+  noiseCanvas = document.createElement('canvas'); noiseCanvas.width = noiseCanvas.height = 160;
+  const ctx = noiseCanvas.getContext('2d'), image = ctx.createImageData(160, 160);
+  let seed = 7;
+  const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < image.data.length; i += 4) { const v = 96 + random() * 64; image.data[i] = image.data[i + 1] = image.data[i + 2] = v; image.data[i + 3] = 255; }
+  ctx.putImageData(image, 0, 0);
+  return noiseCanvas;
+}
+const weaveTiles = new Map();
+/** Woven glass fibre: bundles about 0.45 mm wide, alternating over and under. */
+function weaveTile(k) {
+  const size = Math.max(4, Math.round(0.9 * k)), key = size;
+  if (weaveTiles.has(key)) return weaveTiles.get(key);
+  const tile = document.createElement('canvas'); tile.width = tile.height = size;
+  const ctx = tile.getContext('2d'), half = size / 2;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, size, size);
+  const bundle = (x, y, horizontal) => {
+    const g = horizontal ? ctx.createLinearGradient(0, y, 0, y + half) : ctx.createLinearGradient(x, 0, x + half, 0);
+    g.addColorStop(0, '#555'); g.addColorStop(0.5, '#fff'); g.addColorStop(1, '#555');
+    ctx.fillStyle = g; ctx.fillRect(x + 0.5, y + 0.5, half - 1, half - 1);
+  };
+  bundle(0, 0, true); bundle(half, half, true); bundle(half, 0, false); bundle(0, half, false);
+  weaveTiles.set(key, tile);
+  return tile;
+}
+
 function finishColor(name, maskId, surfaceId, mask = maskColors[maskId], metal = surfaces[surfaceId].color) {
   if (name === 'maskSubstrate') return mask.substrate;
   if (name === 'maskCopper') return mask.copper;
@@ -743,64 +811,128 @@ function formatValue(name, value) {
   return value;
 }
 
+/** Text helper for the samples: shrinks the font until the text fits `maxWidth` mm. */
+function makeText(ctx) {
+  return (value, x, y, font, color, spacing = 0, align = 'left', maxWidth = Infinity) => {
+    let size = Number(/([\d.]+)px/.exec(font)[1]);
+    const setFont = () => { ctx.font = font.replace(/[\d.]+px/, `${size}px`); ctx.letterSpacing = `${spacing * size / Number(/([\d.]+)px/.exec(font)[1])}px`; };
+    setFont();
+    while (ctx.measureText(value).width > maxWidth && size > 0.5) { size *= 0.97; setFont(); }
+    ctx.fillStyle = color; ctx.textAlign = align; ctx.fillText(value, x, y);
+    const width = ctx.measureText(value).width;
+    ctx.letterSpacing = '0px'; ctx.textAlign = 'left';
+    return width;
+  };
+}
+function drawIcon(ctx, name, x, y, size, color) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.strokeStyle = ctx.fillStyle = color; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (name === 'github') { ctx.scale(size / 16, size / 16); ctx.fill(new Path2D(GITHUB_MARK)); ctx.restore(); return; }
+  const u = size / 24; ctx.scale(u, u); ctx.lineWidth = 0.46 / u;
+  if (name === 'mail') {
+    ctx.beginPath(); ctx.roundRect(1.5, 4.5, 21, 15, 2.2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(2.5, 6); ctx.lineTo(12, 13); ctx.lineTo(21.5, 6); ctx.stroke();
+  } else if (name === 'web') {
+    ctx.beginPath(); ctx.arc(12, 12, 10.2, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(12, 12, 4.4, 10.2, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(2, 12); ctx.lineTo(22, 12); ctx.stroke();
+  }
+  ctx.restore();
+}
+
 /**
  * Original sample: a business card in the alisoglu.com style, drawn on the fly at 20 px per mm.
  * Grey values pick the finish: 0 mask over board, 80 mask over copper, 175 exposed metal, 255 silkscreen.
+ * It is laid out like a real board: a QFN chip on a hatched copper pour, routed traces with vias,
+ * gold edge fingers, fiducials, passives with reference designators and contact rows with icons.
  */
 function sampleArtwork() {
   const mm = 20, canvas = document.createElement('canvas'); canvas.width = 85 * mm; canvas.height = 55 * mm;
   const ctx = canvas.getContext('2d');
   const BOARD = '#000', COPPER = '#505050', METAL = '#afafaf', SILK = '#fff';
-  const sans = 'system-ui, -apple-system, "Segoe UI", Arial, sans-serif', mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+  const sans = 'system-ui, -apple-system, "Segoe UI", Arial, sans-serif';
   ctx.scale(mm, mm); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   ctx.fillStyle = BOARD; ctx.fillRect(0, 0, 85, 55);
-  const path = (points, width, color) => { ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(...points[0]); for (const point of points.slice(1)) ctx.lineTo(...point); ctx.stroke(); };
-  const via = (x, y) => { ctx.fillStyle = METAL; ctx.beginPath(); ctx.arc(x, y, 0.95, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = BOARD; ctx.beginPath(); ctx.arc(x, y, 0.42, 0, Math.PI * 2); ctx.fill(); };
-  const text = (value, x, y, font, color, spacing = 0) => { ctx.font = font; ctx.fillStyle = color; ctx.letterSpacing = `${spacing}px`; ctx.fillText(value, x, y); ctx.letterSpacing = '0px'; return ctx.measureText(value).width; };
+  const line = (points, width, color) => { ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(...points[0]); for (const point of points.slice(1)) ctx.lineTo(...point); ctx.stroke(); };
+  const rect = (x, y, w, h, color, r = 0) => { ctx.fillStyle = color; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); };
+  const dot = (x, y, r, color) => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); };
+  const text = makeText(ctx);
+  const via = (x, y) => { dot(x, y, 0.62, METAL); dot(x, y, 0.26, BOARD); };
+  // A trace on the pour gets a clearance gap first, like a real copper pour would.
+  const trace = points => { line(points, 1.25, BOARD); line(points, 0.4, COPPER); };
 
-  // Circuit art under the mask: a chip with straight, staggered traces ending in exposed vias.
-  const chip = { x: 61, y: 22, size: 8 }, pins = [-2.4, -0.8, 0.8, 2.4];
-  const cx = chip.x + chip.size / 2, cy = chip.y + chip.size / 2;
-  pins.forEach((offset, i) => {
-    const near = i % 2 === 0;
-    const ends = [
-      [[chip.x + chip.size + 1.4, cy + offset], [near ? 74 : 77, cy + offset]],
-      [[chip.x - 1.4, cy + offset], [near ? 53 : 50, cy + offset]],
-      [[cx + offset, chip.y - 1.4], [cx + offset, near ? 17 : 14]],
-      [[cx + offset, chip.y + chip.size + 1.4], [cx + offset, near ? 35 : 38]],
-    ];
-    for (const [start, end] of ends) { path([start, end], 0.45, COPPER); via(...end); }
+  // Hatched copper pour behind the circuit, with a solid rim.
+  const pour = { x: 49.5, y: 19.5, w: 33, h: 26.5 };
+  ctx.save(); ctx.beginPath(); ctx.roundRect(pour.x, pour.y, pour.w, pour.h, 2.2); ctx.clip();
+  ctx.strokeStyle = COPPER; ctx.lineWidth = 0.28;
+  for (let d = -40; d < 80; d += 1.05) { ctx.beginPath(); ctx.moveTo(pour.x + d, pour.y); ctx.lineTo(pour.x + d + 40, pour.y + 40); ctx.moveTo(pour.x + d, pour.y + 40); ctx.lineTo(pour.x + d + 40, pour.y); ctx.stroke(); }
+  ctx.restore();
+  ctx.strokeStyle = COPPER; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.roundRect(pour.x, pour.y, pour.w, pour.h, 2.2); ctx.stroke();
+
+  // QFN chip: 6 pads per side, an exposed centre pad with the monogram.
+  const cx = 66, cy = 30, body = 9.2, pitch = 1.05, offsets = [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5].map(v => v * pitch);
+  ctx.fillStyle = BOARD; ctx.beginPath(); ctx.roundRect(cx - body / 2 - 1.6, cy - body / 2 - 1.6, body + 3.2, body + 3.2, 1); ctx.fill();
+  // Traces: bottom pads fan out at 45° to the edge fingers, the others end in staggered vias.
+  const fingers = offsets.map((_, i) => 56.5 + i * 4.3);
+  offsets.forEach((o, i) => {
+    const px = cx + o, fx = fingers[i], startY = cy + body / 2 + 1.6;
+    trace([[px, cy + body / 2], [px, startY], [px + (fx - px) * 1, startY + Math.abs(fx - px)], [fx, 48.6]]);
+    const far = i % 2 === 0;
+    trace([[cx + body / 2, cy + o], [far ? 80.4 : 78.4, cy + o]]); via(far ? 80.4 : 78.4, cy + o);
+    trace([[cx - body / 2, cy + o], [far ? 51.6 : 53.6, cy + o]]); via(far ? 51.6 : 53.6, cy + o);
+    trace([[px, cy - body / 2], [px, far ? 21.4 : 23.2]]); via(px, far ? 21.4 : 23.2);
   });
-  // Two long buses that tie the chip to the wordmark and the contact block.
-  path([[53, cy - 2.4], [50, cy - 5.4], [20.7, cy - 5.4]], 0.45, COPPER);
-  path([[50, cy + 2.4], [50, 40], [47.5, 42.5], [6, 42.5]], 0.45, COPPER);
   ctx.fillStyle = METAL;
-  for (const offset of pins) {
-    ctx.fillRect(chip.x + chip.size + 0.3, cy + offset - 0.3, 1.4, 0.6); ctx.fillRect(chip.x - 1.7, cy + offset - 0.3, 1.4, 0.6);
-    ctx.fillRect(cx + offset - 0.3, chip.y - 1.7, 0.6, 1.4); ctx.fillRect(cx + offset - 0.3, chip.y + chip.size + 0.3, 0.6, 1.4);
+  for (const o of offsets) {
+    rect(cx + body / 2 - 0.9, cy + o - 0.25, 1.3, 0.5, METAL, 0.2); rect(cx - body / 2 - 0.4, cy + o - 0.25, 1.3, 0.5, METAL, 0.2);
+    rect(cx + o - 0.25, cy - body / 2 - 0.4, 0.5, 1.3, METAL, 0.2); rect(cx + o - 0.25, cy + body / 2 - 0.9, 0.5, 1.3, METAL, 0.2);
   }
-  ctx.beginPath(); ctx.roundRect(chip.x, chip.y, chip.size, chip.size, 0.8); ctx.fill();
-  ctx.fillStyle = BOARD; ctx.beginPath(); ctx.arc(chip.x + 1.4, chip.y + 1.4, 0.45, 0, Math.PI * 2); ctx.fill();
-  ctx.font = `700 3.6px ${sans}`; ctx.textAlign = 'center'; ctx.fillText('u.', cx, cy + 1.3); ctx.textAlign = 'left';
+  rect(cx - 2.9, cy - 2.9, 5.8, 5.8, METAL, 0.7);
+  text('u.', cx, cy + 1.45, `800 4.2px ${sans}`, BOARD, 0, 'center');
+  // Silkscreen corner marks, pin-one dot and designator.
+  ctx.strokeStyle = SILK; ctx.lineWidth = 0.2;
+  const half = body / 2 + 0.9;
+  for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) line([[cx + sx * half, cy + sy * (half - 1.2)], [cx + sx * half, cy + sy * half], [cx + sx * (half - 1.2), cy + sy * half]], 0.2, SILK);
+  dot(cx - half - 0.6, cy - half - 0.6, 0.35, SILK);
+  text('U1', cx + half + 0.5, cy - half + 0.4, `700 1.5px ${sans}`, SILK, 0.1, 'left');
 
-  // Frame, monogram and wordmark.
-  ctx.strokeStyle = METAL; ctx.lineWidth = 0.35; ctx.beginPath(); ctx.roundRect(2.4, 2.4, 80.2, 50.2, 1.6); ctx.stroke();
-  ctx.fillStyle = METAL; ctx.beginPath(); ctx.roundRect(6, 6, 11, 11, 2.4); ctx.fill();
-  ctx.fillStyle = BOARD; ctx.font = `700 9px ${sans}`; ctx.textAlign = 'center'; ctx.fillText('u.', 11.6, 14.2); ctx.textAlign = 'left';
-  const name = text('umut alisoglu', 20.5, 12.8, `700 5.8px ${sans}`, SILK);
-  text('.', 20.5 + name + 0.2, 12.8, `700 5.8px ${sans}`, METAL);
-  text('SOFTWARE & PROJECTS', 20.7, 17, `700 2.2px ${sans}`, SILK, 0.3);
+  // Gold edge fingers along the bottom edge, with a silkscreen bracket.
+  for (const fx of fingers) rect(fx - 1.1, 48.6, 2.2, 6.4, METAL, 0.4);
+  line([[fingers[0] - 2.2, 47.3], [fingers[0] - 2.2, 46.6], [fingers.at(-1) + 2.2, 46.6], [fingers.at(-1) + 2.2, 47.3]], 0.2, SILK);
 
-  // Contact block.
-  const rows = [['E', 'umut@alisoglu.com'], ['W', 'alisoglu.com'], ['G', 'github.com/UmutAlisoglu']];
-  rows.forEach(([label, value], i) => { text(label, 6.2, 27.5 + i * 4.4, `700 2.7px ${mono}`, METAL); text(value, 10.4, 27.5 + i * 4.4, `600 2.7px ${mono}`, SILK); });
+  // Passives with reference designators, a test point and fiducials.
+  const resistor = (x, y, label) => { rect(x - 1.25, y - 0.5, 0.9, 1, METAL, 0.15); rect(x + 0.35, y - 0.5, 0.9, 1, METAL, 0.15); ctx.strokeStyle = SILK; ctx.lineWidth = 0.16; ctx.beginPath(); ctx.roundRect(x - 1.75, y - 0.95, 3.5, 1.9, 0.3); ctx.stroke(); text(label, x, y - 1.35, `700 1.3px ${sans}`, SILK, 0.1, 'center'); };
+  resistor(65.5, 13.4, 'R1'); resistor(70.6, 13.4, 'C1');
+  dot(76.4, 13.4, 0.95, METAL); text('TP1', 76.4, 11.1, `700 1.3px ${sans}`, SILK, 0.1, 'center');
+  line([[65.5 - 1.25 + 0.45, 13.4], [65.5 - 1.25 + 0.45, 16.6], [58.4, 16.6], [56, 19]], 0.3, COPPER);
+  line([[70.6 + 0.8, 13.4], [70.6 + 0.8, 15.6], [74.6, 15.6], [76.4, 13.8]], 0.3, COPPER);
+  for (const [x, y] of [[80.6, 5.4], [4.6, 50.4]]) { dot(x, y, 1.15, BOARD); dot(x, y, 0.5, METAL); ctx.strokeStyle = SILK; ctx.lineWidth = 0.16; ctx.beginPath(); ctx.arc(x, y, 1.45, 0, Math.PI * 2); ctx.stroke(); }
 
-  // Footer.
-  text('FILEFORGE  •  REPODOCK  •  PCB ART STUDIO', 6, 49.4, `700 1.9px ${sans}`, SILK, 0.2);
+  // Monogram pad with castellated edges, wordmark and tagline.
+  rect(5.6, 5.6, 11.6, 11.6, METAL, 2.6);
+  for (let i = 0; i < 3; i++) for (const [x, y] of [[8.6 + i * 2.8, 5.6], [8.6 + i * 2.8, 17.2], [5.6, 8.6 + i * 2.8], [17.2, 8.6 + i * 2.8]]) dot(x, y, 0.45, BOARD);
+  text('u.', 11.5, 14.6, `800 9px ${sans}`, BOARD, 0, 'center');
+  const name = text('umut alisoglu', 20.6, 12.4, `700 5.9px ${sans}`, SILK, -0.05, 'left', 32.5);
+  text('.', 20.6 + name + 0.1, 12.4, `700 5.9px ${sans}`, METAL);
+  text('SOFTWARE  •  TOOLS  •  HARDWARE', 20.8, 16.6, `700 1.95px ${sans}`, SILK, 0.3, 'left', 33);
+
+  // Contact rows: an icon on a small metal plate, then the address.
+  const rows = [['mail', 'umut@alisoglu.com'], ['web', 'alisoglu.com'], ['github', 'github.com/UmutAlisoglu']];
+  rows.forEach(([icon, value], i) => {
+    const y = 25.6 + i * 6;
+    rect(5.6, y - 2.3, 4.6, 4.6, METAL, 1.2);
+    drawIcon(ctx, icon, 5.6 + 0.6, y - 2.3 + 0.6, 3.4, BOARD);
+    text(value, 12.4, y + 1.05, `600 3px ${sans}`, SILK, 0.02, 'left', 34);
+  });
+
+  // Footer: a thin copper rule, revision and project names.
+  line([[5.6, 44.6], [40, 44.6], [43.4, 41.2], [48.6, 41.2]], 0.3, COPPER); via(48.6, 41.2);
+  text('FILEFORGE  •  REPODOCK  •  PCB ART STUDIO', 7.6, 50.9, `700 1.75px ${sans}`, SILK, 0.22, 'left', 36);
+  text('REV A', 47.6, 50.9, `700 1.4px ${sans}`, SILK, 0.15, 'left', 6);
   return canvas;
 }
 
-/** Original sample back: a centred monogram plate with traces fanning out to both ends. */
+/** Original sample back: a gold monogram inside topographic copper contours. */
 function sampleBack() {
   const mm = 20, canvas = document.createElement('canvas'); canvas.width = 85 * mm; canvas.height = 55 * mm;
   const ctx = canvas.getContext('2d');
@@ -808,23 +940,34 @@ function sampleBack() {
   const sans = 'system-ui, -apple-system, "Segoe UI", Arial, sans-serif';
   ctx.scale(mm, mm); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   ctx.fillStyle = BOARD; ctx.fillRect(0, 0, 85, 55);
-  const cx = 42.5, cy = 23;
-  const via = (x, y) => { ctx.fillStyle = METAL; ctx.beginPath(); ctx.arc(x, y, 0.95, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = BOARD; ctx.beginPath(); ctx.arc(x, y, 0.42, 0, Math.PI * 2); ctx.fill(); };
-  ctx.strokeStyle = COPPER; ctx.lineWidth = 0.45;
-  for (let i = 0; i < 6; i++) {
-    const y = cy - 7.5 + i * 3, out = i < 3 ? -(3 - i) * 1.6 : (i - 2) * 1.6, bend = 4 + Math.abs(i - 2.5) * 2.4, end = 9 + (i % 2) * 3;
-    for (const dir of [-1, 1]) {
-      const x0 = cx + dir * 12.6, x1 = x0 + dir * bend, x2 = x1 + dir * Math.abs(out), xe = dir < 0 ? end : 85 - end;
-      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.lineTo(x2, y + out); ctx.lineTo(xe, y + out); ctx.stroke();
-      via(xe, y + out);
+  const cx = 42.5, cy = 22.5;
+  // Contour lines that wobble a little, like a terrain map, kept clear of the lettering below.
+  ctx.save(); ctx.beginPath(); ctx.roundRect(2.6, 2.6, 79.8, 36.4, 2); ctx.clip();
+  ctx.strokeStyle = COPPER; ctx.lineWidth = 0.32;
+  for (let ring = 0; ring < 16; ring++) {
+    const rx = 13.5 + ring * 2.25, ry = 12 + ring * 1.55;
+    ctx.beginPath();
+    for (let step = 0; step <= 240; step++) {
+      const a = step / 240 * Math.PI * 2;
+      const wobble = 1 + 0.045 * Math.sin(3 * a + ring * 0.55) + 0.03 * Math.sin(5 * a - ring * 0.8);
+      const x = cx + Math.cos(a) * rx * wobble, y = cy + Math.sin(a) * ry * wobble;
+      if (step) ctx.lineTo(x, y); else ctx.moveTo(x, y);
     }
+    ctx.stroke();
   }
-  ctx.strokeStyle = METAL; ctx.lineWidth = 0.35; ctx.beginPath(); ctx.roundRect(cx - 12.6, cy - 12.6, 25.2, 25.2, 5.6); ctx.stroke();
-  ctx.beginPath(); ctx.roundRect(2.4, 2.4, 80.2, 50.2, 1.6); ctx.stroke();
-  ctx.fillStyle = METAL; ctx.beginPath(); ctx.roundRect(cx - 10, cy - 10, 20, 20, 4.2); ctx.fill();
+  ctx.restore();
+  // Clearance around the plate, the plate, and a ring of small vias.
+  ctx.fillStyle = BOARD; ctx.beginPath(); ctx.roundRect(cx - 12.6, cy - 12.6, 25.2, 25.2, 6.4); ctx.fill();
+  for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2, r = 11.2; ctx.fillStyle = METAL; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 0.42, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = BOARD; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 0.16, 0, Math.PI * 2); ctx.fill(); }
+  ctx.fillStyle = METAL; ctx.beginPath(); ctx.roundRect(cx - 9, cy - 9, 18, 18, 4.4); ctx.fill();
   ctx.textAlign = 'center';
-  ctx.fillStyle = BOARD; ctx.font = `700 15px ${sans}`; ctx.fillText('u.', cx + 0.4, cy + 5);
-  ctx.fillStyle = SILK; ctx.font = `700 4px ${sans}`; ctx.fillText('alisoglu.com', cx, 44);
-  ctx.font = `700 1.8px ${sans}`; ctx.letterSpacing = '0.3px'; ctx.fillText('MADE WITH PCB ART STUDIO', cx, 49.2); ctx.letterSpacing = '0px';
+  ctx.fillStyle = BOARD; ctx.font = `800 13.5px ${sans}`; ctx.fillText('u.', cx + 0.3, cy + 4.6);
+  const text = makeText(ctx);
+  text('alisoglu.com', cx, 45.4, `700 4.2px ${sans}`, SILK, 0.1, 'center', 40);
+  text('MADE WITH PCB ART STUDIO  •  STAYS ON YOUR DEVICE', cx, 49.8, `700 1.7px ${sans}`, SILK, 0.35, 'center', 60);
   return canvas;
 }
+
+// Start last, so every helper and constant above is initialised.
+const root = document.querySelector('[data-pcb-studio]');
+if (root) start(root);

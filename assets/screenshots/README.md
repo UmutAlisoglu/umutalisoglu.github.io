@@ -8,4 +8,4 @@
 
 The Repodock dashboard image at `../repodock-dashboard.png` comes from that project’s public documentation. These screenshots show the projects themselves; they are not mockups or personal photographs.
 
-`pcb-art-studio.jpg` is a crop of PCB Art Studio's live board preview, rendered from the tool's own built-in sample artwork (the blue alisoglu.com business card) on 6 November 2026. It shows the tool's preview, not a photograph of a manufactured board.
+`pcb-art-studio.jpg` is a crop of PCB Art Studio's live board preview, rendered at high resolution (Save preview) from the tool's own built-in sample artwork, the blue alisoglu.com business card, on 6 November 2026. It shows the tool's preview, not a photograph of a manufactured board.
