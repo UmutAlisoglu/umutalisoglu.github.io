@@ -84,8 +84,10 @@ test('sliver removal turns a one-pixel outline into its surroundings but keeps s
   const { removeSlivers } = await import('../src/pcb-art/core.js');
   const width = 12, height = 12, labels = new Uint8Array(width * height);
   for (let y = 3; y < 9; y++) for (let x = 3; x < 9; x++) labels[y * width + x] = 2;
-  for (let x = 2; x < 10; x++) labels[2 * width + x] = 1; // thin fringe above the square
+  for (let x = 2; x < 10; x++) labels[2 * width + x] = 1; // anti-aliased fringe between background and square
+  for (let y = 1; y < 11; y++) labels[y * width + 11] = 2; // a real one-pixel stroke of the lightest tone
   removeSlivers(labels, width, height, 2);
   assert.ok([...labels].every(v => v !== 1), 'the fringe is gone');
   assert.equal(labels[5 * width + 5], 2);
+  for (let y = 1; y < 11; y++) assert.equal(labels[y * width + 11], 2, 'thin strokes of real artwork stay');
 });

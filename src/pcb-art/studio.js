@@ -28,13 +28,14 @@ function start(root) {
   const form = $('form'), fileInput = $('#pcb-file'), drop = $('.pcb-drop'), canvas = $('#pcb-preview'), stage = $('.pcb-stage'), levelList = $('.pcb-levels');
   const status = $('#pcb-status'), warnings = $('#pcb-warnings'), download = $('#pcb-download'), savePreview = $('#pcb-save-preview');
   const work = document.createElement('canvas'), workContext = work.getContext('2d', { willReadFrequently: true });
-  let source = sampleArtwork(), sourceName = 'sample', levelFinishes = [...defaultLevelFinishes[4]], result = null, timer = 0;
+  let source = sampleArtwork(), sourceName = 'business-card', levelFinishes = [...defaultLevelFinishes[4]], result = null, timer = 0;
 
   for (const [id, preset] of Object.entries(presets)) form.preset.append(new Option(`${preset.label} · ${preset.shape === 'circle' ? `⌀ ${preset.width}` : `${preset.width} × ${preset.height}`} mm`, id));
   form.preset.append(new Option('Custom size', 'custom'));
   for (const [id, mask] of Object.entries(maskColors)) form.mask.append(new Option(mask.label, id));
   for (const [id, surface] of Object.entries(surfaces)) form.surface.append(new Option(surface.label, id));
   applyPreset('card');
+  form.mask.value = 'blue'; form.surface.value = 'hasl'; form.detail.value = '0.1';
 
   function applyPreset(id) {
     const preset = presets[id]; if (!preset) return;
@@ -124,6 +125,12 @@ function start(root) {
     ctx.fillStyle = layerView ? 'rgb(250,250,247)' : `rgb(${mask.substrate.join(',')})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.imageSmoothingEnabled = s.pixel > 0.12 ? false : true;
     ctx.drawImage(small2, 0, 0, gw * s.pixel * k, gh * s.pixel * k);
+    if (!layerView) {
+      // Soft studio light across the lacquer, like a photo of a glossy board.
+      const sheen = ctx.createLinearGradient(0, 0, canvas.width * 0.7, canvas.height);
+      sheen.addColorStop(0, 'rgba(255,255,255,.16)'); sheen.addColorStop(0.35, 'rgba(255,255,255,.04)'); sheen.addColorStop(0.6, 'rgba(255,255,255,0)'); sheen.addColorStop(1, 'rgba(0,0,0,.10)');
+      ctx.fillStyle = sheen; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
     ctx.globalCompositeOperation = 'destination-out';
     for (const hole of geometry.holes) { ctx.beginPath(); ctx.arc(hole.x * k, (geometry.height - hole.y) * k, hole.d / 2 * k, 0, Math.PI * 2); ctx.fill(); }
     ctx.restore();
@@ -197,7 +204,12 @@ function start(root) {
   });
   form.addEventListener('submit', event => event.preventDefault());
   fileInput.addEventListener('change', () => loadFile(fileInput.files[0]));
-  $('#pcb-sample').addEventListener('click', () => { source = sampleArtwork(); sourceName = 'sample'; $('.pcb-drop-name').textContent = 'Sample artwork'; schedule(); });
+  $('#pcb-sample').addEventListener('click', () => {
+    source = sampleArtwork(); sourceName = 'business-card'; $('.pcb-drop-name').textContent = 'Sample business card';
+    applyPreset('card'); form.mask.value = 'blue'; form.surface.value = 'hasl'; form.detail.value = '0.1'; form.fit.value = 'cover'; form.zoom.value = 1; form.offsetX.value = 0; form.offsetY.value = 0;
+    form.levels.value = 4; levelFinishes = [...defaultLevelFinishes[4]]; renderLevels(4); form.dither.checked = false; form.invert.checked = false; form.brightness.value = 0; form.contrast.value = 0;
+    form.dispatchEvent(new Event('input')); schedule();
+  });
   for (const type of ['dragenter', 'dragover']) drop.addEventListener(type, event => { event.preventDefault(); drop.classList.add('is-over'); });
   for (const type of ['dragleave', 'drop']) drop.addEventListener(type, () => drop.classList.remove('is-over'));
   drop.addEventListener('drop', event => { event.preventDefault(); loadFile(event.dataTransfer.files[0]); });
@@ -252,27 +264,59 @@ function formatValue(name, value) {
   return value;
 }
 
-/** Original sample: a sunrise over circuit-like hills, drawn on the fly. */
+/**
+ * Original sample: a business card in the alisoglu.com style, drawn on the fly at 20 px per mm.
+ * Grey values pick the finish: 0 mask over board, 80 mask over copper, 175 exposed metal, 255 silkscreen.
+ */
 function sampleArtwork() {
-  const canvas = document.createElement('canvas'); canvas.width = 1100; canvas.height = 700;
+  const mm = 20, canvas = document.createElement('canvas'); canvas.width = 85 * mm; canvas.height = 55 * mm;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 1100, 700);
-  const sun = ctx.createRadialGradient(780, 300, 20, 780, 300, 210);
-  sun.addColorStop(0, '#ababab'); sun.addColorStop(0.62, '#a4a4a4'); sun.addColorStop(0.63, '#000'); sun.addColorStop(1, '#000');
-  ctx.fillStyle = sun; ctx.fillRect(0, 0, 1100, 700);
-  ctx.strokeStyle = '#000'; ctx.lineWidth = 9;
-  for (let y = 250; y < 440; y += 26) { ctx.beginPath(); ctx.moveTo(620, y); ctx.lineTo(940, y); ctx.stroke(); }
-  ctx.fillStyle = '#6a6a6a';
-  ctx.beginPath(); ctx.moveTo(0, 700); ctx.lineTo(0, 470); ctx.lineTo(180, 380); ctx.lineTo(330, 470); ctx.lineTo(520, 330); ctx.lineTo(700, 470); ctx.lineTo(880, 400); ctx.lineTo(1100, 500); ctx.lineTo(1100, 700); ctx.fill();
-  ctx.strokeStyle = '#a8a8a8'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  const traces = [[60, 700, 60, 600, 140, 540, 260, 540], [200, 700, 200, 630, 380, 630, 440, 570], [560, 700, 560, 610, 640, 560, 760, 560], [900, 700, 900, 620, 1000, 580]];
-  for (const t of traces) {
-    ctx.beginPath(); ctx.moveTo(t[0], t[1]); for (let i = 2; i < t.length; i += 2) ctx.lineTo(t[i], t[i + 1]); ctx.stroke();
-    ctx.fillStyle = '#a8a8a8'; ctx.beginPath(); ctx.arc(t.at(-2), t.at(-1), 13, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#6a6a6a'; ctx.beginPath(); ctx.arc(t.at(-2), t.at(-1), 5, 0, Math.PI * 2); ctx.fill();
+  const BOARD = '#000', COPPER = '#505050', METAL = '#afafaf', SILK = '#fff';
+  const sans = 'system-ui, -apple-system, "Segoe UI", Arial, sans-serif', mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+  ctx.scale(mm, mm); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.fillStyle = BOARD; ctx.fillRect(0, 0, 85, 55);
+  const path = (points, width, color) => { ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(...points[0]); for (const point of points.slice(1)) ctx.lineTo(...point); ctx.stroke(); };
+  const via = (x, y) => { ctx.fillStyle = METAL; ctx.beginPath(); ctx.arc(x, y, 0.95, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = BOARD; ctx.beginPath(); ctx.arc(x, y, 0.42, 0, Math.PI * 2); ctx.fill(); };
+  const text = (value, x, y, font, color, spacing = 0) => { ctx.font = font; ctx.fillStyle = color; ctx.letterSpacing = `${spacing}px`; ctx.fillText(value, x, y); ctx.letterSpacing = '0px'; return ctx.measureText(value).width; };
+
+  // Circuit art under the mask: a chip with straight, staggered traces ending in exposed vias.
+  const chip = { x: 61, y: 22, size: 8 }, pins = [-2.4, -0.8, 0.8, 2.4];
+  const cx = chip.x + chip.size / 2, cy = chip.y + chip.size / 2;
+  pins.forEach((offset, i) => {
+    const near = i % 2 === 0;
+    const ends = [
+      [[chip.x + chip.size + 1.4, cy + offset], [near ? 74 : 77, cy + offset]],
+      [[chip.x - 1.4, cy + offset], [near ? 53 : 50, cy + offset]],
+      [[cx + offset, chip.y - 1.4], [cx + offset, near ? 17 : 14]],
+      [[cx + offset, chip.y + chip.size + 1.4], [cx + offset, near ? 35 : 38]],
+    ];
+    for (const [start, end] of ends) { path([start, end], 0.45, COPPER); via(...end); }
+  });
+  // Two long buses that tie the chip to the wordmark and the contact block.
+  path([[53, cy - 2.4], [50, cy - 5.4], [20.7, cy - 5.4]], 0.45, COPPER);
+  path([[50, cy + 2.4], [50, 40], [47.5, 42.5], [6, 42.5]], 0.45, COPPER);
+  ctx.fillStyle = METAL;
+  for (const offset of pins) {
+    ctx.fillRect(chip.x + chip.size + 0.3, cy + offset - 0.3, 1.4, 0.6); ctx.fillRect(chip.x - 1.7, cy + offset - 0.3, 1.4, 0.6);
+    ctx.fillRect(cx + offset - 0.3, chip.y - 1.7, 0.6, 1.4); ctx.fillRect(cx + offset - 0.3, chip.y + chip.size + 0.3, 0.6, 1.4);
   }
-  ctx.fillStyle = '#fff'; ctx.font = '700 92px system-ui, -apple-system, Segoe UI, Arial, sans-serif'; ctx.textBaseline = 'alphabetic';
-  ctx.fillText('Hello, PCB.', 70, 170);
-  ctx.font = '500 40px system-ui, -apple-system, Segoe UI, Arial, sans-serif'; ctx.fillText('made with PCB Art Studio', 74, 232);
+  ctx.beginPath(); ctx.roundRect(chip.x, chip.y, chip.size, chip.size, 0.8); ctx.fill();
+  ctx.fillStyle = BOARD; ctx.beginPath(); ctx.arc(chip.x + 1.4, chip.y + 1.4, 0.45, 0, Math.PI * 2); ctx.fill();
+  ctx.font = `700 3.6px ${sans}`; ctx.textAlign = 'center'; ctx.fillText('u.', cx, cy + 1.3); ctx.textAlign = 'left';
+
+  // Frame, monogram and wordmark.
+  ctx.strokeStyle = METAL; ctx.lineWidth = 0.35; ctx.beginPath(); ctx.roundRect(2.4, 2.4, 80.2, 50.2, 1.6); ctx.stroke();
+  ctx.fillStyle = METAL; ctx.beginPath(); ctx.roundRect(6, 6, 11, 11, 2.4); ctx.fill();
+  ctx.fillStyle = BOARD; ctx.font = `700 9px ${sans}`; ctx.textAlign = 'center'; ctx.fillText('u.', 11.6, 14.2); ctx.textAlign = 'left';
+  const name = text('umut alisoglu', 20.5, 12.8, `700 5.8px ${sans}`, SILK);
+  text('.', 20.5 + name + 0.2, 12.8, `700 5.8px ${sans}`, METAL);
+  text('SOFTWARE & PROJECTS', 20.7, 17, `700 2.2px ${sans}`, SILK, 0.3);
+
+  // Contact block.
+  const rows = [['E', 'umut@alisoglu.com'], ['W', 'alisoglu.com'], ['G', 'github.com/UmutAlisoglu']];
+  rows.forEach(([label, value], i) => { text(label, 6.2, 27.5 + i * 4.4, `700 2.7px ${mono}`, METAL); text(value, 10.4, 27.5 + i * 4.4, `600 2.7px ${mono}`, SILK); });
+
+  // Footer.
+  text('FILEFORGE  •  REPODOCK  •  PCB ART STUDIO', 6, 49.4, `700 1.9px ${sans}`, SILK, 0.2);
   return canvas;
 }
