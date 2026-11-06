@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { discoveryTags } from './discovery.js';
+import { socialCard, OG_WIDTH, OG_HEIGHT } from './social-cards.js';
 import { renderConversionPicker } from './conversion-options.js';
 import { renderQuickJobs } from './quick-jobs.js';
 import { renderEditionChoice, renderProductDemo } from './product-content.js';
@@ -69,12 +70,19 @@ export function siteTemplates() {
           result = result.replace(/(<div class="page-intro">[\s\S]*?<\/div>)/, `$1${renderToolUsage(currentTool)}`);
         }
         result = result.replace(/<meta name="theme-color" content="[^"]*">/, '<meta name="theme-color" content="#f5f5f7">');
+        // Every public page gets its own link preview card (scripts/render-og-images.mjs).
+        const card = socialCard(path);
+        if (card) {
+          const alt = card.alt.replace(/[&"<>]/g, char => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[char]));
+          result = result.replace(/<meta property="og:image" content="[^"]*">/, `<meta property="og:image" content="${card.url}"><meta property="og:image:secure_url" content="${card.url}"><meta property="og:image:type" content="image/png"><meta property="og:image:width" content="${OG_WIDTH}"><meta property="og:image:height" content="${OG_HEIGHT}"><meta property="og:image:alt" content="${alt}"><meta name="twitter:image:alt" content="${alt}">`);
+        }
+        if (!result.includes('property="og:locale"')) result = result.replace('</head>', '<meta property="og:locale" content="en_US"></head>');
         for (const name of ['title', 'description', 'image']) {
           const value = result.match(new RegExp(`<meta property="og:${name}" content="([^"]*)"`))?.[1];
           if (value) result = result.replace('</head>', `<meta name="twitter:${name}" content="${value}"></head>`);
         }
         const metadata = { title: result.match(/<title>([\s\S]*?)<\/title>/)?.[1], description: result.match(/<meta name="description" content="([^"]*)"/)?.[1] };
-        return result.replace('</head>', `<link rel="stylesheet" href="/src/site/premium.css">${path.startsWith('/projects/') ? reviewStyles : ''}<script type="module" src="/src/site/experience.js"></script>${discoveryTags(path, metadata)}</head>`);
+        return result.replace('</head>', `<link rel="stylesheet" href="/src/site/premium.css">${path.startsWith('/projects/') ? reviewStyles : ''}<script type="module" src="/src/site/experience.js"></script>${discoveryTags(path, { ...metadata, image: card?.url, html: result })}</head>`);
       },
     },
   };

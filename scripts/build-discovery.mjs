@@ -5,8 +5,8 @@ import { sitePaths } from '../src/site/templates.js';
 
 const privacy = 'FileForge is free to use without an account. Selected files, pasted text and results are processed on the visitor’s device, not uploaded to a conversion server or saved by this website. Download results before leaving the tab. Ordinary page visits download code and engines from the host, which receives connection information. Optional settings are stored locally only after opt-in; optional offline mode caches public code, not visitor files. The separately hosted game uses its own storage and game-data downloads.';
 const summaries = {
-  '/': ['Umut Alisoglu', 'Umut Alisoglu builds practical software, including FileForge browser file tools and Repodock for local GitHub projects on Windows. Currently building a PCB AIO Tool (23 October 2026).'],
-  '/about/': ['About Umut Alisoglu', 'Umut Alisoglu is the person behind FileForge and Repodock. His public software projects include browser file conversion and a Windows project launcher. As of 23 October 2026, he is building a PCB AIO Tool. Public profile: https://github.com/UmutAlisoglu. Contact: umut@alisoglu.com.'],
+  '/': ['Umut Alisoglu', 'Umut Alisoglu builds practical software, including FileForge browser file tools, Repodock for local GitHub projects on Windows and PCB Art Studio, a free browser tool that turns images into circuit board art with Gerber files. Currently building a PCB AIO Tool (23 October 2026).'],
+  '/about/': ['About Umut Alisoglu', 'Umut Alisoglu is the person behind FileForge, Repodock and PCB Art Studio. His public software projects include browser file conversion, a Windows project launcher and an image-to-Gerber circuit board art tool. As of 23 October 2026, he is building a PCB AIO Tool. Public profile: https://github.com/UmutAlisoglu. Contact: umut@alisoglu.com.'],
   '/tools/': ['Free FileForge browser tools', toolCatalog.map(tool => `- [${tool.name}](https://alisoglu.com/tools/${tool.slug}/): ${tool.description}`).join('\n')],
   '/tools/workspace/': ['FileForge connected workspace', 'Choose a file and the workspace suggests compatible tools. Results pass to the next tool in memory, without uploading or downloading and reselecting. Clear all releases the current session.'],
   '/privacy/': ['Privacy and file handling', privacy + '\n\nRead the full privacy notes for image metadata, optional local storage, hosting, the separate game and external links. This site uses GitHub Pages. It adds no analytics or advertising scripts.'],
@@ -29,6 +29,12 @@ for (const path of sitePaths) {
   if (facts) content += `\n## Formats and limits\n\n${facts[0]}\n\n${facts[1]}\n`;
   const related = tool && allToolPages.filter(candidate => candidate.id !== tool.id && candidate.category === tool.category).slice(0, 5);
   if (related?.length) content += `\n## Related tools\n\n${related.map(candidate => `- [${candidate.name}](https://alisoglu.com/tools/${candidate.slug}/): ${candidate.description}`).join('\n')}\n`;
+  const faq = html.match(/<section class="faq-section"[\s\S]*?<\/section>/)?.[0];
+  if (faq) {
+    const text = value => value.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().replaceAll('&amp;', '&').replaceAll('&quot;', '"').replaceAll('&#39;', "'");
+    const answers = [...faq.matchAll(/<details[^>]*>\s*<summary>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/g)].map(([, question, answer]) => `### ${text(question)}\n\n${text(answer)}`);
+    if (answers.length) content += `\n## Questions and answers\n\n${answers.join('\n\n')}\n`;
+  }
   if (path.startsWith('/tools/')) content += `\n## Cost and file handling\n\n${privacy}\n`;
   content += '\n## Links\n\n- [Privacy](https://alisoglu.com/privacy/)\n- [Contact](https://alisoglu.com/contact/)\n- [Tools](https://alisoglu.com/tools/)\n';
   await mkdir(`dist${path}`, { recursive: true }); await writeFile(`dist${path}index.md`, content);
