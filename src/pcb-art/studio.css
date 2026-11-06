@@ -49,7 +49,7 @@
 .pcb-stage.is-tilted { cursor:grab; touch-action:none; }
 .pcb-stage.is-tilted:active { cursor:grabbing; }
 .pcb-stage canvas { display:block; max-width:100%; filter:drop-shadow(0 2px 1px #0000002e) drop-shadow(0 18px 26px #202c3b33); transition:transform .45s cubic-bezier(.2,.8,.2,1); transform-style:preserve-3d; }
-.pcb-stage.is-tilted canvas { filter:drop-shadow(0 3px 0 #0b2f1a) drop-shadow(0 26px 30px #202c3b40); }
+.pcb-stage.is-tilted canvas { filter:drop-shadow(0 3px 0 var(--pcb-edge,#0b2f1a)) drop-shadow(0 26px 30px #202c3b40); }
 .pcb-status { margin:0; text-align:center; font-size:13px; color:var(--pcb-ink); font-variant-numeric:tabular-nums; }
 .pcb-warnings { margin:0; padding:0; list-style:none; display:grid; gap:6px; }
 .pcb-warnings:empty { display:none; }
