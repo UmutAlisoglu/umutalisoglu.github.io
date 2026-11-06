@@ -20,6 +20,17 @@ const presets = {
   square: { label: 'Square tile', width: 80, height: 80, shape: 'rounded', radius: 2 },
 };
 
+/** One-click looks: how many tones the image is split into and what each tone becomes. */
+const looks = {
+  accents: { label: 'Metal accents', hint: 'Mask, copper, metal and print', levels: 4, finishes: ['maskSubstrate', 'maskCopper', 'gold', 'silk'] },
+  print: { label: 'White print', hint: 'Crisp print on the mask', levels: 2, finishes: ['maskSubstrate', 'silk'] },
+  metal: { label: 'Metal only', hint: 'Shiny metal on the mask', levels: 2, finishes: ['maskSubstrate', 'gold'] },
+  shaded: { label: 'Shaded', hint: 'Three soft mask tones', levels: 3, finishes: ['maskSubstrate', 'maskCopper', 'silk'] },
+  raw: { label: 'Raw board', hint: 'Mask, bare board, metal', levels: 3, finishes: ['maskSubstrate', 'bare', 'gold'] },
+  photo: { label: 'Photo', hint: 'Dotted for photos', levels: 2, finishes: ['maskSubstrate', 'silk'], dither: true },
+};
+const presetIcons = { card: 'M2 5h20v14H2z', badge: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', coaster: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z', bookmark: 'M8 1h8v22H8z', square: 'M3 3h18v18H3z', custom: 'M3 3h18v18H3zM3 9h18M9 3v18' };
+
 const sideIds = ['front', 'back'];
 const sideLabels = { front: 'Front', back: 'Back' };
 // Per-side settings that live in the form while that side is being edited.
@@ -39,22 +50,48 @@ function start(root) {
   const work = document.createElement('canvas'), workContext = work.getContext('2d', { willReadFrequently: true });
   let version = 0;
   const makeSide = (source, name, extra = {}) => ({ source, name, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0, levels: 4, brightness: 0, contrast: 0, invert: false, dither: false, cleanup: true, finishes: [...defaultLevelFinishes[4]], ...extra });
-  const sampleSides = () => ({ front: makeSide(sampleArtwork(), 'Sample business card'), back: makeSide(sampleBack(), 'Sample back side') });
+  const sampleSides = () => ({ front: makeSide(sampleArtwork(), 'Sample business card', { sample: true }), back: makeSide(sampleBack(), 'Sample back side', { sample: true }) });
   let sides = sampleSides(), editing = 'front', show = 'front', mode = 'preview';
   const results = { front: null, back: null };
-  let geometryNow = null, timer = 0, cropView = null, cropFrame = 0;
+  let geometryNow = null, timer = 0, cropView = null, cropFrame = 0, detailTouched = false;
+  const stageHint = $('.pcb-stage-hint');
 
-  for (const [id, preset] of Object.entries(presets)) form.preset.append(new Option(`${preset.label} · ${preset.shape === 'circle' ? `⌀ ${preset.width}` : `${preset.width} × ${preset.height}`} mm`, id));
-  form.preset.append(new Option('Custom size', 'custom'));
-  for (const [id, mask] of Object.entries(maskColors)) form.mask.append(new Option(mask.label, id));
-  for (const [id, surface] of Object.entries(surfaces)) form.surface.append(new Option(surface.label, id));
+  const radio = (name, value, className, content, label) => {
+    const wrap = document.createElement('label'); wrap.className = className; wrap.title = label;
+    const input = Object.assign(document.createElement('input'), { type: 'radio', name, value });
+    input.setAttribute('aria-label', label);
+    wrap.append(input, ...content); return wrap;
+  };
+  const svgIcon = d => { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), path = document.createElementNS(ns, 'path'); svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true'); path.setAttribute('d', d); svg.append(path); return svg; };
+  const textSpan = (text, tag = 'span') => Object.assign(document.createElement(tag), { textContent: text });
+  for (const [id, preset] of [...Object.entries(presets), ['custom', { label: 'Custom' }]]) {
+    const size = id === 'custom' ? 'Any size' : preset.shape === 'circle' ? `⌀ ${preset.width} mm` : `${preset.width} × ${preset.height} mm`;
+    $('.pcb-presets').append(radio('preset', id, 'pcb-preset', [svgIcon(presetIcons[id]), textSpan(preset.label, 'strong'), textSpan(size, 'small')], `${preset.label}, ${size}`));
+  }
+  for (const [id, mask] of Object.entries(maskColors)) {
+    const dot = textSpan(''); dot.className = 'pcb-swatch'; dot.style.setProperty('--swatch', `rgb(${mask.copper.join(',')})`); dot.style.setProperty('--swatch-dark', `rgb(${mask.substrate.join(',')})`);
+    $('.pcb-swatches').append(radio('mask', id, 'pcb-swatch-option', [dot], `${mask.label} solder mask`));
+  }
+  for (const [id, surface] of Object.entries(surfaces)) {
+    const dot = textSpan(''); dot.className = 'pcb-metal-dot'; dot.style.background = `rgb(${surface.color.join(',')})`;
+    $('.pcb-metal').append(radio('surface', id, 'pcb-metal-option', [dot, textSpan(surface.label)], surface.label));
+  }
+  const styleList = $('.pcb-styles');
+  for (const [id, look] of Object.entries(looks)) {
+    const strip = textSpan(''); strip.className = 'pcb-style-strip'; strip.dataset.look = id;
+    styleList.append(radio('look', id, 'pcb-style', [strip, textSpan(look.label, 'strong'), textSpan(look.hint, 'small')], look.label));
+  }
   form.zoom.min = ZOOM_MIN; form.zoom.max = ZOOM_MAX;
   for (const name of ['offsetX', 'offsetY']) { form[name].min = -OFFSET_LIMIT; form[name].max = OFFSET_LIMIT; }
   applyPreset('card');
   form.mask.value = 'blue'; form.surface.value = 'hasl'; form.detail.value = '0.1';
 
+  function syncBoardFields() {
+    form.radius.closest('label').hidden = form.shape.value !== 'rounded';
+    $('[data-custom]').hidden = form.preset.value !== 'custom';
+  }
   function applyPreset(id) {
-    const preset = presets[id]; if (!preset) return;
+    const preset = presets[id]; if (!preset) { syncBoardFields(); return; }
     form.preset.value = id; form.width.value = preset.width; form.height.value = preset.height; form.shape.value = preset.shape; form.radius.value = preset.radius ?? 3;
   }
   /** Settings shared by both sides of the board. */
@@ -79,12 +116,13 @@ function start(root) {
   function writeForm() {
     const side = current();
     for (const name of sideFields) {
-      const field = form[name];
+      const field = form[name]; if (!field) continue;
       if (field.type === 'checkbox') field.checked = side[name]; else field.value = side[name];
     }
     renderLevels();
     updateOutputs();
     $('.pcb-drop-name').textContent = side.name;
+    $('[data-drop-title]').textContent = side.source && !side.sample ? 'Replace the image' : 'Choose or drop your image';
     $('[data-side-label]').textContent = sideLabels[editing].toLowerCase();
     $('#pcb-plain').hidden = !side.source;
     for (const control of root.querySelectorAll('[data-mode-switch="crop"], .pcb-crop-tools [data-crop]')) control.disabled = !side.source;
@@ -105,7 +143,7 @@ function start(root) {
   }
   function writePlacement() {
     const side = current();
-    form.zoom.value = side.zoom; form.offsetX.value = side.offsetX; form.offsetY.value = side.offsetY; form.fit.value = side.fit;
+    form.zoom.value = side.zoom; form.offsetX.value = side.offsetX; form.offsetY.value = side.offsetY;
     updateOutputs();
   }
   function updateOutputs() {
@@ -136,6 +174,23 @@ function start(root) {
   function paintChips() {
     const { mask, surface } = settings();
     for (const chip of levelList.querySelectorAll('.pcb-level-chip')) chip.style.background = `rgb(${finishColor(chip.dataset.finish, mask, surface).join(',')})`;
+    for (const strip of styleList.querySelectorAll('.pcb-style-strip')) {
+      const colors = looks[strip.dataset.look].finishes.map(name => `rgb(${finishColor(name, mask, surface).join(',')})`);
+      strip.style.background = `linear-gradient(90deg, ${colors.map((color, i) => `${color} ${i / colors.length * 100}% ${(i + 1) / colors.length * 100}%`).join(', ')})`;
+      strip.classList.toggle('is-dotted', !!looks[strip.dataset.look].dither);
+    }
+    const side = current(), active = lookOf(side);
+    for (const input of styleList.querySelectorAll('input')) { input.checked = input.value === active; input.disabled = !side.source; }
+    styleList.dataset.note = active ? '' : 'Custom look: see “Fine-tune this side”';
+  }
+  /** The look a side currently matches, or '' when its tones were changed by hand. */
+  function lookOf(side) {
+    return Object.keys(looks).find(id => { const look = looks[id]; return look.levels === side.levels && !!look.dither === side.dither && look.finishes.every((f, i) => side.finishes[i] === f); }) || '';
+  }
+  function applyLook(id) {
+    const look = looks[id], side = current(); if (!look || !side.source) return;
+    Object.assign(side, { levels: look.levels, finishes: [...look.finishes], dither: !!look.dither });
+    writeForm(); schedule();
   }
 
   // ---- Image processing ----
@@ -176,7 +231,9 @@ function start(root) {
     const shared = settings(), geometry = results.front.geometry, mask = maskColors[shared.mask];
     const ids = show === 'both' ? sideIds : [show];
     const box = stage.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
-    const maxW = Math.max(240, box.width - 48), maxH = Math.max(240, Math.min(window.innerHeight * 0.7, 760) - 48);
+    // Leave room for the toolbars and the download button so everything fits on one screen.
+    const headerTop = parseFloat(root.style.getPropertyValue('--pcb-top')) || 0;
+    const maxW = Math.max(240, box.width - 48), maxH = Math.max(240, Math.min(window.innerHeight - headerTop - 430, 700));
     const { width: w, height: h } = geometry;
     const caption = ids.length > 1 ? 26 : 0, gap = ids.length > 1 ? 28 : 0;
     let layout = 'row', scale = Math.min(maxW / w, maxH / h);
@@ -361,6 +418,7 @@ function start(root) {
   }
 
   // ---- Modes and sides ----
+  function updateStageHint() { stageHint.hidden = mode !== 'preview' || !sides[show === 'both' ? 'front' : show].sample; }
   function setMode(next) {
     if (next === 'crop' && !current().source) return;
     mode = next;
@@ -369,12 +427,14 @@ function start(root) {
     stage.classList.toggle('is-cropping', mode === 'crop');
     if (mode === 'crop') { canvas.style.transform = ''; stage.classList.remove('is-tilted'); canvas.tabIndex = 0; }
     else { canvas.removeAttribute('tabindex'); stage.classList.toggle('is-tilted', form.tilt.checked); canvas.style.transform = form.tilt.checked ? 'rotateX(18deg) rotateY(-14deg)' : ''; }
+    updateStageHint();
     if (mode === 'preview') process(); else draw();
   }
   function setShow(next) {
     if (next === show) return;
     const previous = show; show = next;
     for (const button of root.querySelectorAll('[data-show]')) button.setAttribute('aria-pressed', String(button.dataset.show === show));
+    updateStageHint();
     if (mode !== 'preview' || previous === 'both' || next === 'both' || reducedMotion() || !canvas.animate) { draw(); return; }
     // Turn the board over: rotate to edge-on, swap the side, rotate back.
     const base = canvas.style.transform || '';
@@ -404,9 +464,43 @@ function start(root) {
       const rect = imageRect(side, geometry.width, geometry.height), perMm = side.source.width / rect.w;
       if (perMm < 0.5 / result.pixel) notes.push(`${prefix}The image is enlarged a lot (${perMm.toFixed(1)} pixels per mm), so edges may look soft. A larger image gives crisper lines.`);
     }
-    if (anyGold) notes.push(`Order with ${surfaces[shared.surface].label} as surface finish to get the metal look.`);
+    if (anyGold) notes.push({ info: true, text: `Order with ${surfaces[shared.surface].label} as surface finish to get the metal look.` });
     if (shared.holes && !geometry.holes.length) notes.push(geometry.shape === 'circle' ? 'Mounting holes are only added to rectangular boards.' : 'Mounting holes need a board of at least 20 × 20 mm.');
-    warnings.replaceChildren(...notes.map(text => Object.assign(document.createElement('li'), { textContent: text })));
+    // A dark logo on white paper turns most of the board into print or metal; offer the one-click fix.
+    let swapped = false;
+    for (const id of sideIds) {
+      const side = sides[id], result = results[id]; if (!side.source || side.sample) continue;
+      const label = twoSided || id === 'back' ? `${sideLabels[id]}: ` : '';
+      if (side.autoSwapped && side.invert) notes.push({ text: `${label}Light and dark were swapped so the board keeps its ${maskColors[shared.mask].label.toLowerCase()} colour.`, action: 'Undo', run: () => { Object.assign(sides[id], { invert: false, autoSwapped: false }); if (editing === id) form.invert.checked = false; schedule(); } });
+      if (side.invert) continue;
+      const finish = result.layers.finish, lightest = side.finishes.length - 1, name = side.finishes[lightest];
+      if (name !== 'silk' && name !== 'gold') continue;
+      // Light background = most pixels along the board edge are the lightest tone.
+      const gw = result.layers.width, gh = result.layers.height, lightId = finishIds.indexOf(name);
+      let inside = 0, light = 0, edge = 0, edgeLight = 0;
+      for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+        const v = finish[y * gw + x]; if (v === 255) continue;
+        inside++; if (v === lightId) light++;
+        const onEdge = x === 0 || y === 0 || x === gw - 1 || y === gh - 1 || finish[y * gw + x - 1] === 255 || finish[y * gw + x + 1] === 255 || finish[(y - 1) * gw + x] === 255 || finish[(y + 1) * gw + x] === 255;
+        if (onEdge) { edge++; if (v === lightId) edgeLight++; }
+      }
+      const mostlyLight = inside && light / inside > 0.4 && edge && edgeLight / edge > 0.7;
+      // On a freshly loaded image, apply the fix straight away; after that only suggest it.
+      if (mostlyLight && side.autoCheck) { Object.assign(side, { invert: true, autoSwapped: true, autoCheck: false }); if (editing === id) form.invert.checked = true; swapped = true; continue; }
+      side.autoCheck = false;
+      if (mostlyLight) notes.push({ text: `${label}The light background becomes ${name === 'silk' ? 'white print' : 'metal'}. Swapping light and dark keeps the board ${maskColors[shared.mask].label.toLowerCase()}.`, action: 'Swap light and dark', run: () => { sides[id].invert = true; if (editing === id) form.invert.checked = true; schedule(); } });
+    }
+    warnings.replaceChildren(...notes.map(note => {
+      const item = document.createElement('li');
+      if (typeof note === 'string') { item.textContent = note; return item; }
+      if (note.info) item.className = 'is-info';
+      if (!note.action) { item.textContent = note.text; return item; }
+      const button = Object.assign(document.createElement('button'), { type: 'button', className: 'pcb-link', textContent: note.action });
+      button.addEventListener('click', note.run);
+      item.append(note.text, ' ', button); return item;
+    }));
+    updateStageHint();
+    if (swapped) { process(); return; }
     const shapeText = geometry.shape === 'circle' ? `⌀ ${geometry.width} mm` : `${geometry.width} × ${geometry.height} mm`;
     const sideText = id => sides[id].source ? `${sides[id].levels} tones` : 'plain';
     status.textContent = mode === 'crop'
@@ -448,7 +542,10 @@ function start(root) {
       copy.width = Math.max(1, Math.round(naturalW * fit)); copy.height = Math.max(1, Math.round(naturalH * fit));
       copy.getContext('2d').drawImage(image, 0, 0, copy.width, copy.height);
       // A new picture starts centred and filling the board; tone choices of this side are kept.
-      Object.assign(current(), { source: copy, name: file.name, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0 });
+      Object.assign(current(), { source: copy, name: file.name, sample: false, autoCheck: true, autoSwapped: false, invert: false, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0 });
+      // A first own image usually needs less fine detail than the sample card.
+      if (!detailTouched) form.detail.value = '0.15';
+      if (editing === 'front' && sides.back.sample) Object.assign(sides.back, { source: null, name: 'Plain, no artwork', sample: false, version: ++version });
       writeForm();
       if (show !== 'both') setShow(editing);
       setMode('crop');
@@ -468,14 +565,18 @@ function start(root) {
   // ---- Events ----
   form.addEventListener('input', event => {
     const target = event.target;
+    if (target.name === 'look') { applyLook(target.value); return; }
     if (target.name === 'preset') applyPreset(target.value);
     else if (['width', 'height', 'shape', 'radius'].includes(target.name)) form.preset.value = 'custom';
+    if (target.name === 'detail') detailTouched = true;
+    if (target.name === 'invert') Object.assign(current(), { autoSwapped: false, autoCheck: false });
+    if (target.name === 'invert' || target.name === 'levels' || target.name === 'dither' || target.dataset.level) paintChips();
     if (target.dataset.level) { current().finishes[target.dataset.level] = target.value; target.parentElement.querySelector('.pcb-level-chip').dataset.finish = target.value; paintChips(); }
     if (sideFields.includes(target.name)) readField(target);
     if (target.name === 'levels') renderLevels();
     if (target.name === 'mask' || target.name === 'surface') paintChips();
     if (target.name === 'tilt') return;
-    form.radius.closest('label').hidden = form.shape.value !== 'rounded';
+    syncBoardFields();
     updateOutputs();
     if (['zoom', 'offsetX', 'offsetY', 'fit'].includes(target.name) && mode === 'crop') requestCrop();
     if (target.name === 'view' || target.name === 'mask' || target.name === 'surface') draw(); else schedule();
@@ -485,11 +586,11 @@ function start(root) {
   $('#pcb-sample').addEventListener('click', () => {
     sides = sampleSides();
     applyPreset('card'); form.mask.value = 'blue'; form.surface.value = 'hasl'; form.detail.value = '0.1';
-    form.radius.closest('label').hidden = form.shape.value !== 'rounded';
+    detailTouched = false; syncBoardFields();
     writeForm(); setMode('preview');
   });
   $('#pcb-plain').addEventListener('click', () => {
-    Object.assign(current(), { source: null, name: 'Plain, no artwork', version: ++version });
+    Object.assign(current(), { source: null, name: 'Plain, no artwork', sample: false, version: ++version });
     writeForm(); setMode('preview');
   });
   const tabs = [...root.querySelectorAll('[data-side]')];
@@ -523,12 +624,14 @@ function start(root) {
     placementChanged();
   });
 
+  stageHint.addEventListener('click', () => { if (show !== 'both' && show !== editing) setEditing(show); fileInput.click(); });
   for (const type of ['dragenter', 'dragover']) drop.addEventListener(type, event => { event.preventDefault(); drop.classList.add('is-over'); });
   for (const type of ['dragleave', 'drop']) drop.addEventListener(type, () => drop.classList.remove('is-over'));
   drop.addEventListener('drop', event => { event.preventDefault(); loadFile(event.dataTransfer.files[0]); });
   // Dropping an image straight onto the board also works, for the side being edited.
-  stage.addEventListener('dragover', event => { if ([...(event.dataTransfer?.types || [])].includes('Files')) event.preventDefault(); });
-  stage.addEventListener('drop', event => { event.preventDefault(); loadFile(event.dataTransfer.files[0]); });
+  stage.addEventListener('dragover', event => { if ([...(event.dataTransfer?.types || [])].includes('Files')) { event.preventDefault(); stage.classList.add('is-over'); } });
+  stage.addEventListener('dragleave', event => { if (!stage.contains(event.relatedTarget)) stage.classList.remove('is-over'); });
+  stage.addEventListener('drop', event => { event.preventDefault(); stage.classList.remove('is-over'); loadFile(event.dataTransfer.files[0]); });
   window.addEventListener('paste', event => { const item = [...(event.clipboardData?.items || [])].find(entry => entry.type.startsWith('image/')); if (item) loadFile(item.getAsFile()); });
   download.addEventListener('click', () => {
     if (!results.front) return;
@@ -536,6 +639,10 @@ function start(root) {
     save(new Blob([zipped], { type: 'application/zip' }), `${baseName()}-gerbers.zip`);
     status.textContent = `Gerber ZIP ready · ${(zipped.length / 1024).toFixed(zipped.length > 102400 ? 0 : 1)} KB. Upload it unchanged to your PCB maker.`;
   });
+  const downloadMini = $('[data-download-mini]');
+  downloadMini.addEventListener('click', () => download.click());
+  $('[data-goto-preview]').addEventListener('click', () => stage.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' }));
+  new MutationObserver(() => { downloadMini.disabled = download.disabled; }).observe(download, { attributes: true, attributeFilter: ['disabled'] });
   savePreview.addEventListener('click', () => canvas.toBlob(blob => blob && save(blob, `${baseName()}-${mode === 'crop' ? 'crop' : show}.png`), 'image/png'));
 
   // Pointer input: crop (drag, pinch, wheel) or a gentle 3D tilt in the preview.
@@ -601,9 +708,12 @@ function start(root) {
   });
   form.tilt.addEventListener('change', () => { stage.classList.toggle('is-tilted', form.tilt.checked); canvas.style.transform = form.tilt.checked ? 'rotateX(18deg) rotateY(-14deg)' : ''; });
 
+  // Sticky parts of the studio sit just below the site's sticky header.
+  const trackHeader = () => { const band = document.querySelector('.site-header-band'); if (!band) return false; new ResizeObserver(() => root.style.setProperty('--pcb-top', `${band.offsetHeight}px`)).observe(band); return true; };
+  if (!trackHeader()) { const watch = new MutationObserver(() => { if (trackHeader()) watch.disconnect(); }); watch.observe(document.body, { childList: true, subtree: true }); }
   let resizeTimer = 0;
   new ResizeObserver(() => { clearTimeout(resizeTimer); resizeTimer = setTimeout(draw, 80); }).observe(stage);
-  form.radius.closest('label').hidden = form.shape.value !== 'rounded';
+  syncBoardFields();
   writeForm();
   root.classList.add('is-ready');
   process();
