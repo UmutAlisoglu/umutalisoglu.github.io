@@ -4,10 +4,10 @@
 .advanced-workspace legend { margin-bottom: 12px; color: var(--ink); font-size: 13px; font-weight: 650; }
 .advanced-settings, .advanced-workspace .tool-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .advanced-settings label, .advanced-workspace .tool-options label { display: flex; flex-direction: column; gap: 7px; min-width: 0; font-size: 12px; font-weight: 600; }
-.advanced-workspace input:not([type=file]), .advanced-workspace select { width: 100%; min-width: 0; border: 1px solid #d8d4e3; border-radius: 8px; padding: 11px; background: #fff; color: var(--ink); font: inherit; font-size: 13px; }
+.advanced-workspace input:not([type=file]), .advanced-workspace select { width: 100%; min-width: 0; border: 1px solid #dae0e7; border-radius: 8px; padding: 11px; background: #fff; color: var(--ink); font: inherit; font-size: 13px; }
 .advanced-workspace input:focus-visible, .advanced-workspace select:focus-visible, .advanced-workspace button:focus-visible, .advanced-workspace a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-.advanced-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 30px 16px; border: 1.5px dashed #c8bfe0; border-radius: 12px; background: #f8f6ff; color: var(--ink); cursor: pointer; font: inherit; text-align: center; }
-.advanced-drop:hover, .advanced-drop.dragging { border-color: var(--accent); background: #f0ebff; }
+.advanced-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 30px 16px; border: 1.5px dashed #bfcce0; border-radius: 12px; background: #f7f9ff; color: var(--ink); cursor: pointer; font: inherit; text-align: center; }
+.advanced-drop:hover, .advanced-drop.dragging { border-color: var(--accent); background: #eef2ff; }
 .advanced-drop strong { font-size: 15px; }
 .advanced-drop > span { color: var(--muted); font-size: 12px; }
 .advanced-file { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 13px 0; }
@@ -22,7 +22,7 @@
 .advanced-comparison figure { margin: 0; min-width: 0; }
 .advanced-comparison figcaption { font-size: 12px; font-weight: 600; margin-bottom: 9px; color: var(--muted); }
 .advanced-preview, #advanced-original-preview, #advanced-output-preview { display: block; width: 100%; max-height: 340px; object-fit: contain; border: 1px solid var(--line); border-radius: 10px; background: repeating-conic-gradient(#eeedf2 0% 25%, #fff 0% 50%) 50% / 18px 18px; }
-.advanced-result { margin-top: 26px; padding: 20px; border: 1px solid #dad3eb; border-radius: 12px; background: #f9f7fe; min-width: 0; }
+.advanced-result { margin-top: 26px; padding: 20px; border: 1px solid #dae2ee; border-radius: 12px; background: #f8fafe; min-width: 0; }
 .advanced-result h3 { margin: 0 0 12px; font-size: 18px; }
 .advanced-result-heading { display: flex; align-items: center; gap: 16px; justify-content: space-between; }
 .advanced-result-heading > div { min-width: 0; }
@@ -36,7 +36,7 @@
 .crop-stage, #crop-stage { position: relative; overflow: hidden; width: 100%; max-width: 680px; margin-inline: auto; border: 1px solid var(--line); border-radius: 9px; background: repeating-conic-gradient(#eeedf2 0% 25%, #fff 0% 50%) 50% / 18px 18px; cursor: crosshair; touch-action: none; user-select: none; }
 .crop-stage.is-busy, #crop-stage.is-busy { cursor: wait; }
 .crop-stage > img, #crop-source { display: block; width: 100%; height: auto; margin: 0; pointer-events: none; }
-.crop-selection, #crop-selection { position: absolute; border: 2px solid #fff; outline: 1px solid var(--accent); box-shadow: 0 0 0 9999px #19132470; pointer-events: none; }
+.crop-selection, #crop-selection { position: absolute; border: 2px solid #fff; outline: 1px solid var(--accent); box-shadow: 0 0 0 9999px #131a2470; pointer-events: none; }
 .crop-selection::before, .crop-selection::after, #crop-selection::before, #crop-selection::after { position: absolute; content: ''; pointer-events: none; }
 .crop-selection::before, #crop-selection::before { inset: 33.333% 0; border-top: 1px solid #ffffff65; border-bottom: 1px solid #ffffff65; }
 .crop-selection::after, #crop-selection::after { inset: 0 33.333%; border-left: 1px solid #ffffff65; border-right: 1px solid #ffffff65; }
