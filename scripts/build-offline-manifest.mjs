@@ -31,6 +31,8 @@ for (const path of files.sort()) {
   const rel = relative(root, path).replaceAll('\\', '/');
   if (/^(?:skate-scape|showcase)\//.test(rel) || /^(?:sw\.js|offline-manifest\.json)$/.test(rel)) continue;
   // Personal-site screenshots are not required by the offline file tools.
+  // Link preview cards are for social sites and search engines only.
+  if (/^assets\/og\//.test(rel)) continue;
   if (/^assets\/screenshots\//.test(rel) || /^tools\/_assets\/(?:fileforge|skate-scape(?:-session)?)-[^/]+\.jpg$/.test(rel)) continue;
   // Product-page recordings and posters are not required to process files offline.
   if (/^assets\/demos\/(?:fileforge-attachment\.webm|attachment-poster\.png)$/.test(rel) || /^tools\/_assets\/(?:fileforge-attachment|attachment-poster)-/.test(rel)) continue;

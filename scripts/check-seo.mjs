@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { sitePaths, retiredPaths } from '../src/site/templates.js';
-const titles = new Set(), descriptions = new Set();
+const titles = new Set(), descriptions = new Set(), images = new Set();
 const sitemap = await readFile('dist/sitemap.xml', 'utf8');
 for (const path of sitePaths) {
   const html = await readFile(`dist${path}index.html`, 'utf8');
@@ -20,6 +20,15 @@ for (const path of sitePaths) {
     assert.ok(html.includes(app.releaseNotes), `Release metadata differs from page: ${path}`);
     assert.ok(!app.aggregateRating && !app.review, 'No invented ratings or reviews');
   }
+  const image = html.match(/<meta property="og:image" content="([^"]+)"/)?.[1];
+  assert.ok(image?.startsWith('https://alisoglu.com/assets/og/'), `Own link preview image: ${path}`);
+  assert.ok(!images.has(image), `Duplicate preview image: ${path}`); images.add(image);
+  const png = await readFile(`dist${image.replace('https://alisoglu.com', '')}`);
+  assert.equal(png.readUInt32BE(16), 1200, `Preview width: ${path}`); assert.equal(png.readUInt32BE(20), 630, `Preview height: ${path}`);
+  assert.ok(html.includes(`<meta name="twitter:image" content="${image}">`), `Twitter image: ${path}`);
+  assert.match(html, /<meta property="og:image:alt" content="[^"]{20,}">/, `Preview alt text: ${path}`);
+  assert.ok(page.primaryImageOfPage?.url === image, `Structured preview image: ${path}`);
+  for (const faq of graph.filter(item => item['@type'] === 'FAQPage')) for (const question of faq.mainEntity) assert.ok(html.includes(question.name.replaceAll('"', '&quot;')) || html.includes(question.name), `FAQ question visible: ${path}`);
   const markdown = await readFile(`dist${path}index.md`, 'utf8');
   assert.ok(markdown.includes(`Original page: https://alisoglu.com${path}`), `Markdown source: ${path}`);
 }
@@ -30,4 +39,4 @@ for (const path of retiredPaths) {
 }
 const guide = await readFile('dist/llms-full.txt', 'utf8');
 assert.match(guide, /Repodock 0\.3\.0/); assert.doesNotMatch(guide, /Product Kit Studio/);
-console.log(`PASS ${sitePaths.length} public pages: unique metadata, canonical URLs, sitemap, linked structured entities, app download facts and Markdown summaries. Retired pages stay noindex.`);
+console.log(`PASS ${sitePaths.length} public pages: unique metadata, own 1200×630 preview images, canonical URLs, sitemap, linked structured entities, app download facts and Markdown summaries. Retired pages stay noindex.`);

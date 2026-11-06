@@ -1,6 +1,6 @@
 # Umut Alisoglu / FileForge
 
-> alisoglu.com is Umut Alisoglu’s personal website, focused on practical software: FileForge free browser file tools and Repodock for local projects on Windows. Other experiments are listed separately on the Projects page.
+> alisoglu.com is Umut Alisoglu’s personal website, focused on practical software: FileForge free browser file tools, Repodock for local projects on Windows and PCB Art Studio, a free browser tool that turns an image into circuit board art with downloadable Gerber files. Other experiments are listed separately on the Projects page.
 
 FileForge browser tools are free to use without an account. Selected files, pasted text and generated results are processed on the visitor’s device, in the current browser session. They are not uploaded to a conversion server or saved by this website. Download results before closing the tab.
 
@@ -51,6 +51,8 @@ Umut is currently building a PCB AIO Tool (personal update, 23 October 2026).
 - [Video compressor](https://alisoglu.com/tools/video-compressor/index.md): Compress a short video into MP4 on the device.
 
 ## Projects and source
+- [PCB Art Studio](https://alisoglu.com/projects/pcb-art-studio/index.md): Image to Gerber ZIP for decorative circuit boards, processed on the device. Free.
+- [FileForge](https://alisoglu.com/projects/fileforge/index.md): Browser tools and the Windows edition compared.
 - [Skate Scape](https://alisoglu.com/projects/skate-scape/index.md): Unofficial fan project; not an official game or endorsement.
 - [Repodock](https://alisoglu.com/projects/repodock/index.md): Windows launcher for local GitHub projects.
 - [Website source](https://github.com/UmutAlisoglu/umutalisoglu.github.io): Public code and build instructions.
