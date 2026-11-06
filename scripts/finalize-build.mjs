@@ -1,11 +1,11 @@
 import { cp, mkdir, writeFile } from 'node:fs/promises';
 
 // Pages serves the finished dist folder. These are website assets, never visitor files.
-for (const file of ['CNAME', '.nojekyll', '404.html', 'robots.txt', 'sitemap.xml']) {
+for (const file of ['CNAME', '.nojekyll', 'robots.txt', 'sitemap.xml']) {
   await cp(file, `dist/${file}`);
 }
 await cp('assets', 'dist/assets', { recursive: true });
-await cp('styles.css', 'dist/styles.css'); // Standalone 404.html keeps its stable stylesheet URL.
+await cp('styles.css', 'dist/styles.css'); // Kept for old bookmarked pages that still link it.
 await cp('showcase', 'dist/showcase', { recursive: true });
 await mkdir('dist/vendor/ffmpeg', { recursive: true });
 for (const file of ['ffmpeg-core.js', 'ffmpeg-core.wasm']) {

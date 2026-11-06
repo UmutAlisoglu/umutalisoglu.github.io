@@ -368,3 +368,7 @@ a.now-name::after { content:" ↗"; color:var(--accent); font-weight:400; font-s
 .advanced-workspace>h2+.drop-zone { margin-top:18px; }
 /* Small helper text keeps at least 4.5:1 contrast on tinted surfaces. */
 .idea-page .playground-copy p,.idea-page .playground-copy .eyebrow,.idea-page .playground-note,.forge-toolkit-banner p,.forge-tool-entry,.screenshot-preview-note,#screenshot-status,.forge-universal-drop>span,.frame-bar>span { color:#545f6d; }
+.visually-hidden { position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+.not-found-intro { padding:72px 0 48px; max-width:760px; }
+.not-found-intro .intro-copy { max-width:560px; }
+.not-found-page .about-project-list { padding-top:0; padding-bottom:72px; border-top:0; }
