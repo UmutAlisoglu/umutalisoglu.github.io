@@ -93,49 +93,92 @@ function start(root) {
 
   function draw() {
     if (!result) return;
-    const { s, geometry, layers } = result, { width: gw, height: gh, finish } = layers;
-    const small = new ImageData(gw, gh), data = small.data;
-    const mask = maskColors[s.mask], metal = surfaces[s.surface].color;
+    const { geometry, layers } = result, { width: gw, height: gh, finish } = layers;
+    const live = settings(), s = { ...result.s, mask: live.mask, surface: live.surface, view: live.view };
+    const mask = maskColors[s.mask];
     const layerView = { copper: layers.copper, mask: layers.opening, silk: layers.silk }[s.view];
-    for (let i = 0; i < finish.length; i++) {
-      const id = finish[i];
-      if (id === 255) continue;
-      let color;
-      if (layerView) color = layerView[i] ? [24, 32, 44] : [250, 250, 247];
-      else {
-        const name = finishIds[id];
-        color = finishColor(name, s.mask, s.surface, mask, metal);
-        if (name === 'maskCopper' || name === 'gold' || name === 'silk') {
-          const x = i % gw, edgeA = (x > 0 && finish[i - 1] !== id) || (i >= gw && finish[i - gw] !== id), edgeB = (x + 1 < gw && finish[i + 1] !== id) || (i + gw < finish.length && finish[i + gw] !== id);
-          if (edgeA && !edgeB) color = color.map(v => Math.min(255, v + 22)); else if (edgeB && !edgeA) color = color.map(v => v * 0.82);
-        }
-      }
-      data[i * 4] = color[0]; data[i * 4 + 1] = color[1]; data[i * 4 + 2] = color[2]; data[i * 4 + 3] = 255;
-    }
-    const small2 = document.createElement('canvas'); small2.width = gw; small2.height = gh; small2.getContext('2d').putImageData(small, 0, 0);
     const box = stage.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
     const maxW = Math.max(240, box.width - 48), maxH = Math.max(240, Math.min(window.innerHeight * 0.7, 760) - 48);
     const scale = Math.min(maxW / geometry.width, maxH / geometry.height);
     const cssW = geometry.width * scale, cssH = geometry.height * scale;
     canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
     canvas.style.width = `${cssW}px`; canvas.style.height = `${cssH}px`;
-    const ctx = canvas.getContext('2d'), k = canvas.width / geometry.width;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext('2d'), k = canvas.width / geometry.width, W = canvas.width, H = canvas.height;
+    const drawW = gw * s.pixel * k, drawH = gh * s.pixel * k, px = k / 10; // px: one tenth of a millimetre on screen
+
+    // Upscales one finish to screen resolution with smooth, crisp edges instead of square pixels.
+    const maskFor = test => {
+      const small = new ImageData(gw, gh), data = small.data;
+      let any = false;
+      for (let i = 0; i < finish.length; i++) if (finish[i] !== 255 && test(i)) { data[i * 4 + 3] = 255; any = true; }
+      if (!any) return null;
+      const tiny = document.createElement('canvas'); tiny.width = gw; tiny.height = gh; tiny.getContext('2d').putImageData(small, 0, 0);
+      const big = document.createElement('canvas'); big.width = W; big.height = H;
+      const b = big.getContext('2d', { willReadFrequently: true });
+      b.imageSmoothingEnabled = true; b.imageSmoothingQuality = 'high'; b.drawImage(tiny, 0, 0, drawW, drawH);
+      const image = b.getImageData(0, 0, W, H), alpha = image.data;
+      for (let i = 3; i < alpha.length; i += 4) {
+        const a = alpha[i]; if (!a || a === 255) continue;
+        const t = Math.max(0, Math.min(1, (a - 50) / 155)); alpha[i] = Math.round(t * t * (3 - 2 * t) * 255);
+      }
+      b.putImageData(image, 0, 0);
+      return big;
+    };
+    const paint = (maskCanvas, fill) => {
+      const layer = document.createElement('canvas'); layer.width = W; layer.height = H;
+      const l = layer.getContext('2d'); l.drawImage(maskCanvas, 0, 0); l.globalCompositeOperation = 'source-in'; l.fillStyle = fill; l.fillRect(0, 0, W, H);
+      return layer;
+    };
+    const rgb = color => `rgb(${color.map(Math.round).join(',')})`;
+    const shade = (color, amount) => color.map(v => Math.max(0, Math.min(255, v + amount)));
+
+    stage.style.setProperty('--pcb-edge', rgb(shade(mask.substrate, -30)));
+    ctx.clearRect(0, 0, W, H);
     ctx.save(); outlinePath(ctx, geometry, k); ctx.clip();
-    ctx.fillStyle = layerView ? 'rgb(250,250,247)' : `rgb(${mask.substrate.join(',')})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.imageSmoothingEnabled = s.pixel > 0.12 ? false : true;
-    ctx.drawImage(small2, 0, 0, gw * s.pixel * k, gh * s.pixel * k);
-    if (!layerView) {
-      // Soft studio light across the lacquer, like a photo of a glossy board.
-      const sheen = ctx.createLinearGradient(0, 0, canvas.width * 0.7, canvas.height);
-      sheen.addColorStop(0, 'rgba(255,255,255,.16)'); sheen.addColorStop(0.35, 'rgba(255,255,255,.04)'); sheen.addColorStop(0.6, 'rgba(255,255,255,0)'); sheen.addColorStop(1, 'rgba(0,0,0,.10)');
-      ctx.fillStyle = sheen; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (layerView) {
+      ctx.fillStyle = 'rgb(250,250,247)'; ctx.fillRect(0, 0, W, H);
+      const ink = maskFor(i => layerView[i]); if (ink) ctx.drawImage(paint(ink, 'rgb(24,32,44)'), 0, 0);
+    } else {
+      // Lacquer over bare board, with a gentle diagonal falloff.
+      const base = ctx.createLinearGradient(0, 0, W, H);
+      base.addColorStop(0, rgb(shade(mask.substrate, 14))); base.addColorStop(1, rgb(shade(mask.substrate, -10)));
+      ctx.fillStyle = base; ctx.fillRect(0, 0, W, H);
+      const id = name => finishIds.indexOf(name);
+      const bare = maskFor(i => finish[i] === id('bare'));
+      if (bare) { const fr4 = ctx.createLinearGradient(0, 0, W, H); fr4.addColorStop(0, '#d8c99a'); fr4.addColorStop(1, '#b9a675'); ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 1.5 * px; ctx.drawImage(paint(bare, fr4), 0, 0); ctx.restore(); }
+      const copper = maskFor(i => finish[i] === id('maskCopper'));
+      if (copper) {
+        const fill = ctx.createLinearGradient(0, 0, W, H); fill.addColorStop(0, rgb(shade(mask.copper, 16))); fill.addColorStop(1, rgb(shade(mask.copper, -8)));
+        // Copper under the mask is slightly raised: light from the top left, shadow to the bottom right.
+        ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 1.2 * px; ctx.shadowOffsetX = 0.5 * px; ctx.shadowOffsetY = 0.7 * px; ctx.drawImage(paint(copper, fill), 0, 0); ctx.restore();
+      }
+      const metal = maskFor(i => finish[i] === id('gold'));
+      if (metal) {
+        const stops = s.surface === 'enig' ? ['#8f6d27', '#f3d98f', '#b98f3d', '#fbe8b0', '#a07a32', '#e7c773'] : ['#868c94', '#eef1f4', '#a3a9b1', '#ffffff', '#959ba3', '#d9dde2'];
+        const sheenMetal = ctx.createLinearGradient(0, 0, W * 0.9, H);
+        stops.forEach((color, index) => sheenMetal.addColorStop(index / (stops.length - 1), color));
+        // Exposed metal sits in an opening of the lacquer, so the lacquer casts a thin dark lip.
+        ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 1.6 * px; ctx.drawImage(paint(metal, sheenMetal), 0, 0); ctx.restore();
+      }
+      const silk = maskFor(i => finish[i] === id('silk'));
+      if (silk) { ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 0.9 * px; ctx.shadowOffsetY = 0.45 * px; ctx.drawImage(paint(silk, rgb(mask.silk)), 0, 0); ctx.restore(); }
+      // Studio light: a broad reflection across the glossy lacquer and a soft vignette.
+      const sheen = ctx.createLinearGradient(0, 0, W * 0.75, H);
+      sheen.addColorStop(0, 'rgba(255,255,255,.20)'); sheen.addColorStop(0.28, 'rgba(255,255,255,.06)'); sheen.addColorStop(0.45, 'rgba(255,255,255,0)'); sheen.addColorStop(1, 'rgba(0,0,0,.12)');
+      ctx.fillStyle = sheen; ctx.fillRect(0, 0, W, H);
+      const glow = ctx.createRadialGradient(W * 0.28, H * 0.12, 0, W * 0.28, H * 0.12, Math.max(W, H) * 0.45);
+      glow.addColorStop(0, 'rgba(255,255,255,.14)'); glow.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
     }
     ctx.globalCompositeOperation = 'destination-out';
     for (const hole of geometry.holes) { ctx.beginPath(); ctx.arc(hole.x * k, (geometry.height - hole.y) * k, hole.d / 2 * k, 0, Math.PI * 2); ctx.fill(); }
     ctx.restore();
     if (!layerView) {
-      ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = Math.max(1, dpr); outlinePath(ctx, geometry, k); ctx.stroke(); ctx.restore();
+      // Milled edge: a bright rim on top and a darker one below.
+      ctx.save(); ctx.lineWidth = Math.max(1, px); outlinePath(ctx, geometry, k);
+      const rim = ctx.createLinearGradient(0, 0, 0, H); rim.addColorStop(0, 'rgba(255,255,255,.35)'); rim.addColorStop(1, 'rgba(0,0,0,.35)');
+      ctx.strokeStyle = rim; ctx.stroke(); ctx.restore();
+      for (const hole of geometry.holes) { ctx.save(); ctx.beginPath(); ctx.arc(hole.x * k, (geometry.height - hole.y) * k, hole.d / 2 * k, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = px * 2; ctx.stroke(); ctx.restore(); }
     }
     canvas.setAttribute('aria-label', `Preview of a ${geometry.shape === 'circle' ? `${geometry.width} mm round` : `${geometry.width} by ${geometry.height} mm`} board with ${maskColors[s.mask].label.toLowerCase()} solder mask`);
   }
@@ -157,7 +200,7 @@ function start(root) {
   }
 
   function buildZip() {
-    const { s, geometry, layers } = result;
+    const { geometry, layers } = result, live = settings(), s = { ...result.s, mask: live.mask, surface: live.surface };
     const used = new Set([...layers.finish].filter(id => id !== 255).map(id => finishIds[id]));
     const notes = orderNotes({ geometry, pixel: s.pixel, maskColor: maskColors[s.mask].label, surface: surfaces[s.surface].label, usesGold: used.has('gold'), usesBare: used.has('bare') });
     const { files, stats } = fabricationFiles(layers, geometry, s.pixel, { name: 'pcb-art', notes });
