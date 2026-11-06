@@ -359,3 +359,8 @@ a.now-name::after { content:" ↗"; color:var(--accent); font-weight:400; font-s
   .home-bench { grid-template-columns:1fr; }
   .home-hello { margin-top:56px; }
 }
+.premium-pcb { grid-column:1/-1; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); align-items:center; background:#e9f1ea; border-color:#d3e2d5; }
+.premium-pcb .premium-project-image { margin:28px 28px 28px 0; padding:0; }
+.premium-pcb .premium-project-image img { aspect-ratio:auto; border:0; border-radius:16px; box-shadow:0 22px 40px -18px #1d4a2c66; }
+.home-now .is-new .now-state { background:#e8edfb; color:var(--accent); }
+@media (max-width:820px) { .premium-pcb { grid-template-columns:1fr; } .premium-pcb .premium-project-copy>p.premium-project-detail { font-size:14px; } .premium-pcb .premium-project-image { margin:0 22px 24px; } }
