@@ -119,9 +119,11 @@ export function quantize(gray, width, height, levels, { dither = false } = {}) {
 }
 
 /**
- * Removes one-pixel-wide slivers, such as anti-aliased outlines that would otherwise
- * become a thin ring of another finish. A pixel with fewer than four same-tone pixels
- * in its 3×3 neighbourhood takes the most common tone around it.
+ * Removes one-pixel-wide slivers left by anti-aliasing, which would otherwise become a thin
+ * ring of another finish around an edge. Only in-between tones next to both a darker and a
+ * lighter tone are touched, so thin strokes of real artwork (like small text) survive. Such a
+ * pixel with fewer than four same-tone pixels in its 3×3 neighbourhood takes the most common
+ * tone around it.
  */
 export function removeSlivers(labels, width, height, passes = 1) {
   let current = labels;
@@ -130,16 +132,16 @@ export function removeSlivers(labels, width, height, passes = 1) {
     let changed = 0;
     for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
       const i = y * width + x, own = current[i];
-      let same = 0;
+      let same = 0, darker = false, lighter = false;
       const touched = [];
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
         const nx = x + dx, ny = y + dy;
         if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
         const value = current[ny * width + nx];
         if (value === own) same++;
-        else { if (!counts[value]) touched.push(value); counts[value]++; }
+        else { if (!counts[value]) touched.push(value); counts[value]++; if (value < own) darker = true; else lighter = true; }
       }
-      if (same < 4 && touched.length) {
+      if (same < 4 && darker && lighter) {
         let best = own, count = 0;
         for (const value of touched) if (counts[value] > count) { best = value; count = counts[value]; }
         next[i] = best; changed++;
