@@ -2,7 +2,7 @@
 .pcb-page { --pcb-ink:var(--ink,#202c3b); --pcb-muted:var(--muted,#606b77); --pcb-line:var(--line,#dedfdc); --pcb-accent:var(--accent,#3159d9); }
 .pcb-intro { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:48px; align-items:end; padding:28px 0 36px; }
 .pcb-intro h1 { margin:10px 0 0; font-size:clamp(38px,5.4vw,64px); line-height:1.02; letter-spacing:-2px; }
-.pcb-intro h1 em { font-style:normal; color:var(--pcb-muted); font-weight:500; }
+.pcb-intro h1 em { font-family:Georgia,"Times New Roman",serif; font-style:normal; color:var(--accent,#3159d9); font-weight:400; letter-spacing:-1.5px; }
 .pcb-intro>p { margin:0; font-size:17px; line-height:1.6; color:var(--pcb-muted); max-width:560px; }
 
 .pcb-studio { margin:0 0 72px; background:#f5f5f1; border:1px solid var(--pcb-line); border-radius:20px; box-shadow:0 18px 50px #202c3b0d; overflow:clip; }
