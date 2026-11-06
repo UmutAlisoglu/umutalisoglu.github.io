@@ -65,7 +65,7 @@ if ('IntersectionObserver' in window && !reducedMotion.matches) {
       ], { duration: 450, easing: 'cubic-bezier(.2,.65,.3,1)' });
     }
   }, { threshold: 0.08 });
-  document.querySelectorAll('.hero-stage, .premium-project, .premium-tool-grid, .personal-current, .personal-about, .personal-contact, .about-intro, .story-section, .release-panel').forEach(element => observer.observe(element));
+  document.querySelectorAll('.hero-stage, .home-now, .home-bench, .premium-project, .premium-tool-grid, .personal-current, .personal-about, .personal-contact, .about-intro, .story-section, .release-panel').forEach(element => observer.observe(element));
   reducedMotion.addEventListener('change', () => {
     if (!reducedMotion.matches) return;
     observer.disconnect();

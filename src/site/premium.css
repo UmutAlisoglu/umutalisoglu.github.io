@@ -324,3 +324,43 @@ html { scroll-padding-top:108px; }
 @media(max-width:820px) { .product-demo { grid-template-columns:1fr; gap:25px; } .product-demo>div { max-width:620px; } .product-tour-caption { min-height:0; } }
 @media(max-width:680px) { .edition-grid { grid-template-columns:1fr; gap:16px; } .edition-grid article { padding:24px; } .edition-choice { margin-block:30px 45px; } .product-demo { padding-block:35px; margin-block:30px; } .product-demo h2 { font-size:30px; } .edition-grid h3 { font-size:23px; } }
 @media(prefers-reduced-motion:reduce) { .product-tour-focus { transition:none; } }
+
+/* Home: personal intro, "right now" board and experiments row. */
+.home-hero { padding-bottom:64px; }
+.home-hero .premium-hero-copy { font-size:18px; max-width:500px; margin-top:28px; }
+.home-hero .personal-actions { margin-top:34px; }
+.home-now { min-width:0; background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:30px 30px 14px; box-shadow:0 20px 40px -24px #202c3b33; }
+.personal-main .home-now h2 { font:600 11px/1.7 var(--sans); letter-spacing:1.35px; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+.home-now ul { list-style:none; margin:0; padding:0; }
+.home-now li { display:grid; grid-template-columns:86px minmax(0,1fr); column-gap:16px; padding:16px 0; border-top:1px solid var(--line); }
+.home-now li:first-child { border-top:0; }
+.now-state { grid-row:span 2; align-self:start; justify-self:start; font-size:10px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; padding:4px 9px; border-radius:20px; background:#f1f2f4; color:var(--muted); }
+.now-name { font-size:18px; font-weight:600; letter-spacing:-.4px; color:var(--ink); }
+a.now-name::after { content:" ↗"; color:var(--accent); font-weight:400; font-size:14px; }
+.now-note { font-size:13px; line-height:1.6; color:var(--muted); }
+.home-now .is-live .now-state { background:#edf2eb; color:#43644d; display:inline-flex; align-items:center; gap:6px; }
+.home-now .is-live .now-state::before { content:""; width:6px; height:6px; border-radius:50%; background:#6a9278; }
+@media (prefers-reduced-motion:no-preference) { .home-now .is-live .now-state::before { animation:now-pulse 1.8s ease-in-out 4; } }
+@keyframes now-pulse { 50% { opacity:.25; } }
+.home-bench { display:grid; grid-template-columns:auto repeat(3,minmax(0,1fr)); gap:14px; align-items:stretch; margin-top:24px; }
+.home-bench>p { align-self:center; font-size:12px; font-weight:600; color:var(--muted); margin:0 10px 0 0; }
+.home-bench>a { display:flex; flex-direction:column; gap:4px; padding:18px 20px; background:var(--surface); border:1px solid var(--line); border-radius:14px; transition:border-color .2s,transform .2s; }
+.home-bench>a:hover { border-color:#a9bce9; transform:translateY(-2px); }
+.home-bench strong { font-size:15px; color:var(--ink); }
+.home-bench span { font-size:12px; color:var(--muted); }
+.home-hello { margin-top:90px; border-top:1px solid var(--line); }
+@media (max-width:900px) { .home-bench { grid-template-columns:repeat(3,minmax(0,1fr)); } .home-bench>p { grid-column:1/-1; } }
+@media (max-width:680px) {
+  .home-hero { padding-bottom:36px; }
+  .home-hero .premium-hero-copy { font-size:16px; }
+  .home-now { padding:22px 20px 8px; }
+  .home-now li { grid-template-columns:1fr; row-gap:4px; }
+  .now-state { grid-row:auto; }
+  .home-bench { grid-template-columns:1fr; }
+  .home-hello { margin-top:56px; }
+}
+.premium-pcb { grid-column:1/-1; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); align-items:center; background:#e9edf7; border-color:#d5ddef; }
+.premium-pcb .premium-project-image { margin:28px 28px 28px 0; padding:0; }
+.premium-pcb .premium-project-image img { aspect-ratio:auto; border:0; border-radius:16px; box-shadow:0 22px 40px -18px #1a336f66; }
+.home-now .is-new .now-state { background:#e8edfb; color:var(--accent); }
+@media (max-width:820px) { .premium-pcb { grid-template-columns:1fr; } .premium-pcb .premium-project-copy>p.premium-project-detail { font-size:14px; } .premium-pcb .premium-project-image { margin:0 22px 24px; } }

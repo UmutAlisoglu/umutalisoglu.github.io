@@ -14,7 +14,8 @@ Umut is currently building a PCB AIO Tool (personal update, 23 October 2026).
 - [About Umut](https://alisoglu.com/about/index.md): Person and project background.
 - [Free tools directory](https://alisoglu.com/tools/index.md): Full catalogue, formats and practical limits.
 - [Privacy](https://alisoglu.com/privacy/index.md): Local processing, optional storage, hosting and game data.
-- [Projects](https://alisoglu.com/projects/index.md): FileForge, Repodock and Skate Scape.
+- [Projects](https://alisoglu.com/projects/index.md): FileForge, Repodock, PCB Art Studio and Skate Scape.
+- [PCB Art Studio](https://alisoglu.com/projects/pcb-art-studio/index.md): Turn an image into circuit board art and download Gerber files, processed in the browser.
 - [Contact](https://alisoglu.com/contact/index.md): Email umut@alisoglu.com and project feedback.
 
 ## Windows desktop edition

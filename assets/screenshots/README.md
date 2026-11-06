@@ -7,3 +7,5 @@
 `fileforge.jpg` is an actual capture of FileForge’s connected browser workspace using the original, locally generated three-page PDF sample. It contains no visitor documents or private files.
 
 The Repodock dashboard image at `../repodock-dashboard.png` comes from that project’s public documentation. These screenshots show the projects themselves; they are not mockups or personal photographs.
+
+`pcb-art-studio.jpg` is a crop of PCB Art Studio's live board preview, rendered from the tool's own built-in sample artwork (the blue alisoglu.com business card) on 6 November 2026. It shows the tool's preview, not a photograph of a manufactured board.
