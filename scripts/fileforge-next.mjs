@@ -107,7 +107,7 @@ try {
     }
     await search.fill('png to pdf'); assert.equal(await directory.locator('[data-tool-id=image-pdf]').getAttribute('href'), '/tools/image-converter/?format=pdf');
     await directory.locator('.tool-search-clear').click();
-    for (const [category, count] of [['Images', 7], ['PDFs', 6], ['Video', 1], ['Documents', 8], ['All tools', toolCatalog.length]]) {
+    for (const [category, count] of [['Images', 7], ['PDFs', 6], ['Video', 1], ['Documents', 9], ['All tools', toolCatalog.length]]) {
       await directory.locator(`[data-tool-category="${category}"]`).click();
       assert.equal(await directory.locator('[data-tool-results] .task-card').count(), count, category);
       assert.equal(await directory.locator(`[data-tool-category="${category}"]`).getAttribute('aria-pressed'), 'true');

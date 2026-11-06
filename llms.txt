@@ -48,6 +48,7 @@ Umut is currently building a PCB AIO Tool (personal update, 23 October 2026).
 - [Image to SVG](https://alisoglu.com/tools/image-to-svg/index.md): Trace raster artwork into vector shapes.
 - [HEIC to JPG](https://alisoglu.com/tools/heic-to-jpg/index.md): Convert one HEIC/HEIF photo.
 - [Remove metadata](https://alisoglu.com/tools/remove-metadata/index.md): Remove descriptive JPG/PNG tags while preserving pixels.
+- [File inspector](https://alisoglu.com/tools/file-inspector/index.md): Identify a file by its bytes, read its metadata, list embedded files and hidden data, with a hex view. Processed on the device.
 - [Video compressor](https://alisoglu.com/tools/video-compressor/index.md): Compress a short video into MP4 on the device.
 
 ## Projects and source

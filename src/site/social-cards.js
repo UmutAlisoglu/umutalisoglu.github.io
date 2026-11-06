@@ -21,6 +21,7 @@ const pages = {
   '/downloads/': { eyebrow: 'Desktop downloads', title: 'Good on the web.', em: 'At home on your desktop.', subtitle: 'FileForge and Repodock for Windows, straight from their GitHub releases.', chips: ['Windows x64', 'FileForge 0.3.0', 'Repodock 0.3.0'], visual: { kind: 'downloads' } },
   '/privacy/': { eyebrow: 'Privacy', title: 'Your files.', em: 'Your business.', subtitle: 'Selected files are processed in your browser. No analytics, no ads, no conversion server.', chips: ['No file uploads', 'No analytics', 'Opt-in storage'], visual: { kind: 'symbol', symbol: '🔒︎', color: 'mint', label: 'Stays on your device' } },
   '/contact/': { eyebrow: 'Contact & feedback', title: 'Let’s have', em: 'a chat.', subtitle: 'Email umut@alisoglu.com, suggest an improvement or prepare a bug report on GitHub.', chips: ['Email or GitHub', 'Feedback welcome'], visual: { kind: 'symbol', symbol: '✉︎', color: 'blue', label: 'umut@alisoglu.com' } },
+  '/tools/file-inspector/': { eyebrow: 'FileForge · Any file type', title: 'File inspector', em: 'What is this file, really?', subtitle: 'Real format from the bytes, metadata, embedded files, hidden data and a hex view.', chips: local, visual: { kind: 'symbol', symbol: '⌕', color: 'blue' } },
   '/idea-machine/': { eyebrow: 'Experiment', title: 'Idea machine', em: 'Annoyance in. Project out.', subtitle: 'Turn an everyday annoyance into a practical project prompt. Runs locally in the browser.', chips: ['Runs locally', 'Free'], visual: { kind: 'symbol', symbol: '✦', color: 'yellow' } },
 };
 
