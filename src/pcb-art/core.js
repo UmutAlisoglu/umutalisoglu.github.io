@@ -183,13 +183,113 @@ export function despeckle(labels, width, height, minArea) {
 }
 
 /**
+ * Smallest features the low-cost board makers produce reliably, in mm. JLCPCB and PCBWay list
+ * 0.127 mm (5 mil) for copper on two-layer boards and about 0.15 mm for silkscreen lines; 0.15 mm
+ * copper keeps a margin and the cheapest price tier. Solder mask dams of 0.1 mm hold on every
+ * mask colour they offer.
+ */
+export const RULES = { copperWidth: 0.15, copperSpace: 0.15, silkWidth: 0.15, maskDam: 0.1 };
+/** How many grid pixels a rule needs, with a little tolerance for rounding. */
+export const rulePixels = (mm, pixel) => Math.max(1, Math.ceil(mm / pixel - 0.05));
+
+/** Summed-area table, so the sum of any rectangle is four lookups. */
+function areaTable(bits, width, height) {
+  const table = new Uint32Array((width + 1) * (height + 1));
+  for (let y = 0; y < height; y++) {
+    let row = 0;
+    for (let x = 0; x < width; x++) { row += bits[y * width + x] ? 1 : 0; table[(y + 1) * (width + 1) + x + 1] = table[y * (width + 1) + x + 1] + row; }
+  }
+  return (x0, y0, x1, y1) => table[y1 * (width + 1) + x1] - table[y0 * (width + 1) + x1] - table[y1 * (width + 1) + x0] + table[y0 * (width + 1) + x0];
+}
+
+/**
+ * Marks every set pixel that is not part of a full n × n block of set pixels. Those pixels form
+ * a line or a point thinner than n pixels, which a board maker cannot reproduce.
+ */
+export function thinPixels(bits, width, height, n) {
+  const thin = new Uint8Array(bits.length);
+  if (n <= 1) return thin;
+  const sum = areaTable(bits, width, height), full = new Uint8Array(bits.length);
+  for (let y = 0; y + n <= height; y++) for (let x = 0; x + n <= width; x++) if (sum(x, y, x + n, y + n) === n * n) full[y * width + x] = 1;
+  const anchors = areaTable(full, width, height);
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const i = y * width + x; if (!bits[i]) continue;
+    if (!anchors(Math.max(0, x - n + 1), Math.max(0, y - n + 1), x + 1, y + 1)) thin[i] = 1;
+  }
+  return thin;
+}
+
+/**
+ * Makes a bitmap manufacturable: features thinner than `width` pixels grow to that width (only
+ * into `allowed` pixels) and gaps narrower than `space` pixels close up. Art keeps its fine
+ * lines this way instead of losing them. Returns how many pixels changed.
+ */
+export function enforceWidth(bits, width, height, allowed, minWidth, minSpace = 1) {
+  let changed = 0;
+  for (let round = 0; round < 6; round++) {
+    let step = 0;
+    if (minWidth > 1) {
+      const thin = thinPixels(bits, width, height, minWidth), sum = areaTable(bits, width, height), room = areaTable(allowed, width, height), n = minWidth;
+      for (let i = 0; i < bits.length; i++) {
+        if (!thin[i] || !bits[i]) continue;
+        const x = i % width, y = (i - x) / width;
+        let best = -1, bx = 0, by = 0;
+        for (let ay = y - n + 1; ay <= y; ay++) for (let ax = x - n + 1; ax <= x; ax++) {
+          if (ax < 0 || ay < 0 || ax + n > width || ay + n > height || room(ax, ay, ax + n, ay + n) !== n * n) continue;
+          const filled = sum(ax, ay, ax + n, ay + n); if (filled > best) { best = filled; bx = ax; by = ay; }
+        }
+        if (best < 0) { bits[i] = 0; step++; continue; }
+        for (let yy = by; yy < by + n; yy++) for (let xx = bx; xx < bx + n; xx++) if (!bits[yy * width + xx]) { bits[yy * width + xx] = 1; step++; }
+      }
+    }
+    if (minSpace > 1) {
+      const gaps = bits.map(v => v ? 0 : 1), narrow = thinPixels(gaps, width, height, minSpace);
+      for (let i = 0; i < bits.length; i++) if (narrow[i] && allowed[i]) { bits[i] = 1; step++; }
+    }
+    changed += step;
+    if (!step) break;
+  }
+  return changed;
+}
+
+/** Counts the pixels that still break a rule. A clean board has zero everywhere. */
+export function checkRules(layers, pixel) {
+  const { width, height, copper, opening, silk, finish } = layers;
+  const count = bits => bits.reduce((a, b) => a + b, 0);
+  const outside = Uint8Array.from(finish, v => v === 255 ? 1 : 0);
+  const copperGaps = Uint8Array.from(copper, (v, i) => v || outside[i] ? 0 : 1);
+  const maskDams = Uint8Array.from(opening, (v, i) => v || outside[i] ? 0 : 1);
+  // A narrow gap that only touches the outline is edge clearance, not spacing, so it is ignored.
+  const inner = bits => bits.map((v, i) => v && !nearOutside(outside, width, height, i) ? 1 : 0);
+  return {
+    copperWidth: count(thinPixels(copper, width, height, rulePixels(RULES.copperWidth, pixel))),
+    copperSpace: count(inner(thinPixels(copperGaps, width, height, rulePixels(RULES.copperSpace, pixel)))),
+    silkWidth: count(thinPixels(silk, width, height, rulePixels(RULES.silkWidth, pixel))),
+    maskDam: count(inner(thinPixels(maskDams, width, height, rulePixels(RULES.maskDam, pixel)))),
+    silkOnOpening: count(silk.map((v, i) => v && opening[i] ? 1 : 0)),
+    copperOutside: count(copper.map((v, i) => v && outside[i] ? 1 : 0)),
+  };
+}
+function nearOutside(outside, width, height, i) {
+  const x = i % width, y = (i - x) / width;
+  for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+    const nx = x + dx, ny = y + dy;
+    if (nx < 0 || ny < 0 || nx >= width || ny >= height || outside[ny * width + nx]) return true;
+  }
+  return false;
+}
+
+/**
  * Builds the physical layers from per-pixel levels.
  * Returns bitmaps (1 = feature present) for copper, mask openings and silkscreen,
  * plus a `finish` grid for the preview (255 = outside the board or inside a hole keep-out).
+ * `overrides` (optional) holds a finish index per pixel that wins over the image, 255 = none;
+ * text uses it. Unless `rules` is false the layers are made manufacturable (see RULES).
  */
-export function buildLayers(levels, width, height, levelFinishes, geometry, pixel) {
+export function buildLayers(levels, width, height, levelFinishes, geometry, pixel, { overrides = null, rules = true } = {}) {
   const size = width * height;
   const copper = new Uint8Array(size), opening = new Uint8Array(size), silk = new Uint8Array(size), finish = new Uint8Array(size);
+  const copperRoom = new Uint8Array(size), inside = new Uint8Array(size);
   const ids = levelFinishes.map(id => finishIds.indexOf(id));
   if (ids.some(id => id < 0)) throw new Error('Unknown finish.');
   for (let row = 0; row < height; row++) {
@@ -198,15 +298,32 @@ export function buildLayers(levels, width, height, levelFinishes, geometry, pixe
       const i = row * width + col, x = (col + 0.5) * pixel;
       const edge = insideDistance(geometry, x, y), hole = holeDistance(geometry, x, y);
       if (edge <= pixel / 2 || hole <= HOLE_KEEPOUT) { finish[i] = 255; continue; }
-      let id = ids[levels[i]] ?? 0;
+      inside[i] = 1;
+      // Copper keeps a safe distance from the cut edge and the holes; the area stays visually close.
+      const roomy = edge >= COPPER_EDGE_CLEARANCE + pixel / 2 && hole > HOLE_KEEPOUT + pixel / 2;
+      copperRoom[i] = roomy ? 1 : 0;
+      let id = overrides && overrides[i] !== 255 ? overrides[i] : ids[levels[i]] ?? 0;
       const spec = finishes[finishIds[id]];
-      // Copper keeps a safe distance from the cut edge; the area stays visually close.
-      if (spec.copper && edge < COPPER_EDGE_CLEARANCE + pixel / 2) id = finishIds.indexOf(spec.opening ? 'bare' : 'maskSubstrate');
+      if (spec.copper && !roomy) id = finishIds.indexOf(spec.opening ? 'bare' : 'maskSubstrate');
       const final = finishes[finishIds[id]];
       finish[i] = id; copper[i] = final.copper ? 1 : 0; opening[i] = final.opening ? 1 : 0; silk[i] = final.silk ? 1 : 0;
     }
   }
-  return { copper, opening, silk, finish, width, height };
+  const layers = { copper, opening, silk, finish, width, height, fixed: 0 };
+  if (!rules) return layers;
+  let fixed = enforceWidth(copper, width, height, copperRoom, rulePixels(RULES.copperWidth, pixel), rulePixels(RULES.copperSpace, pixel));
+  fixed += enforceWidth(opening, width, height, inside, 1, rulePixels(RULES.maskDam, pixel));
+  // Silkscreen is never printed into a mask opening, so it may only grow onto lacquer.
+  const silkRoom = Uint8Array.from(inside, (v, i) => v && !opening[i] ? 1 : 0);
+  for (let i = 0; i < size; i++) if (silk[i] && opening[i]) silk[i] = 0;
+  fixed += enforceWidth(silk, width, height, silkRoom, rulePixels(RULES.silkWidth, pixel));
+  const id = name => finishIds.indexOf(name);
+  for (let i = 0; i < size; i++) {
+    if (!inside[i]) continue;
+    finish[i] = silk[i] ? id('silk') : copper[i] ? id(opening[i] ? 'gold' : 'maskCopper') : id(opening[i] ? 'bare' : 'maskSubstrate');
+  }
+  layers.fixed = fixed;
+  return layers;
 }
 
 /** Greedy rectangle cover of a bitmap: horizontal runs merged downwards when identical. */
@@ -334,7 +451,7 @@ export function fabricationFiles(layers, geometry, pixel, { name = 'pcb-art', no
 }
 
 /** Plain-language order notes placed in the ZIP. */
-export function orderNotes({ geometry, pixel, maskColor, surface, usesGold, usesBare, backPixel = null, frontArt = true }) {
+export function orderNotes({ geometry, pixel, maskColor, surface, usesGold, usesBare, backPixel = null, frontArt = true, checked = false }) {
   const twoSided = backPixel !== null;
   const size = geometry.shape === 'circle' ? `${geometry.width} mm diameter circle` : `${geometry.width} x ${geometry.height} mm ${geometry.shape === 'rounded' ? `rectangle with ${geometry.radius} mm corners` : 'rectangle'}`;
   return [
@@ -359,12 +476,18 @@ export function orderNotes({ geometry, pixel, maskColor, surface, usesGold, uses
     '2. Check their online Gerber viewer before paying: it should look like the preview.',
     `3. Pick the same solder mask colour${usesGold ? ' and ENIG (gold) or HASL (silver) as surface finish' : ''}.`,
     usesBare ? '4. Areas with neither mask nor copper show the bare board material.' : null,
+    `${usesBare ? '5' : '4'}. Choose "Remove mark" / "No order number" so the maker does not print its order number on the art.`,
     twoSided ? '' : null,
     twoSided ? 'The bottom files are mirrored, as Gerber files always look at the board from the top.' : null,
     twoSided ? 'In the maker\'s viewer, the back looks right once you flip the board over.' : null,
     '',
-    'Copper keeps 0.3 mm away from the board edge. Details smaller than about 0.15 mm',
-    'may be simplified by the manufacturer. This is art, not a tested electrical design.',
+    checked ? 'Manufacturing check: passed' : 'Manufacturing check',
+    `- copper lines and gaps at least ${RULES.copperWidth} mm (JLCPCB minimum 0.10 mm, PCBWay recommends 0.15 mm)`,
+    `- silkscreen lines at least ${RULES.silkWidth} mm, solder mask dams at least ${RULES.maskDam} mm`,
+    `- copper at least ${COPPER_EDGE_CLEARANCE} mm from the board edge${geometry.holes.length ? ` and ${HOLE_KEEPOUT} mm from the holes` : ''}`,
+    '- silkscreen never sits inside a solder mask opening',
+    '',
+    'This is art, not a tested electrical design.',
     '',
   ].filter(line => line !== null).join('\n');
 }

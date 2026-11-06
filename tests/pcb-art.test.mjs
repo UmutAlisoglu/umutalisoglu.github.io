@@ -112,3 +112,31 @@ test('back artwork goes to mirrored bottom layers', () => {
   assert.match(files['README.txt'], /artwork on the front and on the back/);
   assert.match(files['README.txt'], /bottom files are mirrored/);
 });
+
+test('fine detail is made manufacturable: thin lines grow, narrow gaps close, rules pass', async () => {
+  const { checkRules, rulePixels, RULES } = await import('../src/pcb-art/core.js');
+  const geometry = boardGeometry({ width: 10, height: 10 }), pixel = 0.1, size = 100;
+  const levels = new Uint8Array(size * size);
+  for (let x = 10; x < 90; x++) levels[50 * size + x] = 1; // a 0.1 mm copper line
+  for (let y = 20; y < 40; y++) for (let x = 10; x < 40; x++) levels[y * size + x] = 1;
+  for (let y = 20; y < 40; y++) for (let x = 41; x < 70; x++) levels[y * size + x] = 1; // 0.1 mm gap
+  for (let y = 60; y < 80; y++) levels[y * size + 30] = 2; // a 0.1 mm silkscreen line
+  const raw = buildLayers(levels, size, size, ['maskSubstrate', 'maskCopper', 'silk'], geometry, pixel, { rules: false });
+  const before = checkRules(raw, pixel);
+  assert.ok(before.copperWidth > 0 && before.copperSpace > 0 && before.silkWidth > 0);
+  const layers = buildLayers(levels, size, size, ['maskSubstrate', 'maskCopper', 'silk'], geometry, pixel);
+  assert.deepEqual(Object.values(checkRules(layers, pixel)), [0, 0, 0, 0, 0, 0]);
+  assert.equal(layers.copper[50 * size + 50], 1, 'the thin line is kept, not deleted');
+  assert.equal(layers.silk[70 * size + 30], 1);
+  assert.equal(layers.copper[30 * size + 40], 1, 'the narrow gap is closed');
+  assert.ok(layers.fixed > 0);
+  assert.equal(rulePixels(RULES.copperWidth, 0.15), 1, 'at 0.15 mm detail every pixel already meets the rules');
+});
+
+test('text overrides win over the image', () => {
+  const geometry = boardGeometry({ width: 10, height: 10 }), pixel = 0.5, size = 20;
+  const overrides = new Uint8Array(size * size).fill(255);
+  for (let x = 4; x < 16; x++) overrides[10 * size + x] = 4; // silk
+  const layers = buildLayers(new Uint8Array(size * size), size, size, ['maskSubstrate'], geometry, pixel, { overrides });
+  assert.equal(layers.silk[10 * size + 8], 1); assert.equal(layers.silk[5 * size + 8], 0);
+});
