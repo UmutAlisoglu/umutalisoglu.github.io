@@ -1,5 +1,30 @@
 import { zipSync, strToU8 } from 'fflate';
-import { finishes, finishIds, defaultLevelFinishes, boardGeometry, luminance, adjustTone, quantize, removeSlivers, despeckle, buildLayers, fabricationFiles, orderNotes } from './core.js';
+// Bundled fonts: text and the samples come out the same on every computer, so the Gerber files
+// match the preview whatever fonts the visitor has installed.
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import '@fontsource/inter/800.css';
+import '@fontsource/lora/600.css';
+import '@fontsource/jetbrains-mono/700.css';
+import { finishes, finishIds, defaultLevelFinishes, boardGeometry, luminance, adjustTone, quantize, removeSlivers, despeckle, buildLayers, fabricationFiles, orderNotes, checkRules, RULES, COPPER_EDGE_CLEARANCE } from './core.js';
+
+const SANS = 'Inter, system-ui, -apple-system, "Segoe UI", Arial, sans-serif';
+const fontFamilies = {
+  sans: { label: 'Sans bold', css: SANS, weight: 700 },
+  heavy: { label: 'Sans black', css: SANS, weight: 800 },
+  light: { label: 'Sans regular', css: SANS, weight: 400 },
+  serif: { label: 'Serif', css: 'Lora, Georgia, serif', weight: 600 },
+  mono: { label: 'Mono', css: '"JetBrains Mono", Consolas, monospace', weight: 700 },
+};
+const textFinishes = { silk: 'Print', gold: 'Metal', maskCopper: 'Copper under mask', bare: 'Bare board', maskSubstrate: 'Cut out (plain mask)' };
+const textShapes = { straight: 'Straight', up: 'Turned 90°', arcTop: 'Arc along the top', arcBottom: 'Arc along the bottom' };
+const textAligns = { left: 'Left', center: 'Centre', right: 'Right' };
+const TEXT_MIN = 1.5; // mm font size: about 1 mm tall capitals, the smallest print makers keep readable
+const fontsReady = () => Promise.race([
+  Promise.all(['400', '600', '700', '800'].map(w => document.fonts.load(`${w} 20px Inter`)).concat(document.fonts.load('600 20px Lora'), document.fonts.load('700 20px "JetBrains Mono"'))),
+  new Promise(resolve => setTimeout(resolve, 2500)),
+]).catch(() => {});
 
 const maskColors = {
   green: { label: 'Green', substrate: [29, 90, 50], copper: [47, 138, 74], silk: [246, 246, 240] },
@@ -38,6 +63,9 @@ const sideIds = ['front', 'back'];
 const sideLabels = { front: 'Front', back: 'Back' };
 // Per-side settings that live in the form while that side is being edited.
 const sideFields = ['fit', 'zoom', 'offsetX', 'offsetY', 'levels', 'brightness', 'contrast', 'invert', 'dither', 'cleanup'];
+const hasArt = side => !!side.source || side.texts.some(item => item.value.trim());
+let textId = 0;
+const newText = (extra = {}) => ({ id: ++textId, value: 'Your text', size: 4, finish: 'silk', font: 'sans', shape: 'straight', align: 'center', x: 50, y: 50, ...extra });
 const ZOOM_MIN = 0.2, ZOOM_MAX = 6, OFFSET_LIMIT = 300;
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
@@ -50,7 +78,7 @@ function start(root) {
   const cropTools = $('.pcb-crop-tools'), subbar = $('.pcb-subbar'), panel = $('#pcb-side-panel');
   const work = document.createElement('canvas'), workContext = work.getContext('2d', { willReadFrequently: true });
   let version = 0;
-  const makeSide = (source, name, extra = {}) => ({ source, name, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0, levels: 4, brightness: 0, contrast: 0, invert: false, dither: false, cleanup: true, finishes: [...defaultLevelFinishes[4]], ...extra });
+  const makeSide = (source, name, extra = {}) => ({ source, name, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0, levels: 4, brightness: 0, contrast: 0, invert: false, dither: false, cleanup: true, autoLevels: true, finishes: [...defaultLevelFinishes[4]], texts: [], ...extra });
   const sampleSides = () => ({ front: makeSide(sampleArtwork(), 'Sample business card', { sample: true }), back: makeSide(sampleBack(), 'Sample back side', { sample: true }) });
   let sides = sampleSides(), editing = 'front', show = 'front', mode = 'preview';
   const results = { front: null, back: null };
@@ -121,11 +149,12 @@ function start(root) {
       if (field.type === 'checkbox') field.checked = side[name]; else field.value = side[name];
     }
     renderLevels();
+    renderTexts();
     updateOutputs();
     $('.pcb-drop-name').textContent = side.name;
     $('[data-drop-title]').textContent = side.source && !side.sample ? 'Replace the image' : 'Choose or drop your image';
     $('[data-side-label]').textContent = sideLabels[editing].toLowerCase();
-    $('#pcb-plain').hidden = !side.source;
+    $('#pcb-plain').hidden = !hasArt(side);
     for (const control of root.querySelectorAll('[data-mode-switch="crop"], .pcb-crop-tools [data-crop]')) control.disabled = !side.source;
     for (const tab of root.querySelectorAll('[data-side]')) {
       const active = tab.dataset.side === editing;
@@ -153,7 +182,8 @@ function start(root) {
   function updateSummaries() {
     for (const id of sideIds) {
       const side = sides[id];
-      $(`[data-side-summary="${id}"]`).textContent = side.source ? `${side.levels} tones` : 'Plain';
+      const words = side.texts.filter(item => item.value.trim()).length;
+      $(`[data-side-summary="${id}"]`).textContent = side.source ? `${side.template ? 'Template' : `${side.levels} tones`}${words ? ` · ${words} text${words > 1 ? 's' : ''}` : ''}` : words ? `${words} text${words > 1 ? 's' : ''}` : 'Plain';
     }
   }
   function renderLevels() {
@@ -194,6 +224,100 @@ function start(root) {
     writeForm(); schedule();
   }
 
+  // ---- Text on the board ----
+  const textList = $('[data-texts]');
+  function control(tag, attrs, label) {
+    const element = Object.assign(document.createElement(tag), attrs);
+    if (!label) return element;
+    const wrap = document.createElement('label'); wrap.className = 'pcb-field'; wrap.append(label, element); return wrap;
+  }
+  function choice(field, options, value, label) {
+    const select = control('select', {}); select.dataset.textField = field;
+    for (const [id, name] of Object.entries(options)) select.append(new Option(typeof name === 'string' ? name : name.label, id));
+    select.value = value;
+    const wrap = document.createElement('label'); wrap.className = 'pcb-field'; wrap.append(label, select); return wrap;
+  }
+  function slider(field, value, label, min, max, step) {
+    const wrap = document.createElement('label'); wrap.className = 'pcb-slider';
+    const output = document.createElement('output'); output.dataset.textOutput = field; output.textContent = field === 'size' ? `${Number(value).toFixed(1)} mm` : `${Math.round(value)} %`;
+    const input = control('input', { type: 'range', min, max, step, value }); input.dataset.textField = field;
+    wrap.append(label, ' ', output, input); return wrap;
+  }
+  /** One card per text item on the side being edited. */
+  function renderTexts() {
+    const side = current();
+    textList.replaceChildren(...side.texts.map((item, index) => {
+      const card = document.createElement('div'); card.className = 'pcb-text-card'; card.dataset.textIndex = index;
+      const top = document.createElement('div'); top.className = 'pcb-text-top';
+      const value = control('input', { type: 'text', value: item.value, maxLength: 80 }); value.dataset.textField = 'value'; value.setAttribute('aria-label', `Text ${index + 1}`);
+      const remove = control('button', { type: 'button', className: 'pcb-text-remove', textContent: '×' }); remove.dataset.textRemove = index; remove.setAttribute('aria-label', `Remove text ${index + 1}`);
+      top.append(value, remove);
+      const row1 = document.createElement('div'); row1.className = 'pcb-row';
+      row1.append(choice('finish', textFinishes, item.finish, 'Made of'), choice('font', fontFamilies, item.font, 'Font'));
+      const row2 = document.createElement('div'); row2.className = 'pcb-row';
+      row2.append(choice('shape', textShapes, item.shape, 'Shape'), choice('align', textAligns, item.align, 'Anchor'));
+      row2.lastChild.hidden = item.shape === 'arcTop' || item.shape === 'arcBottom';
+      const row3 = document.createElement('div'); row3.className = 'pcb-row';
+      row3.append(slider('x', item.x, 'Left / right', 0, 100, 0.5), slider('y', item.y, 'Up / down', 0, 100, 0.5));
+      row3.firstChild.hidden = item.shape === 'arcTop' || item.shape === 'arcBottom';
+      // Shape and exact position fold away: most people drag the text on the board instead.
+      const more = document.createElement('details'); more.className = 'pcb-text-more';
+      more.append(Object.assign(document.createElement('summary'), { textContent: 'Shape and position' }), row2, row3);
+      card.append(top, slider('size', item.size, 'Size', TEXT_MIN, 20, 0.1), row1, more);
+      return card;
+    }));
+    $('[data-add-text]').textContent = side.texts.length ? '+ Add another text' : '+ Add text';
+  }
+  function textInput(target) {
+    const card = target.closest('[data-text-index]'), item = current().texts[card.dataset.textIndex], field = target.dataset.textField;
+    item[field] = ['x', 'y', 'size'].includes(field) ? Number(target.value) : target.value;
+    const output = card.querySelector(`[data-text-output="${field}"]`);
+    if (output) output.textContent = field === 'size' ? `${item.size.toFixed(1)} mm` : `${Math.round(item[field])} %`;
+    if (field === 'shape') {
+      const arc = item.shape === 'arcTop' || item.shape === 'arcBottom';
+      // Arcs keep their distance from the centre on the up / down slider.
+      if (arc && ((item.shape === 'arcTop' && item.y > 40) || (item.shape === 'arcBottom' && item.y < 60))) { item.y = item.shape === 'arcTop' ? 18 : 82; renderTexts(); }
+      else { card.querySelector('[data-text-field="align"]').closest('label').hidden = arc; card.querySelector('[data-text-field="x"]').closest('label').hidden = arc; }
+    }
+    updateSummaries(); schedule();
+  }
+  function addText() {
+    const side = current(), count = side.texts.length;
+    side.texts.push(newText({ y: clamp(50 + (count % 5) * 12 - 24, 10, 90), finish: 'silk' }));
+    renderTexts(); updateSummaries();
+    textList.lastElementChild?.querySelector('input')?.select();
+    if (mode === 'crop') setMode('preview'); else schedule();
+  }
+  textList.addEventListener('click', event => {
+    const index = event.target.closest('[data-text-remove]')?.dataset.textRemove; if (index === undefined) return;
+    current().texts.splice(Number(index), 1); renderTexts(); updateSummaries(); schedule();
+  });
+  $('[data-add-text]').addEventListener('click', addText);
+  /** The text item under a point of the shown side (mm from the top-left), or null. */
+  const scratch = document.createElement('canvas').getContext('2d');
+  function textAt(id, x, y) {
+    const items = sides[id].texts;
+    for (let i = items.length - 1; i >= 0; i--) if (items[i].value.trim() && drawTextItem(scratch, items[i], geometryNow, 1)(x, y)) return i;
+    return -1;
+  }
+
+  // ---- Templates ----
+  function applyTemplate(id) {
+    const template = templates[id]; if (!template) return;
+    applyPreset(template.preset); form.mask.value = template.mask; form.surface.value = template.surface; form.detail.value = '0.15'; detailTouched = false;
+    const build = (spec, side) => spec ? makeSide(spec.art(), `${template.label} template`, { template: id, autoLevels: false, cleanup: true, texts: spec.texts.map(item => newText(item)) }) : makeSide(null, side === 'back' ? 'Plain, no artwork' : '', {});
+    sides = { front: build(template.front, 'front'), back: build(template.back, 'back') };
+    syncBoardFields(); editing = 'front'; writeForm(); setShow('front'); setMode('preview');
+    status.textContent = `${template.label} template loaded. Change the texts on the left.`;
+    textList.querySelector('input')?.focus({ preventScroll: true });
+  }
+  for (const [id, template] of Object.entries(templates)) {
+    const button = control('button', { type: 'button', className: 'pcb-template' }); button.dataset.template = id;
+    button.append(svgIcon(presetIcons[template.preset]), textSpan(template.label, 'strong'), textSpan(template.hint, 'small'));
+    button.addEventListener('click', () => applyTemplate(id));
+    $('.pcb-templates').append(button);
+  }
+
   // ---- Image processing ----
   function schedule() { clearTimeout(timer); timer = setTimeout(process, mode === 'crop' ? 350 : 60); }
   /** Turns one side into tone levels on a grid of `pixel` mm; cleanup sizes stay in millimetres. */
@@ -204,32 +328,31 @@ function start(root) {
     const rect = imageRect(side, gw, gh);
     workContext.imageSmoothingQuality = 'high';
     workContext.drawImage(side.source, rect.x, rect.y, rect.w, rect.h);
-    const gray = adjustTone(luminance(workContext.getImageData(0, 0, gw, gh).data, gw * gh), { brightness: side.brightness, contrast: side.contrast, invert: side.invert });
+    const gray = adjustTone(luminance(workContext.getImageData(0, 0, gw, gh).data, gw * gh), { brightness: side.brightness, contrast: side.contrast, invert: side.invert, autoLevels: side.autoLevels });
     const levels = quantize(gray, gw, gh, side.levels, { dither: side.dither });
     if (side.cleanup && !side.dither) { removeSlivers(levels, gw, gh, Math.max(2, Math.round(2 * cleanupPixel / pixel))); despeckle(levels, gw, gh, Math.ceil((0.3 / pixel) ** 2)); }
     return { levels, gw, gh };
   }
   function computeSide(id, geometry, shared) {
-    const side = sides[id], pixel = pixelFor(side, shared);
-    const key = JSON.stringify([geometry, pixel, side.version, side.source ? sideFields.map(name => side[name]) : 0, side.source ? side.finishes : 0]);
+    const side = sides[id], pixel = pixelFor(side, shared), texts = side.texts.filter(item => item.value.trim());
+    const key = JSON.stringify([geometry, pixel, side.version, side.source ? sideFields.map(name => side[name]) : 0, side.source ? [side.finishes, side.autoLevels] : 0, texts]);
     if (results[id]?.key === key) return;
-    let layers, preview;
-    if (!side.source) {
-      const gw = Math.ceil(geometry.width / pixel), gh = Math.ceil(geometry.height / pixel);
-      layers = buildLayers(new Uint8Array(gw * gh), gw, gh, ['maskSubstrate'], geometry, pixel);
-      preview = { layers, pixel };
-    } else {
-      const fab = rasterize(side, geometry, pixel);
-      layers = buildLayers(fab.levels, fab.gw, fab.gh, side.finishes, geometry, pixel);
+    // One grid of tone levels plus the text on top, at a given pixel size.
+    const grid = (size, cleanupPixel) => {
+      const fab = side.source ? rasterize(side, geometry, size, cleanupPixel) : { gw: Math.ceil(geometry.width / size), gh: Math.ceil(geometry.height / size) };
+      const levels = fab.levels || new Uint8Array(fab.gw * fab.gh);
+      const overrides = textLayer(texts, geometry, size, fab.gw, fab.gh);
+      return buildLayers(levels, fab.gw, fab.gh, side.source ? side.finishes : ['maskSubstrate'], geometry, size, { overrides });
+    };
+    const layers = grid(pixel, pixel);
+    let preview = { layers, pixel };
+    if (hasArt(side)) {
       // The board photo is drawn from a finer grid (about 1800 px across) so curves and small
       // text look smooth; the Gerber files keep the chosen detail size. Dithered dots stay 1:1.
-      const finePixel = side.dither ? pixel : Math.max(pixel / 3, Math.max(geometry.width, geometry.height) / 1800);
-      if (finePixel < pixel * 0.9) {
-        const fine = rasterize(side, geometry, finePixel, pixel);
-        preview = { layers: buildLayers(fine.levels, fine.gw, fine.gh, side.finishes, geometry, finePixel), pixel: finePixel };
-      } else preview = { layers, pixel };
+      const finePixel = side.dither && side.source ? pixel : Math.max(pixel / 3, Math.max(geometry.width, geometry.height) / 1800);
+      if (finePixel < pixel * 0.9) preview = { layers: grid(finePixel, pixel), pixel: finePixel };
     }
-    results[id] = { key, pixel, geometry, plain: !side.source, layers, preview };
+    results[id] = { key, pixel, geometry, plain: !hasArt(side), layers, preview, rules: hasArt(side) ? checkRules(layers, pixel) : null };
   }
   function process() {
     const shared = settings();
@@ -399,6 +522,9 @@ function start(root) {
       for (const f of [1 / 3, 2 / 3]) { ctx.beginPath(); ctx.moveTo(bw * f, 0); ctx.lineTo(bw * f, bh); ctx.moveTo(0, bh * f); ctx.lineTo(bw, bh * f); ctx.stroke(); }
       ctx.strokeStyle = 'rgba(32,44,59,.35)'; ctx.lineDashOffset = 4;
       for (const f of [1 / 3, 2 / 3]) { ctx.beginPath(); ctx.moveTo(bw * f, 0); ctx.lineTo(bw * f, bh); ctx.moveTo(0, bh * f); ctx.lineTo(bw, bh * f); ctx.stroke(); }
+      // Text sits on top of the image; show where it lands.
+      ctx.setLineDash([]); ctx.fillStyle = accent; ctx.shadowColor = '#fff'; ctx.shadowBlur = 3;
+      for (const item of side.texts) if (item.value.trim()) drawTextItem(ctx, item, geometry, scale);
       ctx.restore();
     } else {
       ctx.save(); ctx.translate(bx, by); outlinePath(ctx, geometry, scale); ctx.fillStyle = `rgb(${mask.substrate.join(',')})`; ctx.fill(); ctx.restore();
@@ -487,7 +613,14 @@ function start(root) {
       const rect = imageRect(side, geometry.width, geometry.height), perMm = side.source.width / rect.w;
       if (perMm < 0.5 / result.pixel) notes.push(`${prefix}The image is enlarged a lot (${perMm.toFixed(1)} pixels per mm), so edges may look soft. A larger image gives crisper lines.`);
     }
+    if (sideIds.some(id => sides[id].texts.some(item => item.value.trim() && item.finish === 'gold'))) anyGold = true;
     if (anyGold) notes.push({ info: true, text: `Order with ${surfaces[shared.surface].label} as surface finish to get the metal look.` });
+    // Manufacturing check on the files that will be downloaded.
+    const checked = sideIds.filter(id => results[id].rules);
+    const broken = checked.reduce((sum, id) => sum + Object.values(results[id].rules).reduce((a, b) => a + b, 0), 0);
+    const widened = checked.reduce((sum, id) => sum + results[id].layers.fixed, 0);
+    if (checked.length && !broken) notes.push({ ok: true, text: `Manufacturing check passed: copper lines and gaps at least ${RULES.copperWidth} mm, print lines at least ${RULES.silkWidth} mm, copper ${COPPER_EDGE_CLEARANCE} mm from the edge. Fits JLCPCB and PCBWay.${widened ? ' Details that were too thin were widened automatically.' : ''}` });
+    else if (broken) notes.push(`Manufacturing check: ${broken} pixels are still finer than the makers’ minimum. Choose a coarser detail setting.`);
     if (shared.holes && !geometry.holes.length) notes.push(geometry.shape === 'circle' ? 'Mounting holes are only added to rectangular boards.' : 'Mounting holes need a board of at least 20 × 20 mm.');
     // A dark logo on white paper turns most of the board into print or metal; offer the one-click fix.
     let swapped = false;
@@ -517,6 +650,7 @@ function start(root) {
       const item = document.createElement('li');
       if (typeof note === 'string') { item.textContent = note; return item; }
       if (note.info) item.className = 'is-info';
+      if (note.ok) item.className = 'is-ok';
       if (!note.action) { item.textContent = note.text; return item; }
       const button = Object.assign(document.createElement('button'), { type: 'button', className: 'pcb-link', textContent: note.action });
       button.addEventListener('click', note.run);
@@ -525,7 +659,7 @@ function start(root) {
     updateStageHint();
     if (swapped) { process(); return; }
     const shapeText = geometry.shape === 'circle' ? `⌀ ${geometry.width} mm` : `${geometry.width} × ${geometry.height} mm`;
-    const sideText = id => sides[id].source ? `${sides[id].levels} tones` : 'plain';
+    const sideText = id => sides[id].source ? `${sides[id].levels} tones` : hasArt(sides[id]) ? 'text' : 'plain';
     status.textContent = mode === 'crop'
       ? 'Drag to move · scroll or pinch to zoom · arrow keys and + / − work too'
       : `${shapeText} · ${results.front.pixel} mm detail · front ${sideText('front')} · back ${sideText('back')}`;
@@ -538,7 +672,8 @@ function start(root) {
     const geometry = geometryNow, shared = settings(), front = results.front, back = results.back.plain ? null : results.back;
     const used = new Set();
     for (const result of [front, back]) if (result) for (const v of result.layers.finish) if (v !== 255) used.add(finishIds[v]);
-    const notes = orderNotes({ geometry, pixel: front.pixel, maskColor: maskColors[shared.mask].label, surface: surfaces[shared.surface].label, usesGold: used.has('gold'), usesBare: used.has('bare'), backPixel: back ? back.pixel : null, frontArt: !front.plain });
+    const passed = [front, back].every(result => !result || !result.rules || Object.values(result.rules).every(v => !v));
+    const notes = orderNotes({ geometry, pixel: front.pixel, maskColor: maskColors[shared.mask].label, surface: surfaces[shared.surface].label, usesGold: used.has('gold'), usesBare: used.has('bare'), backPixel: back ? back.pixel : null, frontArt: !front.plain, checked: passed });
     const { files, stats } = fabricationFiles(front.layers, geometry, front.pixel, { name: 'pcb-art', notes, back: back && { layers: back.layers, pixel: back.pixel } });
     const zipped = zipSync(Object.fromEntries(Object.entries(files).map(([name, text]) => [name, strToU8(text)])), { level: 9 });
     return { zipped, stats };
@@ -548,7 +683,7 @@ function start(root) {
     document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
   function baseName() {
-    const named = sides.front.source ? sides.front : sides.back;
+    const named = hasArt(sides.front) ? sides.front : sides.back;
     const safe = named.name.toLowerCase().replace(/\.[a-z0-9]+$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'art';
     return `pcb-art-${safe}-${geometryNow.width}x${geometryNow.height}mm`;
   }
@@ -565,7 +700,7 @@ function start(root) {
       copy.width = Math.max(1, Math.round(naturalW * fit)); copy.height = Math.max(1, Math.round(naturalH * fit));
       copy.getContext('2d').drawImage(image, 0, 0, copy.width, copy.height);
       // A new picture starts centred and filling the board; tone choices of this side are kept.
-      Object.assign(current(), { source: copy, name: file.name, sample: false, autoCheck: true, autoSwapped: false, invert: false, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0 });
+      Object.assign(current(), { source: copy, name: file.name, sample: false, template: null, autoLevels: true, autoCheck: true, autoSwapped: false, invert: false, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0 });
       // A first own image usually needs less fine detail than the sample card.
       if (!detailTouched) form.detail.value = '0.15';
       if (editing === 'front' && sides.back.sample) Object.assign(sides.back, { source: null, name: 'Plain, no artwork', sample: false, version: ++version });
@@ -588,6 +723,7 @@ function start(root) {
   // ---- Events ----
   form.addEventListener('input', event => {
     const target = event.target;
+    if (target.dataset.textField) { textInput(target); return; }
     if (target.name === 'look') { applyLook(target.value); return; }
     if (target.name === 'preset') applyPreset(target.value);
     else if (['width', 'height', 'shape', 'radius'].includes(target.name)) form.preset.value = 'custom';
@@ -613,7 +749,7 @@ function start(root) {
     writeForm(); setMode('preview');
   });
   $('#pcb-plain').addEventListener('click', () => {
-    Object.assign(current(), { source: null, name: 'Plain, no artwork', sample: false, version: ++version });
+    Object.assign(current(), { source: null, name: 'Plain, no artwork', sample: false, template: null, texts: [], version: ++version });
     writeForm(); setMode('preview');
   });
   const tabs = [...root.querySelectorAll('[data-side]')];
@@ -685,7 +821,7 @@ function start(root) {
 
   // Pointer input: crop (drag, pinch, wheel) or a gentle 3D tilt in the preview.
   const pointers = new Map();
-  let tilt = null, pinch = null;
+  let tilt = null, pinch = null, textDrag = null;
   const tiltBoard = (x, y) => { canvas.style.transform = `rotateX(${y}deg) rotateY(${x}deg)`; };
   stage.addEventListener('pointerdown', event => {
     if (mode === 'crop') {
@@ -699,10 +835,41 @@ function start(root) {
       }
       return;
     }
+    const point = boardMm(event);
+    if (point) {
+      const index = textAt(show, point.x, point.y);
+      if (index >= 0) {
+        event.preventDefault(); stage.setPointerCapture(event.pointerId);
+        if (editing !== show) setEditing(show);
+        const item = sides[show].texts[index];
+        textDrag = { item, index, start: point, x: item.x, y: item.y };
+        stage.classList.add('is-moving-text');
+        return;
+      }
+    }
     if (!form.tilt.checked) return;
     tilt = { x: event.clientX, y: event.clientY }; stage.setPointerCapture(event.pointerId);
   });
+  /** Pointer position in mm on the single board shown in the preview, or null. */
+  function boardMm(event) {
+    if (mode !== 'preview' || show === 'both' || form.tilt.checked || !geometryNow) return null;
+    const rect = canvas.getBoundingClientRect(); if (!rect.width) return null;
+    const x = (event.clientX - rect.left) / rect.width * geometryNow.width, y = (event.clientY - rect.top) / rect.height * geometryNow.height;
+    return x >= 0 && y >= 0 && x <= geometryNow.width && y <= geometryNow.height ? { x, y } : null;
+  }
   stage.addEventListener('pointermove', event => {
+    if (textDrag) {
+      const point = boardMm(event) || textDrag.last; if (!point) return;
+      textDrag.last = point;
+      const { item } = textDrag;
+      item.x = clamp(textDrag.x + (point.x - textDrag.start.x) / geometryNow.width * 100, 0, 100);
+      item.y = clamp(textDrag.y + (point.y - textDrag.start.y) / geometryNow.height * 100, 0, 100);
+      const card = textList.querySelector(`[data-text-index="${textDrag.index}"]`);
+      for (const field of ['x', 'y']) { const input = card?.querySelector(`[data-text-field="${field}"]`); if (input) { input.value = item[field]; card.querySelector(`[data-text-output="${field}"]`).textContent = `${Math.round(item[field])} %`; } }
+      schedule();
+      return;
+    }
+    if (mode === 'preview' && !tilt) { const point = boardMm(event); stage.classList.toggle('can-move-text', !!point && textAt(show, point.x, point.y) >= 0); }
     if (mode === 'crop') {
       const last = pointers.get(event.pointerId); if (!last) return;
       const point = { x: event.clientX, y: event.clientY };
@@ -722,6 +889,7 @@ function start(root) {
     tiltBoard(Math.max(-35, Math.min(35, (event.clientX - tilt.x) / 6)), Math.max(-35, Math.min(35, -(event.clientY - tilt.y) / 6)));
   });
   const release = event => {
+    if (textDrag) { textDrag = null; stage.classList.remove('is-moving-text'); return; }
     if (pointers.delete(event.pointerId)) { if (pointers.size < 2) pinch = null; if (!pointers.size) stage.classList.remove('is-dragging'); return; }
     if (!tilt) return; tilt = null; canvas.style.transform = form.tilt.checked ? 'rotateX(18deg) rotateY(-14deg)' : '';
   };
@@ -803,6 +971,61 @@ function outlinePath(ctx, geometry, k) {
   else ctx.rect(0, 0, w * k, h * k);
 }
 
+/**
+ * Draws one text item on a canvas whose origin is the board's top-left corner, at `k` canvas
+ * pixels per mm, in the current fill style. Returns a hit test that takes a point in mm.
+ */
+function drawTextItem(ctx, item, geometry, k) {
+  const font = fontFamilies[item.font] || fontFamilies.sans, size = Math.max(TEXT_MIN, Number(item.size) || TEXT_MIN) * k;
+  const W = geometry.width * k, H = geometry.height * k, value = item.value;
+  ctx.save();
+  ctx.font = `${font.weight} ${size}px ${font.css}`; ctx.textBaseline = 'middle';
+  let hit = () => false;
+  const arc = item.shape === 'arcTop' || item.shape === 'arcBottom', top = item.shape === 'arcTop';
+  const radius = arc ? Math.abs((top ? 0.5 - item.y / 100 : item.y / 100 - 0.5) * H) : 0;
+  if (arc && radius > size * 0.7) {
+    // Each letter stands on the circle: reading left to right over the top or under the bottom.
+    const chars = [...value], widths = chars.map(ch => ctx.measureText(ch).width + size * 0.04), total = widths.reduce((a, b) => a + b, 0), span = total / radius;
+    let run = 0;
+    ctx.textAlign = 'center';
+    chars.forEach((ch, i) => {
+      const a = top ? -Math.PI / 2 - span / 2 + (run + widths[i] / 2) / radius : Math.PI / 2 + span / 2 - (run + widths[i] / 2) / radius;
+      ctx.save(); ctx.translate(W / 2 + radius * Math.cos(a), H / 2 + radius * Math.sin(a)); ctx.rotate(top ? a + Math.PI / 2 : a - Math.PI / 2); ctx.fillText(ch, 0, 0); ctx.restore();
+      run += widths[i];
+    });
+    hit = (x, y) => {
+      const dx = x * k - W / 2, dy = y * k - H / 2, distance = Math.hypot(dx, dy);
+      let a = Math.atan2(dy, dx) - (top ? -Math.PI / 2 : Math.PI / 2); a = Math.atan2(Math.sin(a), Math.cos(a));
+      return Math.abs(distance - radius) < size * 0.7 && Math.abs(a) < span / 2 + 0.05;
+    };
+  } else {
+    const x = item.x / 100 * W, y = item.y / 100 * H, turn = item.shape === 'up' ? -Math.PI / 2 : 0;
+    ctx.textAlign = item.align || 'center';
+    ctx.translate(x, y); ctx.rotate(turn); ctx.fillText(value, 0, 0);
+    const width = ctx.measureText(value).width, left = ctx.textAlign === 'left' ? 0 : ctx.textAlign === 'right' ? -width : -width / 2;
+    hit = (px, py) => {
+      const dx = px * k - x, dy = py * k - y, lx = dx * Math.cos(-turn) - dy * Math.sin(-turn), ly = dx * Math.sin(-turn) + dy * Math.cos(-turn);
+      return lx >= left - size * 0.2 && lx <= left + width + size * 0.2 && Math.abs(ly) < size * 0.65;
+    };
+  }
+  ctx.restore();
+  return hit;
+}
+
+/** Text rasterised on the fabrication grid: a finish index per pixel, 255 where there is no text. */
+function textLayer(items, geometry, pixel, gw, gh) {
+  if (!items.length) return null;
+  const canvas = document.createElement('canvas'); canvas.width = gw; canvas.height = gh;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true }), out = new Uint8Array(gw * gh).fill(255);
+  for (const item of items) {
+    ctx.clearRect(0, 0, gw, gh); ctx.fillStyle = '#000';
+    drawTextItem(ctx, item, geometry, 1 / pixel);
+    const data = ctx.getImageData(0, 0, gw, gh).data, id = finishIds.indexOf(item.finish);
+    for (let i = 0; i < out.length; i++) if (data[i * 4 + 3] >= 128) out[i] = id;
+  }
+  return out;
+}
+
 function formatValue(name, value) {
   const number = Number(value);
   if (name === 'zoom') return `${Math.round(number * 100)} %`;
@@ -850,7 +1073,7 @@ function sampleArtwork() {
   const mm = 20, canvas = document.createElement('canvas'); canvas.width = 85 * mm; canvas.height = 55 * mm;
   const ctx = canvas.getContext('2d');
   const BOARD = '#000', COPPER = '#505050', METAL = '#afafaf', SILK = '#fff';
-  const sans = 'system-ui, -apple-system, "Segoe UI", Arial, sans-serif';
+  const sans = SANS;
   ctx.scale(mm, mm); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   ctx.fillStyle = BOARD; ctx.fillRect(0, 0, 85, 55);
   const line = (points, width, color) => { ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(...points[0]); for (const point of points.slice(1)) ctx.lineTo(...point); ctx.stroke(); };
@@ -894,16 +1117,16 @@ function sampleArtwork() {
   const half = body / 2 + 0.9;
   for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) line([[cx + sx * half, cy + sy * (half - 1.2)], [cx + sx * half, cy + sy * half], [cx + sx * (half - 1.2), cy + sy * half]], 0.2, SILK);
   dot(cx - half - 0.6, cy - half - 0.6, 0.35, SILK);
-  text('U1', cx + half + 0.5, cy - half + 0.4, `700 1.5px ${sans}`, SILK, 0.1, 'left');
+  text('U1', cx + half + 0.5, cy - half + 0.4, `700 1.6px ${sans}`, SILK, 0.1, 'left');
 
   // Gold edge fingers along the bottom edge, with a silkscreen bracket.
   for (const fx of fingers) rect(fx - 1.1, 48.6, 2.2, 6.4, METAL, 0.4);
   line([[fingers[0] - 2.2, 47.3], [fingers[0] - 2.2, 46.6], [fingers.at(-1) + 2.2, 46.6], [fingers.at(-1) + 2.2, 47.3]], 0.2, SILK);
 
   // Passives with reference designators, a test point and fiducials.
-  const resistor = (x, y, label) => { rect(x - 1.25, y - 0.5, 0.9, 1, METAL, 0.15); rect(x + 0.35, y - 0.5, 0.9, 1, METAL, 0.15); ctx.strokeStyle = SILK; ctx.lineWidth = 0.16; ctx.beginPath(); ctx.roundRect(x - 1.75, y - 0.95, 3.5, 1.9, 0.3); ctx.stroke(); text(label, x, y - 1.35, `700 1.3px ${sans}`, SILK, 0.1, 'center'); };
+  const resistor = (x, y, label) => { rect(x - 1.25, y - 0.5, 0.9, 1, METAL, 0.15); rect(x + 0.35, y - 0.5, 0.9, 1, METAL, 0.15); ctx.strokeStyle = SILK; ctx.lineWidth = 0.16; ctx.beginPath(); ctx.roundRect(x - 1.75, y - 0.95, 3.5, 1.9, 0.3); ctx.stroke(); text(label, x, y - 1.4, `700 1.55px ${sans}`, SILK, 0.1, 'center'); };
   resistor(65.5, 13.4, 'R1'); resistor(70.6, 13.4, 'C1');
-  dot(76.4, 13.4, 0.95, METAL); text('TP1', 76.4, 11.1, `700 1.3px ${sans}`, SILK, 0.1, 'center');
+  dot(76.4, 13.4, 0.95, METAL); text('TP1', 76.4, 11.0, `700 1.55px ${sans}`, SILK, 0.1, 'center');
   line([[65.5 - 1.25 + 0.45, 13.4], [65.5 - 1.25 + 0.45, 16.6], [58.4, 16.6], [56, 19]], 0.3, COPPER);
   line([[70.6 + 0.8, 13.4], [70.6 + 0.8, 15.6], [74.6, 15.6], [76.4, 13.8]], 0.3, COPPER);
   for (const [x, y] of [[80.6, 5.4], [4.6, 50.4]]) { dot(x, y, 1.15, BOARD); dot(x, y, 0.5, METAL); ctx.strokeStyle = SILK; ctx.lineWidth = 0.16; ctx.beginPath(); ctx.arc(x, y, 1.45, 0, Math.PI * 2); ctx.stroke(); }
@@ -928,7 +1151,7 @@ function sampleArtwork() {
   // Footer: a thin copper rule, revision and project names.
   line([[5.6, 44.6], [40, 44.6], [43.4, 41.2], [48.6, 41.2]], 0.3, COPPER); via(48.6, 41.2);
   text('FILEFORGE  •  REPODOCK  •  PCB ART STUDIO', 7.6, 50.9, `700 1.75px ${sans}`, SILK, 0.22, 'left', 36);
-  text('REV A', 47.6, 50.9, `700 1.4px ${sans}`, SILK, 0.15, 'left', 6);
+  text('REV A', 47.6, 50.9, `700 1.6px ${sans}`, SILK, 0.15, 'left', 6);
   return canvas;
 }
 
@@ -937,7 +1160,7 @@ function sampleBack() {
   const mm = 20, canvas = document.createElement('canvas'); canvas.width = 85 * mm; canvas.height = 55 * mm;
   const ctx = canvas.getContext('2d');
   const BOARD = '#000', COPPER = '#505050', METAL = '#afafaf', SILK = '#fff';
-  const sans = 'system-ui, -apple-system, "Segoe UI", Arial, sans-serif';
+  const sans = SANS;
   ctx.scale(mm, mm); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   ctx.fillStyle = BOARD; ctx.fillRect(0, 0, 85, 55);
   const cx = 42.5, cy = 22.5;
@@ -968,6 +1191,133 @@ function sampleBack() {
   return canvas;
 }
 
+/**
+ * Ready-made designs. The artwork is drawn on the fly at 20 px per mm with the same grey code as
+ * the sample (black mask over board, dark grey copper under mask, light grey metal, white print);
+ * every word is an editable text item, so people only type their own details.
+ */
+function templateCanvas(width, height, draw) {
+  const mm = 20, canvas = document.createElement('canvas'); canvas.width = width * mm; canvas.height = height * mm;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(mm, mm); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.fillStyle = INK.board; ctx.fillRect(0, 0, width, height);
+  const tools = {
+    line: (points, w, color = INK.copper) => { ctx.strokeStyle = color; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(...points[0]); for (const point of points.slice(1)) ctx.lineTo(...point); ctx.stroke(); },
+    rect: (x, y, w, h, color, r = 0) => { ctx.fillStyle = color; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); },
+    dot: (x, y, r, color) => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); },
+    ring: (x, y, r, w, color) => { ctx.strokeStyle = color; ctx.lineWidth = w; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke(); },
+    via: (x, y) => { tools.dot(x, y, 0.6, INK.metal); tools.dot(x, y, 0.25, INK.board); },
+  };
+  draw(ctx, tools);
+  return canvas;
+}
+const INK = { board: '#000', copper: '#505050', metal: '#afafaf', silk: '#fff' };
+const templates = {
+  card: {
+    label: 'Business card', hint: 'Name, title, contacts', preset: 'card', mask: 'black', surface: 'enig',
+    front: {
+      art: () => templateCanvas(85, 55, (ctx, t) => {
+        // Monogram plate with castellated edges.
+        t.rect(6, 6, 13, 13, INK.metal, 2.8);
+        for (let i = 0; i < 3; i++) for (const [x, y] of [[9.2 + i * 3.3, 6], [9.2 + i * 3.3, 19], [6, 9.2 + i * 3.3], [19, 9.2 + i * 3.3]]) t.dot(x, y, 0.5, INK.board);
+        // A small circuit on the right: a chip, fanned-out traces, vias and edge fingers.
+        const cx = 70, cy = 22;
+        t.rect(cx - 6, cy - 6, 12, 12, INK.board);
+        for (let i = 0; i < 5; i++) {
+          const o = (i - 2) * 1.6;
+          t.line([[cx + 4, cy + o], [cx + 8 + (i % 2) * 2, cy + o]], 0.4); t.via(cx + 8 + (i % 2) * 2, cy + o);
+          t.line([[cx + o, cy - 4], [cx + o, cy - 8 - (i % 2) * 2]], 0.4); t.via(cx + o, cy - 8 - (i % 2) * 2);
+          t.line([[cx + o, cy + 4], [cx + o, cy + 7 + Math.abs(o)], [62 + i * 4.2, 42 + Math.abs(o) * 0.2], [62 + i * 4.2, 47]], 0.4);
+          t.rect(61 + i * 4.2, 47, 2, 8, INK.metal, 0.4);
+          t.line([[cx - 4, cy + o], [cx - 8 - (i % 2) * 2, cy + o]], 0.4); t.via(cx - 8 - (i % 2) * 2, cy + o);
+        }
+        t.rect(cx - 4, cy - 4, 8, 8, INK.copper, 0.6);
+        for (let i = 0; i < 5; i++) { const o = (i - 2) * 1.6; t.rect(cx + 3.2, cy + o - 0.3, 1.2, 0.6, INK.metal, 0.15); t.rect(cx - 4.4, cy + o - 0.3, 1.2, 0.6, INK.metal, 0.15); t.rect(cx + o - 0.3, cy - 4.4, 0.6, 1.2, INK.metal, 0.15); t.rect(cx + o - 0.3, cy + 3.2, 0.6, 1.2, INK.metal, 0.15); }
+        t.rect(cx - 2, cy - 2, 4, 4, INK.metal, 0.5);
+        // Silkscreen frame around the chip, a thin copper rule under the contacts.
+        ctx.strokeStyle = INK.silk; ctx.lineWidth = 0.2; ctx.beginPath(); ctx.roundRect(cx - 5.4, cy - 5.4, 10.8, 10.8, 0.6); ctx.stroke();
+        t.line([[6, 46.5], [44, 46.5], [47.5, 43], [52, 43]], 0.35); t.via(52, 43);
+      }),
+      texts: [
+        { value: 'AB', x: 12.5 / 85 * 100, y: 12.7 / 55 * 100, size: 6.4, font: 'heavy', finish: 'maskSubstrate', align: 'center' },
+        { value: 'Your Name', x: 22.5 / 85 * 100, y: 11 / 55 * 100, size: 5.6, font: 'sans', finish: 'silk', align: 'left' },
+        { value: 'MAKER  ·  DESIGNER', x: 22.7 / 85 * 100, y: 16.3 / 55 * 100, size: 2, font: 'sans', finish: 'gold', align: 'left' },
+        { value: 'hello@example.com', x: 6 / 85 * 100, y: 29 / 55 * 100, size: 3, font: 'light', finish: 'silk', align: 'left' },
+        { value: 'example.com', x: 6 / 85 * 100, y: 34.5 / 55 * 100, size: 3, font: 'light', finish: 'silk', align: 'left' },
+        { value: '+49 123 456789', x: 6 / 85 * 100, y: 40 / 55 * 100, size: 3, font: 'light', finish: 'silk', align: 'left' },
+      ],
+    },
+    back: {
+      art: () => templateCanvas(85, 55, (ctx, t) => {
+        for (let ring = 0; ring < 9; ring++) t.ring(42.5, 23, 13 + ring * 2.2, 0.35, INK.copper);
+        t.rect(28.5, 9, 28, 28, INK.board, 7);
+        t.rect(31, 11.5, 23, 23, INK.metal, 5.5);
+        ctx.fillStyle = INK.board; ctx.fillRect(0, 40, 85, 15);
+      }),
+      texts: [
+        { value: 'AB', x: 50, y: 23 / 55 * 100, size: 11, font: 'heavy', finish: 'maskSubstrate' },
+        { value: 'example.com', x: 50, y: 46.5 / 55 * 100, size: 3.6, font: 'sans', finish: 'silk' },
+      ],
+    },
+  },
+  badge: {
+    label: 'Round badge', hint: 'Text around the edge', preset: 'badge', mask: 'blue', surface: 'enig',
+    front: {
+      art: () => templateCanvas(50, 50, (ctx, t) => {
+        t.ring(25, 25, 22.4, 1.6, INK.metal);
+        for (const r of [10.8, 12, 18.6, 19.8]) t.ring(25, 25, r, 0.35, INK.copper);
+        for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 2; t.line([[25 + Math.cos(a) * 12.6, 25 + Math.sin(a) * 12.6], [25 + Math.cos(a) * (i % 3 ? 13.6 : 14.4), 25 + Math.sin(a) * (i % 3 ? 13.6 : 14.4)]], 0.35); }
+        t.dot(25, 25, 9.2, INK.metal);
+        for (const a of [0, Math.PI]) t.via(25 + Math.cos(a) * 15.3, 25 + Math.sin(a) * 15.3);
+      }),
+      texts: [
+        { value: 'YOUR NAME', y: 19.4, size: 3.4, font: 'sans', finish: 'silk', shape: 'arcTop' },
+        { value: 'MAKER  ·  2026', y: 80.6, size: 2.8, font: 'sans', finish: 'silk', shape: 'arcBottom' },
+        { value: 'AB', x: 50, y: 51, size: 9, font: 'heavy', finish: 'maskSubstrate' },
+      ],
+    },
+    back: null,
+  },
+  coaster: {
+    label: 'Coaster', hint: 'Sunburst and gold rim', preset: 'coaster', mask: 'black', surface: 'enig',
+    front: {
+      art: () => templateCanvas(90, 90, (ctx, t) => {
+        t.ring(45, 45, 43, 1.8, INK.metal);
+        for (let i = 0; i < 40; i++) {
+          const a = i / 40 * Math.PI * 2, inner = 16.5, outer = i % 2 ? 31 : 34;
+          t.line([[45 + Math.cos(a) * inner, 45 + Math.sin(a) * inner], [45 + Math.cos(a) * outer, 45 + Math.sin(a) * outer]], 0.45);
+          t.via(45 + Math.cos(a) * (outer + 0.4), 45 + Math.sin(a) * (outer + 0.4));
+        }
+        t.ring(45, 45, 15.6, 0.5, INK.copper);
+        t.dot(45, 45, 13.6, INK.metal);
+      }),
+      texts: [
+        { value: 'TAKE A BREAK', y: 7.8, size: 4.2, font: 'sans', finish: 'silk', shape: 'arcTop' },
+        { value: 'MADE BY YOUR NAME', y: 92.2, size: 3.2, font: 'sans', finish: 'silk', shape: 'arcBottom' },
+        { value: 'AB', x: 50, y: 50.6, size: 12, font: 'heavy', finish: 'maskSubstrate' },
+      ],
+    },
+    back: null,
+  },
+  bookmark: {
+    label: 'Bookmark', hint: 'A quote along the length', preset: 'bookmark', mask: 'green', surface: 'enig',
+    front: {
+      art: () => templateCanvas(40, 150, (ctx, t) => {
+        t.dot(20, 13, 6, INK.metal); t.dot(20, 13, 3.2, INK.board); t.ring(20, 13, 7.6, 0.4, INK.copper);
+        for (const [x, jog] of [[6, 1], [34, -1]]) {
+          t.line([[x, 24], [x, 60], [x + jog * 2.5, 63.5], [x + jog * 2.5, 100], [x, 103.5], [x, 136]], 0.4); t.via(x, 24); t.via(x, 136);
+        }
+        for (const x of [8.8, 31.2]) { t.line([[x, 30], [x, 128]], 0.3); t.via(x, 30); t.via(x, 128); }
+      }),
+      texts: [
+        { value: 'KEEP READING', x: 50, y: 54, size: 8.5, font: 'heavy', finish: 'silk', shape: 'up' },
+        { value: 'YOUR NAME', x: 50, y: 95, size: 2.6, font: 'sans', finish: 'gold' },
+      ],
+    },
+    back: null,
+  },
+};
+
 // Start last, so every helper and constant above is initialised.
 const root = document.querySelector('[data-pcb-studio]');
-if (root) start(root);
+if (root) fontsReady().then(() => start(root));
