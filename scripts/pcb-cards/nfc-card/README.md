@@ -3,9 +3,9 @@
 Vector generator for Umut's 85 x 55 mm PCB business card with a built-in NFC tag.
 Everything is drawn as vector geometry (shapely), so the Gerbers have smooth edges instead of pixel steps.
 
-- Front: silver (HASL) 6-turn antenna coil, NXP NT3H2111W0FTTJ (NTAG I2C plus, TSSOP-8, LCSC C2654884), name and contacts.
-- Back: tap zone over the antenna, monogram, tone-on-tone copper contour field, QR code to https://alisoglu.com.
-- Antenna: 36 x 42 mm, 0.5 mm track, 0.4 mm gap, about 2.5 µH (`coil.py`), resonance about 14 MHz with the 50 pF chip.
+- Front: round silver (HASL) 6-turn antenna coil (43 mm) with dial ticks and an arc tagline, NXP NT3H2111W0FTTJ (NTAG I2C plus, TSSOP-8, LCSC C2654884), name and contacts.
+- Back: round tap target over the antenna, copper ripples spreading over both sides, monogram in a dotted ring, QR code to https://alisoglu.com.
+- Antenna: round, 43 mm outside, 0.5 mm track, 0.4 mm gap, about 2.4 µH, resonance about 14 MHz with the 50 pF chip.
   No other copper inside or near the coil on either side. C1 is an optional 0402 tuning capacitor, not fitted.
 
 ```
