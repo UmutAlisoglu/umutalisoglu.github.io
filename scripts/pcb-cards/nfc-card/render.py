@@ -17,6 +17,9 @@ SCHEMES = {
     'white': dict(sub=(0.93, 0.94, 0.95), cu=(0.86, 0.88, 0.90), fr4=(0.80, 0.74, 0.55), silk=(0.10, 0.11, 0.13), bg=(0.10, 0.12, 0.16)),
 }
 C = SCHEMES[scheme]
+FINISH = sys.argv[5] if len(sys.argv) > 5 else 'silver'
+METAL_GOLD = [(0, (0.80, 0.63, 0.30)), (0.35, (0.98, 0.86, 0.56)), (0.55, (0.86, 0.69, 0.36)), (0.8, (0.97, 0.84, 0.52)), (1, (0.78, 0.60, 0.28))]
+METAL_SILVER = [(0, (0.70, 0.72, 0.75)), (0.32, (0.95, 0.96, 0.97)), (0.55, (0.76, 0.78, 0.81)), (0.8, (0.93, 0.94, 0.95)), (1, (0.66, 0.68, 0.71))]
 
 
 def path(ctx, g):
@@ -48,7 +51,8 @@ def side(ctx, L, ox, components=False, vias=()):
     path(ctx, mask.difference(cu)); ctx.set_source_rgb(*C['fr4']); ctx.fill()
     # exposed metal: ENIG gold with a soft sweep
     g = cairo.LinearGradient(0, 0, W, H)
-    for t, c in [(0, (0.80, 0.63, 0.30)), (0.35, (0.98, 0.86, 0.56)), (0.55, (0.86, 0.69, 0.36)), (0.8, (0.97, 0.84, 0.52)), (1, (0.78, 0.60, 0.28))]:
+    stops = METAL_GOLD if FINISH == 'gold' else METAL_SILVER
+    for t, c in stops:
         g.add_color_stop_rgb(t, *c)
     metal = mask.intersection(cu)
     path(ctx, metal); ctx.set_source(g); ctx.fill()
