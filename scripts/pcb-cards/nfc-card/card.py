@@ -121,8 +121,15 @@ TC = (XS, 30.6)
 interior = coil_inner.buffer(-1.0)
 keep = box(U1[0] - 4.6, CY0, U1[0] + 4.6, by1 + 2.4).union(box(C1[0] - 3, CY0, C1[0] + 4.2, C1[1] + 0.9))
 tap_disc = disc(*TC, 3.9)
-tap_txt, _ = F_BOLD.text('TAP', 2.2, TC[0], TC[1] - 0.8, tracking=0.25, anchor='center')
-TOP['silk'].append(tap_disc.difference(tap_txt.buffer(0.05)))
+def waves(cx, cy, s=1.0):
+    # contactless symbol: four arcs, drawn as knock-out lines
+    g = []
+    ox = cx - 2.0 * s
+    for rr in (0.9, 1.65, 2.4, 3.15):
+        a = ring(ox, cy, rr * s, 0.34 * s)
+        g.append(a.intersection(Polygon([(ox, cy), (ox + 8 * s, cy + 6.2 * s), (ox + 8 * s, cy - 6.2 * s)])))
+    return U(*g)
+TOP['silk'].append(tap_disc.difference(waves(TC[0], TC[1], 0.95)))
 rip = []
 rr = 5.0
 idx = 0
@@ -137,9 +144,6 @@ while rr < 22:
     rr += 1.25 + idx * 0.06
     idx += 1
 TOP['silk'].append(U(*rip).intersection(interior).difference(keep.buffer(0.4)))
-nfc_lbl, _ = F_MONO.text('NFC  ·  13.56 MHz', 1.3, TC[0], 41.0, tracking=0.12, anchor='center')
-TOP['silk_cut'].append(box(TC[0] - 9, 40.4, TC[0] + 9, 42.3))
-TOP['label'].append(nfc_lbl)
 
 # ============================================================ front: identity
 LX = 4.6
@@ -195,7 +199,6 @@ for i, (txt, ic) in enumerate(rows):
 
 foot, fw = F_MONO.text('FILEFORGE · REPODOCK · PCB ART STUDIO', 1.25, LX, 4.15, tracking=0.2)
 TOP['silk'].append(foot)
-TOP['silk'].append(F_MONO.text('REV B · 2026', 1.25, CX1, 2.6, tracking=0.2, anchor='right')[0])
 
 # subtle copper texture in the top-left corner behind the logo: fine pin grid under mask
 grid = []
@@ -233,23 +236,19 @@ while rr < 22:
     idx += 1
 binterior = bzone.buffer(-1.8).difference(box(BCX - 0.9, 0, BCX + 0.9, V2[1] + 1.2))
 BOT['silk'].append(U(*brip).intersection(binterior))
-BOT['bare'].append(disc(*BTC, 3.6).difference(disc(*BTC, 2.7)))
-BOT['silk'].append(disc(*BTC, 2.25))
-tl1, _ = F_SEMI.text('tap here', 2.0, BCX, 44.2, tracking=0.08, anchor='center')
-tl2, _ = F_MONO.text('NFC → ALISOGLU.COM', 1.25, BCX, 41.9, tracking=0.2, anchor='center')
-BOT['silk_cut'].append(box(BCX - 10.5, 41.0, BCX + 10.5, 46.9))
-BOT['label'] += [tl1, tl2]
+BOT['silk'].append(disc(*BTC, 3.9).difference(waves(BTC[0], BTC[1], 0.95)))
 
 # right half: monogram, contour field, QR code
 RX0 = 43.6                                     # nothing copper left of this (antenna keep-out)
-MG = rrect(46.4, 34.0, 59.6, 47.2, 2.9)
-mg_txt, _ = F_BLACK.text('u.', 10.8, 53.0, 36.3, tracking=-0.2, anchor='center')
+MGC = (62.8, 40.4)
+MG = rrect(MGC[0] - 6.4, MGC[1] - 6.4, MGC[0] + 6.4, MGC[1] + 6.4, 2.8)
+mg_txt, _ = F_BLACK.text('u.', 10.4, MGC[0], MGC[1] - 4.3, tracking=-0.2, anchor='center')
 BOT['gold'].append(MG.difference(mg_txt.buffer(0.02)))
 BOT['cu'].append(MG)
-for i_, t_ in enumerate(['MADE WITH', 'PCB ART STUDIO', '', 'STAYS ON', 'YOUR DEVICE']):
-    if t_:
-        BOT['silk'].append(F_MONO.text(t_, 1.25, 62.2, 45.6 - i_ * 2.05, tracking=0.22)[0])
-big, bw = F_BOLD.text('alisoglu.com', 4.3, 46.4, 27.2, tracking=-0.08)
+for j_ in range(36):
+    a_ = 2 * math.pi * j_ / 36
+    BOT['silk'].append(disc(MGC[0] + 9.6 * math.cos(a_), MGC[1] + 9.6 * math.sin(a_), 0.36 if j_ % 3 else 0.5))
+big, bw = F_BOLD.text('alisoglu.com', 4.3, MGC[0], 25.4, tracking=-0.08, anchor='center')
 BOT['silk'].append(big)
 print('big width', bw)
 
@@ -264,14 +263,12 @@ QX, QY = W - 3.4 - quiet - qsize, 3.4 + quiet
 qr_bg = rrect(QX - quiet, QY - quiet, QX + qsize + quiet, QY + qsize + quiet, 1.0)
 dark = U(*[box(QX + c * MOD, QY + (NM - 1 - r) * MOD, QX + (c + 1) * MOD, QY + (NM - r) * MOD) for r in range(NM) for c in range(NM) if mods[r][c]])
 BOT['silk'].append(qr_bg.difference(dark))
-BOT['silk'].append(F_MONO.text('SCAN  →', 1.25, QX - quiet - 1.4, QY + 3.0, tracking=0.3, anchor='right')[0])
-BOT['silk'].append(F_MONO.text('OR TAP  ←', 1.25, QX - quiet - 1.4, QY + 1.0, tracking=0.3, anchor='right')[0])
 
 # contour field around the monogram (copper under mask, tone on tone)
 avoid = U(MG.buffer(1.0), qr_bg.buffer(1.2), U(*BOT['silk']).buffer(1.0, quad_segs=8).difference(bzone.buffer(1)))
 field_clip = rrect(RX0, 1.0, W - 1.0, H - 1.0, 2.2)
 lines = []
-mc = (53.0, 40.6)
+mc = MGC
 for kk in range(1, 40):
     d0 = 1.2 + kk * 0.78
     base = MG.buffer(d0, quad_segs=16).exterior
