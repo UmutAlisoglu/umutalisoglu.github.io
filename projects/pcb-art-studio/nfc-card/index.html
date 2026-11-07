@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NFC Card Builder — a PCB business card phones can tap — Alisoglu</title>
+  <meta name="description" content="Design a circuit board business card with a built-in NFC tag. Type your details, preview both sides and download Gerber, BOM and placement files ready for JLCPCB. Then write your link to the tag from the browser.">
+  <meta name="theme-color" content="#f8f4e9">
+  <link rel="canonical" href="https://alisoglu.com/projects/pcb-art-studio/nfc-card/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="NFC Card Builder — a PCB business card phones can tap — Alisoglu">
+  <meta property="og:description" content="Type your details, preview the board and download files ready to order, with assembly of the NFC chip. Then write your link to the tag from the browser.">
+  <meta property="og:url" content="https://alisoglu.com/projects/pcb-art-studio/nfc-card/">
+  <meta property="og:image" content="https://alisoglu.com/assets/social-card.png">
+  <link rel="icon" href="/assets/monogram.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/hub.css">
+  <link rel="stylesheet" href="/site.css">
+  <link rel="stylesheet" href="/src/pcb-art/studio.css">
+  <link rel="stylesheet" href="/src/nfc-card/builder.css">
+  <script type="module" src="/src/nfc-card/builder.js"></script>
+</head>
+<body>
+  <site-header></site-header>
+  <main id="main" class="wrap project-page pcb-page nfc-page"><div class="breadcrumbs"><a href="/projects/">Projects</a><span aria-hidden="true">/</span><a href="/projects/pcb-art-studio/">PCB Art Studio</a><span aria-hidden="true">/</span><span>NFC Card Builder</span></div>
+    <section class="pcb-intro"><div><p class="eyebrow">BROWSER TOOL / NFC BUSINESS CARD</p><h1>NFC Card Builder<span class="accent-dot">.</span><br><em>A business card phones can tap.</em></h1></div><div><p>Type your name and links and get a real circuit board business card with an NFC chip and antenna built in. Preview both sides, download the files the board maker needs (including chip assembly), and when the cards arrive, write your link to the tag right here. A tap with a phone opens your website.</p><span class="local-badge"><span class="status-dot"></span> Files stay on your device</span></div></section>
+
+    <section class="pcb-studio nfc-studio" data-nfc-builder aria-label="NFC Card Builder">
+      <form class="pcb-layout" autocomplete="off"><div class="pcb-controls">
+        <ol class="pcb-steps" aria-label="How it works"><li><b>1</b>Fill in</li><li><b>2</b>Order</li><li><b>3</b>Write the tag</li></ol>
+
+        <fieldset class="pcb-group">
+          <legend>Name <small>front</small></legend>
+          <div class="pcb-row">
+            <label class="pcb-field">First line<input name="first" maxlength="24" value="umut"></label>
+            <label class="pcb-field">Second line<input name="last" maxlength="24" value="alisoglu"></label>
+          </div>
+          <div class="pcb-row">
+            <label class="pcb-field">Monogram<input name="monogram" maxlength="3" value="u." aria-describedby="nfc-monogram-hint"></label>
+            <label class="pcb-check nfc-check-pad"><input name="dot" type="checkbox" checked> Metal dot after the name</label>
+          </div>
+          <p class="pcb-hint" id="nfc-monogram-hint">The monogram is cut out of a metal tile on both sides. Leave it empty to skip the tile.</p>
+        </fieldset>
+
+        <fieldset class="pcb-group">
+          <legend>Contact lines <small>up to three</small></legend>
+          <div class="nfc-rows" data-rows></div>
+        </fieldset>
+
+        <fieldset class="pcb-group">
+          <legend>Extra lines</legend>
+          <label class="pcb-field">Around the tap target<input name="tagline" maxlength="40" value="SOFTWARE · TOOLS · HARDWARE"></label>
+          <label class="pcb-field">Bottom line<input name="footer" maxlength="48" value="FILEFORGE · REPODOCK · PCB ART STUDIO"></label>
+          <p class="pcb-hint">Both are printed in small capitals. Use · to separate words.</p>
+        </fieldset>
+
+        <fieldset class="pcb-group">
+          <legend>Back and tag</legend>
+          <label class="pcb-field">Big line on the back<input name="backTitle" maxlength="28" value="alisoglu.com"></label>
+          <label class="pcb-field">Link for the QR code and the tag<input name="url" type="url" inputmode="url" maxlength="120" value="https://alisoglu.com"></label>
+          <p class="pcb-hint">A phone opens this link when it scans the QR code or taps the card. Short links make a bigger, easier QR code.</p>
+        </fieldset>
+
+        <fieldset class="pcb-group pcb-shared">
+          <legend>Look</legend>
+          <div class="pcb-field">Solder mask colour<div class="pcb-swatches" role="radiogroup" aria-label="Solder mask colour" data-swatches></div></div>
+          <div class="pcb-field">Metal finish<div class="pcb-segment pcb-metal" role="radiogroup" aria-label="Metal finish" data-metals></div></div>
+          <label class="pcb-check"><input name="ripples" type="checkbox" checked> Copper ripples across the card</label>
+        </fieldset>
+        <div class="pcb-mobile-bar"><button type="button" class="button secondary" data-goto-preview>See the card <span aria-hidden="true">↑</span></button><button type="button" class="button primary" data-download-mini disabled>Download files <span aria-hidden="true">↓</span></button></div>
+      </div>
+
+      <div class="pcb-output">
+        <div class="pcb-toolbar">
+          <div class="pcb-segment" role="group" aria-label="Side shown in the preview"><button type="button" data-show="both" aria-pressed="true">Both</button><button type="button" data-show="front" aria-pressed="false">Front</button><button type="button" data-show="back" aria-pressed="false">Back</button></div>
+          <label class="pcb-field pcb-inline">View<select name="view"><option value="board">Finished card</option><option value="cu">Copper</option><option value="mask">Mask openings</option><option value="silk">Silkscreen</option></select></label>
+        </div>
+        <div class="pcb-stage nfc-stage" data-show="both" aria-live="off"><figure class="nfc-side" data-side="front"><div class="nfc-svg" data-svg="front"></div><figcaption>Front</figcaption></figure><figure class="nfc-side" data-side="back"><div class="nfc-svg" data-svg="back"></div><figcaption>Back, after turning the card over</figcaption></figure></div>
+        <p id="nfc-status" class="pcb-status" role="status" aria-live="polite">Loading fonts…</p>
+        <ul id="nfc-warnings" class="pcb-warnings"></ul>
+        <div class="pcb-actions"><button type="button" id="nfc-download" class="button primary" disabled>Download Gerber ZIP <span aria-hidden="true">↓</span></button><button type="button" id="nfc-bom" class="button secondary" disabled>BOM</button><button type="button" id="nfc-cpl" class="button secondary" disabled>CPL</button></div>
+        <p class="pcb-hint">The ZIP holds the board files and order notes. BOM and CPL are for assembling the NFC chip at JLCPCB. <a href="#order">How to order</a></p>
+      </div></form>
+      <noscript><p class="pcb-hint">The NFC Card Builder needs JavaScript to draw the card.</p></noscript>
+    </section>
+
+    <section class="release-panel" id="order"><div><p class="eyebrow">FROM FILE TO CARD</p><h2>Ready to order.</h2><p>The card is 85 × 55 mm, the size of a regular business card, with two layers. The antenna is a round 6-turn coil tuned for the NXP NTAG I2C plus chip, and nothing else made of copper comes near it, so the tag reads well.<br>Every download passes a manufacturing check: copper and print at least 0.15 mm wide and apart, mask dams at least 0.1 mm.</p></div><div><ol class="steps-list"><li><h3>Download the files</h3><p>The Gerber ZIP for the board, plus BOM and CPL for the chip. Nothing is uploaded while you design.</p></li><li><h3>Order at JLCPCB with assembly</h3><p>Upload the ZIP, pick 0.8 mm thickness for a card feel, the same mask colour and HASL for silver or ENIG for gold. Turn on assembly for the top side and upload BOM and CPL. The chip is LCSC part C2654884.</p></li><li><h3>Write your link</h3><p>The chip arrives blank. Open this page on an Android phone in Chrome and use <a href="#write">Write the tag</a>, or use the free NXP TagWriter app.</p></li></ol></div></section>
+
+    <section class="story-section nfc-write" id="write" aria-labelledby="nfc-write-title"><div><p class="eyebrow">STEP 3</p><h2 id="nfc-write-title">Write the tag.</h2></div><div>
+      <p>Hold the back of the card against your phone. The link is stored on the chip, so any phone that taps the card opens it, even without an app.</p>
+      <label class="pcb-field nfc-write-field">Link to write<input id="nfc-write-url" type="url" inputmode="url" maxlength="200" value="https://alisoglu.com"></label>
+      <div class="pcb-actions nfc-write-actions"><button type="button" class="button primary" id="nfc-write">Write to tag</button><button type="button" class="button secondary" id="nfc-read">Read a tag</button><button type="button" class="button secondary" id="nfc-cancel" hidden>Cancel</button></div>
+      <p class="nfc-write-status" id="nfc-write-status" role="status" aria-live="polite"></p>
+      <p class="pcb-hint" id="nfc-support"></p>
+    </div></section>
+
+    <section class="faq-section" aria-labelledby="faq-title"><div><p class="eyebrow">QUESTIONS</p><h2 id="faq-title">A few answers.</h2></div><div class="faq-list"><details><summary>Is the NFC Card Builder free?</summary><p>Yes. Designing and downloading the files is free and needs no account. You pay the board maker for the boards and the chip assembly.</p></details><details><summary>Does the card really work with phones?</summary><p>Yes. It has a real antenna made of copper and an NXP NTAG I2C plus chip soldered on by the maker. Phones with NFC read it when they touch the back of the card. Keep metal away from the card while testing.</p></details><details><summary>Which phones can write the tag from this page?</summary><p>Writing from a website needs Chrome on an Android phone with NFC turned on. On an iPhone or any other device, use the free NXP TagWriter app. Every phone with NFC can read the card once the link is on it.</p></details><details><summary>Can I change the link later?</summary><p>Yes. The tag stays rewritable, so you can write a new link any time. The QR code is printed, so it keeps the link you chose when ordering.</p></details><details><summary>What is inside the download?</summary><p>Copper, solder mask and silkscreen layers for both sides, solder paste for the chip, the board outline, the drill file and order notes. BOM and CPL are separate files because JLCPCB asks for them in their own upload fields.</p></details><details><summary>Is my information uploaded?</summary><p>No. Everything you type is turned into board files in your browser. Nothing is sent to this website or anyone else until you upload the files to a board maker yourself.</p></details><details><summary>Can I design something other than this layout?</summary><p>The antenna and chip stay where they are, because they are tuned and checked. Your text, icons, monogram, QR code, colours and metal finish are yours to choose. For free-form art, use <a href="/projects/pcb-art-studio/">PCB Art Studio</a>.</p></details></div></section>
+  </main>
+  <site-footer></site-footer>
+</body>
+</html>
