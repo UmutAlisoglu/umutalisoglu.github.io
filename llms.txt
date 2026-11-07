@@ -16,6 +16,7 @@ Umut is currently building a PCB AIO Tool (personal update, 23 October 2026).
 - [Privacy](https://alisoglu.com/privacy/index.md): Local processing, optional storage, hosting and game data.
 - [Projects](https://alisoglu.com/projects/index.md): FileForge, Repodock, PCB Art Studio and Skate Scape.
 - [PCB Art Studio](https://alisoglu.com/projects/pcb-art-studio/index.md): Turn an image into circuit board art and download Gerber files, processed in the browser.
+- [NFC Card Builder](https://alisoglu.com/projects/pcb-art-studio/nfc-card/index.md): A circuit board business card with a built-in NFC tag: type your details, download Gerber, BOM and CPL files and write the tag from the browser.
 - [Contact](https://alisoglu.com/contact/index.md): Email umut@alisoglu.com and project feedback.
 
 ## Windows desktop edition
@@ -53,6 +54,7 @@ Umut is currently building a PCB AIO Tool (personal update, 23 October 2026).
 
 ## Projects and source
 - [PCB Art Studio](https://alisoglu.com/projects/pcb-art-studio/index.md): Image to Gerber ZIP for decorative circuit boards, processed on the device. Free.
+- [NFC Card Builder](https://alisoglu.com/projects/pcb-art-studio/nfc-card/index.md): NFC business card PCB with a tuned antenna; Gerber, BOM and CPL for JLCPCB assembly, plus Web NFC tag writing. Free.
 - [FileForge](https://alisoglu.com/projects/fileforge/index.md): Browser tools and the Windows edition compared.
 - [Skate Scape](https://alisoglu.com/projects/skate-scape/index.md): Unofficial fan project; not an official game or endorsement.
 - [Repodock](https://alisoglu.com/projects/repodock/index.md): Windows launcher for local GitHub projects.

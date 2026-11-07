@@ -221,3 +221,12 @@
 .pcb-text-more[open] summary::before { content:"− "; }
 .pcb-text-more[open] { gap:10px; }
 .pcb-text-more[open]>.pcb-row { margin-top:10px; }
+/* Link to the NFC Card Builder. */
+.nfc-promo { display:grid; grid-template-columns:auto 1fr auto; gap:16px; align-items:center; margin:-40px 0 64px; padding:18px 22px; border:1px solid #c9d3f3; border-radius:16px; background:linear-gradient(120deg,#f4f6fe,#fff); color:var(--pcb-ink); text-decoration:none; transition:border-color .2s, box-shadow .2s; }
+.nfc-promo:hover { border-color:var(--pcb-accent); box-shadow:0 10px 30px #3159d914; }
+.nfc-promo:focus-visible { outline:3px solid #3159d966; outline-offset:3px; }
+.nfc-promo-icon { display:grid; place-items:center; width:44px; height:44px; border-radius:12px; background:var(--pcb-accent); color:#fff; font:700 14px/1 var(--sans); letter-spacing:-2px; }
+.nfc-promo strong { display:block; font-size:16px; }
+.nfc-promo small { display:block; margin-top:3px; font-size:13px; line-height:1.5; color:#545f6d; }
+.nfc-promo-arrow { font-size:22px; color:var(--pcb-accent); }
+@media (max-width:520px) { .nfc-promo { grid-template-columns:auto 1fr; margin-top:-48px; } .nfc-promo-arrow { display:none; } }

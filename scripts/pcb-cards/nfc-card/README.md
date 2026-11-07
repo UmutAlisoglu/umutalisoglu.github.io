@@ -1,5 +1,7 @@
 # NFC business card (Rev B)
 
+The same card can now be made in the browser with the NFC Card Builder (/projects/pcb-art-studio/nfc-card/, code in src/nfc-card/), which fits your own text around this antenna.
+
 Vector generator for Umut's 85 x 55 mm PCB business card with a built-in NFC tag.
 Everything is drawn as vector geometry (shapely), so the Gerbers have smooth edges instead of pixel steps.
 

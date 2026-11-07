@@ -1,0 +1,28 @@
+/* NFC Card Builder: builds on the PCB Art Studio layout (studio.css). */
+.nfc-page .pcb-intro>div>p { margin:0 0 14px; font-size:17px; line-height:1.6; color:var(--pcb-muted); max-width:560px; }
+.nfc-page .local-badge { display:inline-flex; align-items:center; gap:7px; padding:6px 11px; border:1px solid; border-radius:999px; font-size:13px; }
+.nfc-rows { display:grid; gap:8px; }
+.nfc-row { display:grid; grid-template-columns:104px minmax(0,1fr); gap:8px; }
+.nfc-row select, .nfc-row input { width:100%; min-height:38px; border:1px solid var(--pcb-line); border-radius:8px; background:#fff; color:var(--pcb-ink); font:500 13px var(--sans); padding:7px 9px; }
+.nfc-page .pcb-field input:focus, .nfc-row input:focus, .nfc-row select:focus { outline:2px solid #3159d966; border-color:var(--pcb-accent); }
+.nfc-check-pad { align-self:end; min-height:38px; }
+
+.nfc-stage { display:grid; grid-template-columns:1fr; gap:18px; align-content:center; padding:12px 4px; }
+.nfc-stage[data-show="front"] [data-side="back"], .nfc-stage[data-show="back"] [data-side="front"] { display:none; }
+.nfc-side { margin:0; display:grid; gap:6px; justify-items:center; width:100%; }
+.nfc-svg { width:100%; max-width:720px; aspect-ratio:89.8 / 59.8; }
+.nfc-svg svg { display:block; width:100%; height:100%; }
+.nfc-side figcaption { font-size:12px; color:var(--pcb-muted); }
+.nfc-stage[data-show="both"] .nfc-svg { max-width:560px; }
+
+.nfc-write .pcb-actions { justify-content:flex-start; margin:14px 0 10px; }
+.nfc-write-field { max-width:520px; }
+.nfc-write-field input { min-height:44px; font-size:15px; }
+.nfc-write-status { margin:0 0 8px; min-height:1.5em; font-size:15px; color:var(--pcb-ink); }
+.nfc-write .button { cursor:pointer; }
+.nfc-write .button[disabled] { opacity:.55; cursor:not-allowed; transform:none; }
+.nfc-write .button[hidden] { display:none; }
+
+@media (max-width:520px) {
+  .nfc-row { grid-template-columns:96px minmax(0,1fr); }
+}
