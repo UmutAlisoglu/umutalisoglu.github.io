@@ -186,7 +186,26 @@ def icon_code(cx, cy):
     return U(a, b, stroke([(cx + 0.22, cy + 0.95), (cx - 0.22, cy - 0.95)], 0.24))
 
 
-rows = [('umut@alisoglu.com', icon_mail), ('alisoglu.com', icon_globe), ('github.com/UmutAlisoglu', icon_code)]
+GH_PATH = "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+
+
+def icon_github(cx, cy, d=2.75):
+    """GitHub mark (octicon mark-github), solid, d mm wide."""
+    from svgpathtools import parse_path
+    p = parse_path(GH_PATH)
+    pts = []
+    for seg in p:
+        n = max(2, int(seg.length() * 6))
+        for t in range(n):
+            z = seg.point(t / n)
+            pts.append((z.real, z.imag))
+    g = Polygon(pts).buffer(0)
+    sc = d / 16
+    g = affinity.scale(g, sc, -sc, origin=(0, 0))
+    return affinity.translate(g, cx - 8 * sc, cy + 8 * sc)
+
+
+rows = [('umut@alisoglu.com', icon_mail), ('alisoglu.com', icon_globe), ('github.com/UmutAlisoglu', icon_github)]
 row_y = [28.4, 22.4, 16.4]
 for (txt, ic), yb in zip(rows, row_y):
     t = rrect(LX, yb - 0.75, LX + 3.7, yb + 2.95, 0.8)
@@ -248,7 +267,7 @@ NM = len(mods)
 MOD = 0.52
 quiet = 1.5
 qsize = NM * MOD
-QX, QY = W - 3.2 - quiet - qsize, 3.2 + quiet
+QX, QY = MGC[0] - qsize / 2, 3.0 + quiet
 qr_bg = rrect(QX - quiet, QY - quiet, QX + qsize + quiet, QY + qsize + quiet, 1.0)
 dark = U(*[box(QX + c * MOD, QY + (NM - 1 - r) * MOD, QX + (c + 1) * MOD, QY + (NM - r) * MOD) for r in range(NM) for c in range(NM) if mods[r][c]])
 BOT['silk'].append(qr_bg.difference(dark))

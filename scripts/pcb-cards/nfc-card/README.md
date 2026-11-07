@@ -9,7 +9,7 @@ Everything is drawn as vector geometry (shapely), so the Gerbers have smooth edg
   No other copper inside or near the coil on either side. C1 is an optional 0402 tuning capacitor, not fitted.
 
 ```
-pip install shapely fonttools uharfbuzz qrcode pycairo pygerber opencv-python-headless
+pip install svgpathtools shapely fonttools uharfbuzz qrcode pycairo pygerber opencv-python-headless
 python3 card.py out              # Gerbers, drill, BOM, CPL, layers.pkl
 python3 check.py out/layers.pkl  # DRC: 0.15 mm copper/silk, 0.1 mm mask dam, edge clearance
 python3 render.py out/layers.pkl out/preview.png blue 24 silver   # or black / white, gold
