@@ -11,7 +11,7 @@ function report(message, error = false) { $('#document-status').textContent = me
 function busy(value) {
   working = value; publishToolBusy(value); $('#advanced-workspace').setAttribute('aria-busy', String(value));
   $('#document-input').disabled = value; $('#document-run').disabled = value || !selected;
-  $('#document-export').disabled = value || !pages.length; $('#document-clear').disabled = value; $('#document-cancel').hidden = !value;
+  $('#document-export').disabled = value || !pages.length; $('#document-clear').disabled = value; $('#document-clear').hidden = !selected; $('#document-cancel').hidden = !value;
 }
 function stop() { generation++; engine?.remove(); engine = null; clearTimeout(timer); busy(false); }
 function discard() {
