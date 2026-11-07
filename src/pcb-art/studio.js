@@ -302,14 +302,14 @@ function start(root) {
   }
 
   // ---- Templates ----
-  function applyTemplate(id) {
+  function applyTemplate(id, { focus = true } = {}) {
     const template = templates[id]; if (!template) return;
     applyPreset(template.preset); form.mask.value = template.mask; form.surface.value = template.surface; form.detail.value = '0.15'; detailTouched = false;
     const build = (spec, side) => spec ? makeSide(spec.art(), `${template.label} template`, { template: id, autoLevels: false, cleanup: true, texts: spec.texts.map(item => newText(item)) }) : makeSide(null, side === 'back' ? 'Plain, no artwork' : '', {});
     sides = { front: build(template.front, 'front'), back: build(template.back, 'back') };
     syncBoardFields(); editing = 'front'; writeForm(); setShow('front'); setMode('preview');
     status.textContent = `${template.label} template loaded. Change the texts on the left.`;
-    textList.querySelector('input')?.focus({ preventScroll: true });
+    if (focus) textList.querySelector('input')?.focus({ preventScroll: true });
   }
   for (const [id, template] of Object.entries(templates)) {
     const button = control('button', { type: 'button', className: 'pcb-template' }); button.dataset.template = id;
@@ -919,8 +919,10 @@ function start(root) {
   if (!trackHeader()) { const watch = new MutationObserver(() => { if (trackHeader()) watch.disconnect(); }); watch.observe(document.body, { childList: true, subtree: true }); }
   let resizeTimer = 0;
   new ResizeObserver(() => { clearTimeout(resizeTimer); resizeTimer = setTimeout(draw, 80); }).observe(stage);
-  syncBoardFields();
-  writeForm();
+  // A link like /projects/pcb-art-studio/?template=badge opens straight on that template.
+  const linked = new URLSearchParams(location.search).get('template');
+  if (linked && Object.hasOwn(templates, linked)) applyTemplate(linked, { focus: false });
+  else { syncBoardFields(); writeForm(); }
   root.classList.add('is-ready');
   process();
 }

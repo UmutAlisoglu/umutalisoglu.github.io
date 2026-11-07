@@ -24,17 +24,21 @@
         <p class="eyebrow"><span class="intro-dot" aria-hidden="true"></span> UMUT ALISOGLU · SOFTWARE &amp; IDEAS</p>
         <h1 id="intro-title">I build small tools<br><em>for everyday hassles.</em></h1>
         <p class="premium-hero-copy">Hi, I’m Umut. When something annoys me twice, I try to make software for it. Here you’ll find what I’ve built, what I’m working on, and a few experiments along the way.</p>
-        <div class="personal-actions"><a class="button primary" href="#projects">Explore my work <span aria-hidden="true">↓</span></a><a class="text-link" href="mailto:umut@alisoglu.com">Say hello <span aria-hidden="true">↗</span></a></div>
+        <div class="personal-actions"><a class="button primary" href="/projects/pcb-art-studio/?template=badge">Make a PCB badge <span aria-hidden="true">↗</span></a><a class="text-link" href="#projects">Explore my work <span aria-hidden="true">↓</span></a></div>
       </div>
-      <aside class="home-now" aria-labelledby="now-title">
-        <h2 id="now-title">Right now</h2>
-        <ul>
-          <li class="is-live"><span class="now-state">Building</span><span class="now-name">PCB AIO Tool</span><span class="now-note">In progress</span></li>
-          <li><span class="now-state">Shipped</span><a class="now-name" href="/projects/fileforge/">FileForge</a><span class="now-note">File tools that stay on your device</span></li>
-          <li><span class="now-state">Shipped</span><a class="now-name" href="/projects/repodock/">Repodock</a><span class="now-note">GitHub projects on Windows, one click away</span></li>
-          <li class="is-new"><span class="now-state">New</span><a class="now-name" href="/projects/pcb-art-studio/">PCB Art Studio</a><span class="now-note">Turn any picture into a real circuit board</span></li>
-          <li class="is-new"><span class="now-state">New</span><a class="now-name" href="/projects/pcb-art-studio/nfc-card/">NFC Card Builder</a><span class="now-note">A PCB business card phones can tap</span></li>
-        </ul>
+      <aside class="home-try" aria-labelledby="try-title">
+        <!-- Photo slot: once a real board exists, add
+             <img class="home-try-photo" src="/assets/screenshots/pcb-badge-photo.webp" width="720" height="720" alt="…">
+             inside .home-try-media next to the render and add the class "has-photo" to .home-try-media. -->
+        <a class="home-try-media" href="/projects/pcb-art-studio/?template=badge" aria-label="Open the round badge template in PCB Art Studio">
+          <img class="home-try-render" src="/assets/screenshots/pcb-badge-render.webp" width="720" height="720" alt="Round PCB badge render: blue solder mask, gold rim and centre plate with the letters AB, white text YOUR NAME and MAKER 2026 around the edge" decoding="async" fetchpriority="high">
+        </a>
+        <div class="home-try-copy">
+          <p class="eyebrow">TRY IT NOW · 2 MINUTES</p>
+          <h2 id="try-title">Your name on a real circuit board.</h2>
+          <p>Change the text, pick the colours and download Gerber files a board maker can produce. It all runs in your browser.</p>
+          <a class="text-link" href="/projects/pcb-art-studio/?template=badge">Start with this badge <span aria-hidden="true">↗</span></a>
+        </div>
       </aside>
     </section>
     <section class="personal-projects" id="projects" aria-labelledby="projects-title">
@@ -53,6 +57,16 @@
           <a class="premium-project-image" href="/projects/repodock/" aria-label="Explore the Repodock dashboard"><img src="/assets/repodock-dashboard.webp" width="1440" height="900" alt="Repodock dashboard with local projects and their run controls" loading="lazy" decoding="async"></a>
         </article>
       </div>
+      <aside class="home-now" aria-labelledby="now-title">
+        <h2 id="now-title">Status board</h2>
+        <ul>
+          <li><span class="now-state">Shipped</span><a class="now-name" href="/projects/fileforge/">FileForge</a><span class="now-note">File tools that stay on your device</span></li>
+          <li><span class="now-state">Shipped</span><a class="now-name" href="/projects/repodock/">Repodock</a><span class="now-note">GitHub projects on Windows, one click away</span></li>
+          <li class="is-new"><span class="now-state">New</span><a class="now-name" href="/projects/pcb-art-studio/">PCB Art Studio</a><span class="now-note">Turn any picture into a real circuit board</span></li>
+          <li class="is-new"><span class="now-state">New</span><a class="now-name" href="/projects/pcb-art-studio/nfc-card/">NFC Card Builder</a><span class="now-note">A PCB business card phones can tap</span></li>
+          <li class="is-live"><span class="now-state">Building</span><span class="now-name">PCB AIO Tool</span><span class="now-note">In progress</span></li>
+        </ul>
+      </aside>
       <div class="home-bench" aria-label="Experiments">
         <p>Also on the bench</p>
         <a href="/projects/skate-scape/"><strong>Skate Scape</strong><span>An unofficial fan game project</span></a>
