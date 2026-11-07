@@ -1,0 +1,48 @@
+/* Finishing layer, loaded last on every page. Keeps tools and pages consistent.
+   Dedicated FileForge tool pages: the tool gets the full width; related tools follow as an even grid. */
+.dedicated-tool .advanced-layout,
+body[data-fileforge-tool] .dedicated-tool .tool-layout { grid-template-columns: minmax(0, 1fr); }
+body[data-fileforge-tool] .dedicated-tool .tool-sidebar { order: 2; }
+.dedicated-tool .advanced-sidebar,
+body[data-fileforge-tool] .dedicated-tool .tool-sidebar { border-top: 1px solid var(--line); padding-top: 24px; position: static; }
+body[data-fileforge-tool] .dedicated-tool .tool-sidebar::before { content: 'More FileForge tools'; display: block; margin: 0 0 12px; font-size: 11px; font-weight: 600; color: var(--muted); }
+.dedicated-tool .advanced-sidebar .tool-nav,
+body[data-fileforge-tool] .dedicated-tool .tool-sidebar .tool-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-height: none; overflow: visible; padding: 0; }
+.dedicated-tool .tool-nav a { display: flex; flex-direction: row; align-items: flex-start; gap: 12px; min-width: 0; padding: 12px; font-size: 12.5px; text-align: left; border: 1px solid transparent; border-radius: 10px; }
+.dedicated-tool .tool-nav a:hover { background: #eef1f8; }
+.dedicated-tool .tool-nav a[aria-current] { background: #eceff9; border-color: #cfd9fc; color: var(--accent); }
+.dedicated-tool .tool-nav .tool-symbol { flex: 0 0 24px; width: 24px; height: 24px; display: grid; place-items: center; font-size: 18px; line-height: 1; margin-top: 1px; }
+.dedicated-tool .tool-nav small { display: block; font-size: 11px; font-weight: 400; line-height: 1.45; color: var(--muted); margin-top: 3px; }
+body[data-fileforge-tool] .dedicated-tool .desktop-tip { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 16px; padding: 16px 12px 0; }
+body[data-fileforge-tool] .dedicated-tool .desktop-tip h2 { margin: 0; }
+body[data-fileforge-tool] .dedicated-tool .desktop-tip p { margin: 0; flex: 1 1 260px; }
+@media (max-width: 900px) {
+  .dedicated-tool .advanced-sidebar .tool-nav,
+  body[data-fileforge-tool] .dedicated-tool .tool-sidebar .tool-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 650px) {
+  .dedicated-tool .advanced-sidebar .tool-nav,
+  body[data-fileforge-tool] .dedicated-tool .tool-sidebar .tool-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+  .dedicated-tool .tool-nav a { padding: 10px 8px; gap: 10px; }
+  body[data-fileforge-tool] .dedicated-tool .desktop-tip { display: none; }
+}
+@media (max-width: 360px) {
+  .dedicated-tool .advanced-sidebar .tool-nav,
+  body[data-fileforge-tool] .dedicated-tool .tool-sidebar .tool-nav { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* The same upload target on every tool. */
+.dedicated-tool .drop-zone .drop-icon { display: block; font-size: 26px; line-height: 1; color: var(--accent); margin-bottom: 10px; }
+
+/* Calm, on-palette notes (blue/white only). */
+.document-note { border-left-color: #b8c7f0; background: #eef2fb; }
+.document-note p { color: var(--ink); }
+
+/* Small form fields share the look of the other inputs. */
+.document-settings label { flex-wrap: wrap; max-width: 100%; }
+.document-settings input:not([type=checkbox]):not([type=radio]):not([type=number]) { font: inherit; font-size: 14px; color: var(--ink); min-width: 0; flex: 1 1 180px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 5px; background: white; }
+.document-settings small { color: var(--muted); }
+
+/* Idea machine */
+.idea-page .playground-copy h1 em { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
+.idea-page #prompt-output { white-space: pre-line; }

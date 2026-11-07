@@ -16,6 +16,7 @@ function busy(value) {
   if ($('#document-text')) $('#document-text').disabled = value;
   $('#document-run').disabled = value || (kind === 'pdf-text' ? !selected : !$('#document-text').value.trim());
   $('#document-cancel').hidden = !value;
+  $('#document-clear').hidden = !(selected || currentResult || $('#document-text')?.value);
 }
 function invalidate() {
   invalidateToolResult(); currentResult = null; $('#document-result').hidden = true; $('#document-output-wrap').hidden = true;

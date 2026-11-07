@@ -92,7 +92,7 @@ export async function createScreenshotSample() {
   context.fillStyle = '#28233c'; context.font = '650 37px "Segoe UI", sans-serif'; context.fillText('A place for bright ideas.', 274, 121);
   context.fillStyle = '#8a819d'; context.font = '16px "Segoe UI", sans-serif'; context.fillText('Less clutter. More room to make something good.', 276, 156);
   context.fillStyle = '#7155cc'; rounded(context, 1035, 85, 154, 43, 10); context.fill(); context.fillStyle = '#ffffff'; context.font = '600 14px "Segoe UI", sans-serif'; context.fillText('+  New collection', 1055, 112);
-  const cards = [['#e9e1fd', '01', 'Make it useful', 'Small tools. Thoughtful details.'], ['#dff1eb', '02', 'Make it yours', 'A little personality goes a long way.'], ['#f9e9d9', '03', 'Put it out there', 'Good ideas deserve to be seen.']];
+  const cards = [['#e3eafc', '01', 'Make it useful', 'Small tools. Thoughtful details.'], ['#dff1eb', '02', 'Make it yours', 'A little personality goes a long way.'], ['#f9e9d9', '03', 'Put it out there', 'Good ideas deserve to be seen.']];
   cards.forEach(([fill, number, title, description], index) => {
     const x = 274 + index * 308; context.fillStyle = '#ffffff'; rounded(context, x, 204, 286, 244, 15); context.fill();
     context.fillStyle = fill; rounded(context, x + 20, 224, 246, 114, 10); context.fill(); context.fillStyle = '#615071'; context.font = '600 35px "Segoe UI", sans-serif'; context.fillText(number, x + 40, 295);

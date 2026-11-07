@@ -231,7 +231,7 @@ h1 em { font-family: inherit; font-style: normal; font-weight: 600; letter-spaci
 .tool-panel, .download-card, .feedback-panel { background: var(--surface); border-color: var(--line); box-shadow: 0 4px 20px #26364e04; }
 .tool-hint { font-size: 13px; line-height: 1.75; }
 .tool-panel>.eyebrow { font-size: 10px; letter-spacing: .8px; }
-.drop-zone { background: #f8f6fc; border-color: #c4d0e3; }
+.drop-zone { background: #f7f9fd; border-color: #c4d0e3; }
 .tool-options small, .inline-note { font-size: 12px; }
 .tool-nav small { font-size: 12px; }
 .local-badge { background: #f0f4ec; border-color: #d9e2d0; color: #48603a; font-weight: 500; }
@@ -277,7 +277,7 @@ h1 em { font-family: inherit; font-style: normal; font-weight: 600; letter-spaci
 .collection-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 23px 26px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: 1.3px; }
 .collection-heading span:last-child { font-family: var(--mono); color: #77808e; }
 .collection-item { display: grid; grid-template-columns: 46px minmax(0, 1fr) 20px; align-items: center; gap: 17px; padding: 23px 26px; border-bottom: 1px solid var(--line); transition: background .16s; }
-.collection-item:hover { background: #f8f6fc; }
+.collection-item:hover { background: #f7f9fd; }
 .collection-icon { display: grid; place-items: center; width: 46px; height: 46px; border: 1px solid #28273508; border-radius: 10px; font-size: 22px; font-weight: 600; letter-spacing: -1px; color: #475569; }
 .collection-item strong { display: block; font-size: 19px; font-weight: 600; letter-spacing: -.4px; }
 .collection-item small { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }

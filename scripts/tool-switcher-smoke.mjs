@@ -19,7 +19,15 @@ context.on('request', request => {
 const finder = () => page.getByRole('dialog', { name: 'Find a tool', exact: true });
 const query = () => finder().getByRole('searchbox', { name: 'What would you like to do?' });
 const check = async (name, run) => { await run(); console.log(`PASS ${name}`); };
-async function open() { await page.locator('[data-open-tools]').first().click(); await finder().waitFor(); }
+async function open() {
+  // On phones the finder button lives in the collapsed main menu.
+  const trigger = page.locator('[data-open-tools]').first();
+  const menu = page.locator('.site-menu-toggle');
+  // Let the header react to a viewport change before deciding which control to use.
+  await page.waitForFunction(() => { const toggle = document.querySelector('.site-menu-toggle'); return !toggle || toggle.hidden !== matchMedia('(max-width: 680px)').matches; });
+  if (await menu.isVisible() && await menu.getAttribute('aria-expanded') !== 'true') await menu.click();
+  await trigger.click(); await finder().waitFor();
+}
 async function focusedTool() { return page.evaluate(() => document.activeElement?.dataset.switcherTool || null); }
 
 try {

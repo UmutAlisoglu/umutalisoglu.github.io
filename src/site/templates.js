@@ -82,7 +82,7 @@ export function siteTemplates() {
           if (value) result = result.replace('</head>', `<meta name="twitter:${name}" content="${value}"></head>`);
         }
         const metadata = { title: result.match(/<title>([\s\S]*?)<\/title>/)?.[1], description: result.match(/<meta name="description" content="([^"]*)"/)?.[1] };
-        return result.replace('</head>', `<link rel="stylesheet" href="/src/site/premium.css">${path.startsWith('/projects/') ? reviewStyles : ''}<script type="module" src="/src/site/experience.js"></script>${discoveryTags(path, { ...metadata, image: card?.url, html: result })}</head>`);
+        return result.replace('</head>', `<link rel="stylesheet" href="/src/site/premium.css"><link rel="stylesheet" href="/src/site/polish.css">${path.startsWith('/projects/') ? reviewStyles : ''}<script type="module" src="/src/site/experience.js"></script>${discoveryTags(path, { ...metadata, image: card?.url, html: result })}</head>`);
       },
     },
   };
