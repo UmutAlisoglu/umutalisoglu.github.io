@@ -1,5 +1,10 @@
 const canvasBlob = canvas => new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Sample generation is unavailable in this browser.')), 'image/png'));
 export async function createSample(kind) {
+  if (kind === 'page') {
+    const { drawAngledSample, SAMPLE_NAME } = await import('../fileforge/scanner-sample.js');
+    const { blob } = await drawAngledSample();
+    return { files: [new File([blob], SAMPLE_NAME, { type: 'image/png' })], tool: 'scanner' };
+  }
   if (kind === 'photo') {
     const response = await fetch('/assets/demos/headphones.png');
     if (!response.ok) throw new Error('The sample photo could not load. Try again online or choose your own photo.');
