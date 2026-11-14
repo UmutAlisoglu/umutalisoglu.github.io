@@ -391,4 +391,5 @@ if (new URLSearchParams(location.search).get('embed') === '1' && window.parent !
 }
 selectJob(chosenJob); renderActions(); persistFavourites();
 const params = new URLSearchParams(location.search);
-if (['photo', 'text', 'pdf'].includes(params.get('demo'))) void sample(params.get('demo'));
+// The document job straightens a photo, so any demo there uses the angled page sample.
+if (['photo', 'text', 'pdf', 'page'].includes(params.get('demo'))) void sample(chosenJob === 'document' ? 'page' : params.get('demo'));

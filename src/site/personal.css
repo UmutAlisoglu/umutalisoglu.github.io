@@ -45,7 +45,7 @@
 .current-project{display:flex;align-items:baseline;gap:13px;font-size:18px;line-height:1.6;margin:0}
 .current-project strong{font-weight:600}
 .current-project small{display:block;font-size:12px;color:var(--muted);margin-top:3px}
-.current-marker{width:8px;height:8px;background:var(--accent);border-radius:50%;flex-shrink:0}
+.current-list{display:grid;gap:10px}.current-marker{width:8px;height:8px;background:var(--accent);border-radius:50%;flex-shrink:0}
 .personal-projects{border-top:1px solid var(--line);padding:48px 0 62px;scroll-margin-top:28px}
 .personal-section-heading{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:34px}
 .personal-section-heading .eyebrow{margin-bottom:13px}

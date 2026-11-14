@@ -1,6 +1,7 @@
 import { formatBytes, resultName } from './shared.js';
 import { scaledSize } from './advanced-shared.js';
-import { validateQuad, quadHomography, invertHomography, projectPoint } from './scanner-math.js';
+import { validateQuad, quadHomography } from './scanner-math.js';
+import { drawAngledSample, SAMPLE_NAME, SAMPLE_QUAD, SAMPLE_SIZE } from './scanner-sample.js';
 import { configureToolBridge, publishToolSelection, publishToolBusy, invalidateToolResult, publishToolResult } from './workspace-bridge.js';
 import './scanner.css';
 
@@ -86,6 +87,8 @@ async function selectFiles(files, samplePoints = null) {
     finally { canvas.width = canvas.height = 1; }
     if (current !== revision) return;
     invalidatePreview(); releaseSource(); selected = file; bitmap = nextBitmap; nextBitmap = null;
+    // The workspace's document demo hands over the same generated page: reuse its known corners.
+    if (!samplePoints && file.name === SAMPLE_NAME && bitmap.width === SAMPLE_SIZE.width && bitmap.height === SAMPLE_SIZE.height) samplePoints = SAMPLE_QUAD;
     points = samplePoints ? validateQuad(samplePoints, bitmap.width, bitmap.height) : fullImage();
     sourceURL = URL.createObjectURL(preview); $('#scanner-source').src = sourceURL; $('#scanner-editor').hidden = false;
     $('#scanner-filename').textContent = `${file.name} · ${formatBytes(file.size)} · ${bitmap.width} × ${bitmap.height}px${samplePoints ? ' · generated sample' : ''}`;
@@ -167,35 +170,13 @@ async function sample() {
   if (busy()) return;
   loading = true; updateBusy(); report('Drawing an original sample document on your device…');
   const current = revision;
-  const paper = document.createElement('canvas'), photo = document.createElement('canvas');
   try {
-    paper.width = 850; paper.height = 1000; const context = paper.getContext('2d');
-    context.fillStyle = '#f9f6ea'; context.fillRect(0, 0, 850, 1000);
-    context.fillStyle = '#6840bd'; context.fillRect(65, 70, 72, 9); context.font = 'bold 19px Arial'; context.fillText('FILEFORGE / ORIGINAL SAMPLE', 65, 120);
-    context.fillStyle = '#292631'; context.font = 'bold 44px Arial'; context.fillText('A GOOD IDEA,', 65, 220); context.fillText('ON PAPER.', 65, 275);
-    context.font = '28px Arial';
-    ['Four corners change the perspective.', 'A simple photo becomes a clearer page.', 'Your files stay on your device.', '', 'Make room for better ideas.', 'Then take your next step.'].forEach((line, index) => context.fillText(line, 65, 370 + index * 65));
-    context.fillStyle = '#6840bd'; context.fillRect(65, 840, 720, 3); context.font = '19px Arial'; context.fillText('Generated locally. No real personal document.', 65, 900);
-    const paperPixels = context.getImageData(0, 0, 850, 1000).data;
-    photo.width = 1150; photo.height = 1100; const destination = photo.getContext('2d');
-    destination.fillStyle = '#56636a'; destination.fillRect(0, 0, photo.width, photo.height);
-    const quad = [{ x: 250, y: 60 }, { x: 900, y: 130 }, { x: 1040, y: 1050 }, { x: 110, y: 970 }];
-    const inverse = invertHomography(quadHomography(quad)), image = destination.getImageData(0, 0, photo.width, photo.height);
-    for (let y = 60; y <= 1050; y++) {
-      if (y % 128 === 0) { await new Promise(resolve => requestAnimationFrame(resolve)); if (current !== revision) return; }
-      for (let x = 110; x <= 1040; x++) {
-        const uv = projectPoint(inverse, x, y);
-        if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1) continue;
-        const px = Math.round(uv.x * 849), py = Math.round(uv.y * 999), source = (py * 850 + px) * 4, target = (y * photo.width + x) * 4;
-        const shadow = .87 + .13 * uv.x;
-        for (let channel = 0; channel < 3; channel++) image.data[target + channel] = paperPixels[source + channel] * shadow;
-        image.data[target + 3] = 255;
-      }
-    }
-    destination.putImageData(image, 0, 0); const blob = await encode(photo); if (current !== revision) return;
-    loading = false; updateBusy(); await selectFiles([new File([blob], 'angled-page-sample.png', { type: 'image/png' })], quad);
+    const created = await drawAngledSample(() => current !== revision);
+    if (!created || current !== revision) return;
+    const { blob, quad } = created;
+    loading = false; updateBusy(); await selectFiles([new File([blob], SAMPLE_NAME, { type: 'image/png' })], quad);
   } catch (error) { report(error.message || 'Could not draw the sample. Choose your own document photo.', true); }
-  finally { paper.width = paper.height = photo.width = photo.height = 1; loading = false; updateBusy(); }
+  finally { loading = false; updateBusy(); }
 }
 
 input.addEventListener('change', () => void selectFiles([...input.files]));
