@@ -37,7 +37,7 @@ export function resolveQuickJob(id, files) {
 }
 
 export function renderQuickJobs() {
-  return `<section class="quick-jobs" data-quick-jobs aria-labelledby="quick-jobs-title"><header><div><p class="eyebrow">QUICK JOBS</p><h2 id="quick-jobs-title">Start with what you need done.</h2></div><p>A few guided steps. Your files stay on your device.</p></header><div class="quick-job-grid">${quickJobs.map(job => `<a class="quick-job-card" data-quick-job="${job.id}" href="/tools/workspace/?job=${job.id}"><span class="quick-job-symbol" aria-hidden="true">${job.symbol}</span><h3>${job.title}</h3><p>${job.description}</p><small>${job.accepts}</small><span class="quick-job-link">Start this job <span aria-hidden="true">→</span></span></a>`).join('')}</div></section>`;
+  return `<section class="quick-jobs" data-quick-jobs aria-labelledby="quick-jobs-title"><header><div><p class="eyebrow">QUICK JOBS</p><h2 id="quick-jobs-title">Not sure which tool? Start with the job.</h2></div><p>A few guided steps across the right tools. Your files stay on your device.</p></header><div class="quick-job-grid">${quickJobs.map(job => `<a class="quick-job-card" data-quick-job="${job.id}" href="/tools/workspace/?job=${job.id}"><span class="quick-job-symbol" aria-hidden="true">${job.symbol}</span><h3>${job.title}</h3><p>${job.description}</p><small>${job.accepts}</small><span class="quick-job-link">Start this job <span aria-hidden="true">→</span></span></a>`).join('')}</div></section>`;
 }
 
 export function renderJobSteps(job) {

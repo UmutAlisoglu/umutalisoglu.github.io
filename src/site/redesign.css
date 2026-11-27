@@ -1,3 +1,4 @@
+@import './fonts.css';
 /* Redesign layer ("clean blueprint"), loaded last on every page.
    Cool white canvas, one blue accent, big calm type, soft cards, a faint dot grid as a nod to circuit boards.
    Blue/white only (see site-style-and-a11y). Everything here overrides earlier layers via tokens first, components second. */
@@ -142,3 +143,128 @@ section.conversion-picker { background: var(--tint) !important; border: 1px soli
 .local-badge { background: var(--tint-2) !important; color: var(--accent-ink) !important; border-color: transparent !important; }
 .status-dot { background: var(--accent) !important; }
 .quick-job-card .quick-job-symbol { background: var(--tint-2) !important; color: var(--accent-ink) !important; }
+
+/* ---------------------------------------------------------------------------
+   Polish pass (2026-11-27b): consistency, rhythm, states, mobile ergonomics.
+   --------------------------------------------------------------------------- */
+
+/* One typeface everywhere. Inter ships with the site (see the @imports at the top), so Windows
+   visitors no longer fall back to Segoe UI/Arial. Form controls inherit it too. */
+button, input, select, textarea { font-family: inherit; }
+.eyebrow, .project-label, .version-label, .development-badge, .machine-badge, .machine-footnote, .row-status,
+.conversion-picker .eyebrow, .sample-jobs .eyebrow { font-family: var(--sans) !important; }
+.eyebrow { font-size: 11px !important; letter-spacing: .08em !important; color: var(--accent-ink) !important; background: var(--tint-2) !important; text-transform: uppercase; }
+h1, h2, h3 { text-wrap: balance; }
+p, li, dd { text-wrap: pretty; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+
+/* Keyboard focus: one visible, on-brand ring. */
+:where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):not(.tool-search-input input):focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 3px; border-radius: 8px; }
+.drop-zone:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* Buttons: tactile press, calmer disabled state. */
+.button { -webkit-tap-highlight-color: transparent; }
+.button:active { transform: translateY(0) scale(.98) !important; }
+.button:disabled, .button[aria-disabled="true"] { opacity: .5; box-shadow: none !important; transform: none !important; cursor: not-allowed; }
+/* A tool's main action looks inactive until a file is chosen (still clickable: it explains what is missing). */
+form[data-empty="true"] button[type="submit"].primary, form[data-empty="true"] button[type="submit"].button { opacity: .55; box-shadow: none; }
+form[data-empty="true"] button[type="submit"]:hover { transform: none; }
+
+/* Forms: white fields, one border, blue focus. */
+select, input[type="text"], input[type="number"], input[type="search"], input[type="email"], input[type="url"], textarea {
+  background-color: #fff; border-color: #cfd8e8; border-radius: 12px; }
+select:hover, input[type="text"]:hover, input[type="number"]:hover, input[type="search"]:hover, textarea:hover { border-color: #a9bbe6; }
+select:focus, input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px #2f55e01f; }
+.conversion-picker select { background-color: #fff !important; border: 1px solid #cfd8e8 !important; border-radius: 12px !important; }
+
+/* FAQ: a clean plus/minus instead of the browser triangle. */
+.faq-section summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; padding-inline: 14px !important; }
+.faq-section summary::-webkit-details-marker { display: none; }
+.faq-section summary::after { content: ''; flex: 0 0 22px; height: 22px; border-radius: 50%; background:
+  linear-gradient(var(--accent-ink), var(--accent-ink)) center/10px 1.6px no-repeat,
+  linear-gradient(var(--accent-ink), var(--accent-ink)) center/1.6px 10px no-repeat, var(--tint-2); transition: transform .25s, background-size .25s; }
+.faq-section details[open] summary::after { transform: rotate(180deg); background-size: 10px 1.6px, 1.6px 0, auto; }
+.faq-section details p { padding-inline: 14px; color: var(--muted); }
+
+/* Notes and badges left over in warm/green tints -> blue/white. */
+.limit-note p, .limit-note li { color: var(--muted) !important; }
+.limit-note .note-pin, .note-pin { color: var(--accent) !important; }
+.inline-note { background: var(--tint) !important; border-color: var(--line) !important; color: var(--ink); }
+.development-badge { background: var(--tint-2) !important; border-color: transparent !important; color: var(--accent-ink) !important; }
+.forge-local-pill { background: var(--tint-2) !important; border-color: transparent !important; color: var(--accent-ink) !important; }
+.forge-local-pill .status-dot { background: var(--accent) !important; }
+.tone-yellow, .project-mini.tone-yellow { background: var(--tint-2) !important; }
+.current-project small { background: var(--tint-2) !important; color: var(--accent-ink) !important; font-weight: 600; }
+.current-marker { background: var(--accent) !important; box-shadow: 0 0 0 4px #2f55e01f; }
+
+/* Tool pages: get to the drop zone faster, fewer repeated lines. */
+.dedicated-tool .page-intro { padding-bottom: 20px !important; }
+.dedicated-tool .page-intro > p:not(.eyebrow) { max-width: 44em; }
+.dedicated-tool .forge-tool-entry { margin-top: 14px; font-size: 12.5px; }
+.dedicated-tool #tool-panel > .eyebrow { display: none; }
+.dedicated-tool #tool-panel .tool-hint { margin-bottom: 20px; }
+.dedicated-tool .breadcrumbs { padding-top: 14px !important; margin-top: 0 !important; }
+@media (max-width: 700px) { .dedicated-tool .forge-tool-entry { display: none; } }
+.tool-input-facts { margin: 0 0 16px !important; }
+.tool-input-facts > div { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.tool-input-facts a { font-size: 13px; color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; transition: color .15s, border-color .15s; }
+.tool-input-facts a:hover { color: var(--accent-ink); border-bottom-color: currentColor; }
+.dedicated-tool .file-list li { border-radius: 12px; transition: background .15s; }
+.dedicated-tool .file-list li:hover { background: var(--tint); }
+.job-status [role="status"]:empty { display: none; }
+progress { accent-color: var(--accent); height: 8px; border-radius: 999px; }
+/* "More FileForge tools": collapsed on phones (see redesign.js). */
+.tool-nav.is-collapsed a:nth-child(n+7):not([aria-current]) { display: none !important; }
+.tool-nav-more { grid-column: 1 / -1; justify-self: start; margin-top: 6px; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--accent-ink); font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s; }
+.tool-nav-more:hover { background: var(--tint); border-color: #c9d6f7; }
+
+/* Tools directory: compact, scannable cards (icon, name, one line). The whole card is the link. */
+.directory-page .task-grid.grouped-results, .directory-page .tool-job-group .task-grid { gap: 12px; }
+.directory-page .tool-job-group .task-grid, .directory-page .task-grid:not(.grouped-results) { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)) !important; }
+.directory-page .task-card { display: grid !important; grid-template-columns: 44px minmax(0, 1fr) 16px; grid-template-rows: auto 1fr; column-gap: 14px; row-gap: 4px; align-items: start; padding: 18px !important; min-height: 0 !important; }
+.directory-page .task-card .task-top { display: contents; }
+.directory-page .task-card .task-icon { grid-column: 1; grid-row: 1 / span 2; width: 44px !important; height: 44px !important; display: grid; place-items: center; border-radius: 12px; font-size: 20px; margin: 0 !important; transition: background .2s, color .2s; }
+.directory-page .task-card .task-category { display: none; }
+.directory-page .task-card h3 { grid-column: 2; grid-row: 1; margin: 1px 0 0 !important; font-size: 16.5px !important; letter-spacing: -.02em; line-height: 1.3; }
+.directory-page .task-card p { grid-column: 2; grid-row: 2; margin: 0 !important; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 13.5px !important; line-height: 1.5; color: var(--muted) !important; }
+.directory-page .task-card .task-open { grid-column: 3; grid-row: 1; margin: 2px 0 0 !important; font-size: 0 !important; color: #9aa8c4; transition: color .2s, transform .2s; }
+.directory-page .task-card .task-open span { font-size: 15px; }
+.directory-page .task-card:hover { transform: translateY(-2px); }
+.directory-page .task-card:hover .task-icon { background: var(--accent) !important; color: #fff !important; }
+.directory-page .task-card:hover .task-open { color: var(--accent); transform: translate(2px, -2px); }
+.directory-page .tool-job-group { margin-top: 40px !important; }
+.directory-page .tool-job-group header h2 { font-size: clamp(22px, 2.4vw, 28px) !important; margin-bottom: 4px; }
+.directory-page .tool-job-group header p { color: var(--muted); max-width: 46em; margin: 0 0 16px; }
+.directory-page .tool-directory { margin-top: 8px; }
+.directory-page .tool-search-form label { font-size: clamp(22px, 2.4vw, 28px); font-weight: 700; letter-spacing: -.03em; }
+.tool-search-input { border-radius: 999px !important; border-color: #cfd8e8 !important; padding: 0 22px !important; box-shadow: var(--shadow); }
+.tool-search-input:focus-within { border-color: var(--accent) !important; box-shadow: 0 0 0 4px #2f55e01f, var(--shadow) !important; }
+.tool-search-input input, .tool-search-input input:focus { border: 0 !important; box-shadow: none !important; outline: 0 !important; background: transparent !important; }
+.tool-search-input > span { font-size: 24px !important; }
+.directory-page .tool-search-input { max-width: 720px; }
+.tool-category-filters button { border-radius: 999px !important; transition: background .15s, border-color .15s, color .15s; }
+.tool-category-filters button[aria-pressed="true"] { background: var(--ink) !important; color: #fff !important; border-color: var(--ink) !important; }
+.directory-page .quick-jobs { margin-top: 72px; }
+.directory-page .forge-toolkit-banner { border-radius: 24px; border: 1px solid var(--line); background: linear-gradient(135deg, var(--tint-2), #fff 70%) !important; }
+@media (max-width: 640px) {
+  .directory-page .tool-job-group .task-grid, .directory-page .task-grid:not(.grouped-results) { grid-template-columns: minmax(0, 1fr) !important; gap: 8px; }
+  .directory-page .task-card { padding: 14px !important; grid-template-columns: 40px minmax(0, 1fr) 14px; }
+  .directory-page .task-card .task-icon { width: 40px !important; height: 40px !important; }
+  .tool-category-filters { flex-wrap: nowrap !important; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; }
+  .tool-category-filters::-webkit-scrollbar { display: none; }
+  .tool-category-filters button { flex: 0 0 auto; }
+}
+
+/* Mobile ergonomics: bigger tap targets in nav lists and the footer. */
+@media (max-width: 700px) {
+  .site-footer div a, .site-footer div button { display: inline-flex; align-items: center; min-height: 40px; }
+  .button { min-height: 48px; }
+  .dedicated-tool .page-intro h1 { font-size: clamp(38px, 11vw, 52px) !important; }
+}
+.forge-memory { color: var(--accent-ink) !important; }
+/* Home status board: "Building" pill and the workspace drop illustration in blue too. */
+.home-now .now-state { background: var(--tint-2) !important; color: var(--accent-ink) !important; }
+.home-now .is-new .now-state { background: var(--accent) !important; color: #fff !important; }
+.home-now .now-state::before { background: var(--accent) !important; }
+.forge-file-stack i:nth-child(1), .forge-file-stack i:nth-child(3) { color: var(--accent-ink) !important; background: var(--tint) !important; }
+@media (max-width: 700px) { .premium-home .premium-hero { padding-bottom: 32px; } }
