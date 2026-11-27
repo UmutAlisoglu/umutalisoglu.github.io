@@ -54,8 +54,9 @@ for (const compare of document.querySelectorAll('[data-compare]')) {
     const ease = t => t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
     const frame = now => {
       if (touched) return;
-      const t = now - start, i = keys.findIndex(([at]) => at > t);
-      if (i < 0) { range.value = 50; set(50); return; }
+      // rAF timestamps can be slightly older than performance.now(), so clamp to the first key.
+      const t = Math.max(1, now - start), i = keys.findIndex(([at]) => at > t);
+      if (i < 1) { range.value = 50; set(50); return; }
       const [t0, v0] = keys[i - 1], [t1, v1] = keys[i], v = v0 + (v1 - v0) * ease((t - t0) / (t1 - t0));
       range.value = Math.round(v); set(v);
       requestAnimationFrame(frame);
