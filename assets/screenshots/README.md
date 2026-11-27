@@ -4,7 +4,7 @@
 
 `skate-scape-session.jpg` is a second actual gameplay capture, taken on 23 October 2026 after moving and jumping in Lumbridge. It is used on the homepage project card so that the hero and project list show different views. The same RuneScape attribution and unofficial fan-project notice above apply.
 
-`fileforge.jpg` is an actual capture of FileForge’s connected browser workspace using the original, locally generated three-page PDF sample. It contains no visitor documents or private files.
+`fileforge.jpg` is an actual capture of FileForge’s connected browser workspace (PDF organizer) using the original, locally generated three-page PDF sample, retaken on 27 November 2026 after the blue/white redesign. It contains no visitor documents or private files.
 
 The Repodock dashboard image at `../repodock-dashboard.png` comes from that project’s public documentation. These screenshots show the projects themselves; they are not mockups or personal photographs.
 

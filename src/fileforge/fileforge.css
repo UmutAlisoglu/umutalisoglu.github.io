@@ -45,7 +45,7 @@
 .page-caption { margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 600; }
 .page-card > small { display: block; color: var(--muted); font-size: 10px; }
 .page-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
-.page-actions button { border: 1px solid #cbd4e2; border-radius: 5px; background: #fffdf8; color: var(--ink); font-size: 20px; min-height: 38px; }
+.page-actions button { border: 1px solid #cbd4e2; border-radius: 5px; background: #fff; color: var(--ink); font-size: 20px; min-height: 38px; }
 .page-actions button:hover { background: #e6ecff; }
 @media (max-width: 900px) {
   .tool-page .tool-tabs { grid-template-columns: repeat(5, minmax(0, 1fr)); }

@@ -21,14 +21,14 @@ export async function createSample(kind) {
   }
   const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
   const doc = await PDFDocument.create(), font = await doc.embedFont(StandardFonts.Helvetica), bold = await doc.embedFont(StandardFonts.HelveticaBold);
-  const themes = [[.43, .24, .78], [.20, .52, .40], [.20, .40, .62]];
+  const themes = [[.18, .33, .88], [.05, .11, .2], [.39, .55, .95]];
   ['THE SMALL THINGS, SORTED.', 'EVERY PAGE IN ITS PLACE.', 'READY FOR YOUR NEXT STEP.'].forEach((title, index) => {
     const page = doc.addPage([595, 842]), color = rgb(...themes[index]);
     page.drawRectangle({ x: 0, y: 570, width: 595, height: 272, color });
     page.drawText('FILEFORGE / SAMPLE DOCUMENT', { x: 48, y: 770, font, size: 12, color: rgb(1, 1, 1) });
     const words = title.split(', '); page.drawText(words[0], { x: 48, y: 655, font: bold, size: 25, color: rgb(1, 1, 1) });
     if (words[1]) page.drawText(words[1], { x: 48, y: 615, font: bold, size: 25, color: rgb(1, 1, 1) });
-    ['This is an original three-page sample.', 'Try moving this page, rotating it or keeping only one.', 'Your original document stays unchanged.'].forEach((line, i) => page.drawText(line, { x: 48, y: 500 - i * 33, font, size: 14, color: rgb(.32, .29, .37) }));
+    ['This is an original three-page sample.', 'Try moving this page, rotating it or keeping only one.', 'Your original document stays unchanged.'].forEach((line, i) => page.drawText(line, { x: 48, y: 500 - i * 33, font, size: 14, color: rgb(.32, .38, .48) }));
     page.drawText(`Sample page ${index + 1} of 3`, { x: 48, y: 48, font, size: 11, color });
   });
   return { files: [new File([await doc.save()], 'fileforge-three-pages.pdf', { type: 'application/pdf' })], tool: 'organize' };

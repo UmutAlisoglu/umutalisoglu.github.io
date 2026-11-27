@@ -107,7 +107,7 @@ function selectionChanged() {
   publishToolSelection(selected);
 }
 function renderFiles() {
-  list.replaceChildren();
+  list.replaceChildren(); form.dataset.empty = String(!selected.length);
   selected.forEach((file, index) => {
     const item = document.createElement('li');
     const label = document.createElement('span'); label.textContent = `${index + 1}. ${file.name}`;

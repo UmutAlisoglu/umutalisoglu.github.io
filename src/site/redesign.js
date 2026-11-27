@@ -14,3 +14,24 @@ if (targets.length && 'IntersectionObserver' in window && !matchMedia('(prefers-
   setTimeout(() => targets.forEach(show), 4000);
   addEventListener('beforeprint', () => targets.forEach(show));
 }
+
+// Phones: "More FileForge tools" lists every tool (24+), which pushed the guide and FAQ far down.
+// Show the first six (plus the current tool) and let people expand the rest.
+const toolNav = document.querySelector('.dedicated-tool .tool-nav');
+if (toolNav && matchMedia('(max-width: 650px)').matches) {
+  const links = toolNav.querySelectorAll('a');
+  if (links.length > 8) {
+    toolNav.classList.add('is-collapsed');
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'tool-nav-more';
+    more.setAttribute('aria-expanded', 'false');
+    more.textContent = `Show all ${links.length} tools`;
+    more.addEventListener('click', () => {
+      const open = toolNav.classList.toggle('is-collapsed') === false;
+      more.setAttribute('aria-expanded', String(open));
+      more.textContent = open ? 'Show fewer tools' : `Show all ${links.length} tools`;
+    });
+    toolNav.append(more);
+  }
+}
