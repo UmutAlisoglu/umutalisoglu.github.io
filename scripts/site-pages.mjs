@@ -118,6 +118,11 @@ try {
         assert.equal(await page.locator('#scanner-run').isDisabled(), true);
         assert.equal(await page.locator('#scanner-input').isVisible(), true);
         assert.equal(await page.locator('#scanner-sample').isVisible(), true);
+      } else if (tool.id === 'edit') {
+        assert.equal(await page.locator('body').getAttribute('data-advanced-tool'), 'edit');
+        assert.equal(await page.locator('#pe-input').isVisible(), true);
+        assert.equal(await page.locator('#pe-sample').isVisible(), true);
+        assert.equal(await page.locator('#pe-editor').isVisible(), false);
       } else if (tool.id === 'inspect') {
         assert.equal(await page.locator('body').getAttribute('data-advanced-tool'), 'inspect');
         assert.equal(await page.locator('#inspector-input').isVisible(), true);
