@@ -112,12 +112,12 @@ h1 em, h2 em { font-family: Georgia, 'Times New Roman', serif; font-style: itali
 .home-hello .hello-link:hover { color: #9fb8ff; }
 
 /* Scroll reveal (only when JS has opted in, never hides content otherwise) */
-.js-reveal [data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.8,.2,1); }
-.js-reveal [data-reveal].is-in { opacity: 1; transform: none; }
+.js-reveal [data-reveal] { transition: opacity .6s ease, translate .6s cubic-bezier(.2,.8,.2,1); }
+.js-reveal [data-reveal]:not(.is-in) { opacity: 0; translate: 0 18px; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
-  .js-reveal [data-reveal] { opacity: 1; transform: none; }
+  .js-reveal [data-reveal] { opacity: 1; translate: none; }
   .home-try { transform: none; }
 }
 .home-hello p, .home-hello .hello-link small, .home-hello .hello-link code, .home-hello .hello-link span:not([aria-hidden]) { color: #d6e0f5 !important; }
@@ -134,3 +134,11 @@ h1 em, h2 em { font-family: Georgia, 'Times New Roman', serif; font-style: itali
 section.conversion-picker { background: var(--tint) !important; border: 1px solid var(--line) !important; border-radius: 24px !important; }
 .quick-jobs [class*="icon"], .quick-job-icon { background: var(--tint-2) !important; color: var(--accent-ink) !important; }
 .private-badge, .privacy-badge, .trust-badge { background: var(--tint-2) !important; color: var(--accent-ink) !important; border-color: transparent !important; }
+/* Audit fixes (2026-11-27) */
+/* Reveal (above) uses the separate `translate` property and only applies before `.is-in`, so it never fights a card's own hover `transform`. */
+@media print { .js-reveal [data-reveal] { opacity: 1 !important; translate: none !important; } body::before { display: none; } }
+/* Last warm/green leftovers on tool pages -> blue/white */
+.limit-note { background: var(--tint) !important; border: 1px solid var(--line); border-radius: 18px; }
+.local-badge { background: var(--tint-2) !important; color: var(--accent-ink) !important; border-color: transparent !important; }
+.status-dot { background: var(--accent) !important; }
+.quick-job-card .quick-job-symbol { background: var(--tint-2) !important; color: var(--accent-ink) !important; }
