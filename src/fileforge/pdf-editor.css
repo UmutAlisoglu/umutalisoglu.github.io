@@ -5,8 +5,8 @@
 .pe-heading{display:flex;gap:24px;justify-content:space-between;align-items:center;margin-bottom:22px}
 .pe-heading h2{margin-bottom:8px}.pe-heading .eyebrow{font-size:9px;margin-bottom:8px}.pe-heading .tool-hint{margin:0}
 .pe-heading>.button{flex-shrink:0;white-space:nowrap;font-size:12px;padding:12px 17px}
-.pe-drop{position:relative;display:flex;align-items:center;justify-content:center;gap:15px;min-height:96px;padding:20px;border:1px dashed #b9c8e6;border-radius:12px;background:#f6f8fe;cursor:pointer;transition:background .15s,border-color .15s}
-.pe-drop.dragging{border-color:#3159d9;background:#e8eefd}.pe-drop:focus-within{outline:3px solid var(--accent);outline-offset:3px}
+.pe-drop{position:relative;display:flex;align-items:center;justify-content:center;gap:15px;min-height:96px;padding:20px;border:2px dashed #b9c9f3;border-radius:20px;background:#f1f5fd;cursor:pointer;transition:background .15s,border-color .15s}
+.pe-drop:hover,.pe-drop.dragging{border-color:#3159d9;background:#e6edfc}.pe-drop:focus-within{outline:3px solid var(--accent);outline-offset:3px}
 .pe-drop-icon{color:#3159d9;font-size:30px}.pe-drop strong{display:block;font-size:13px}.pe-drop small{display:block;font-size:11px;color:#545f6d;margin-top:5px}
 .pe-drop input{position:absolute;width:1px;height:1px;opacity:0}
 .pe-workspace .selection-bar{margin:12px 0 10px;gap:12px;font-size:11px;overflow-wrap:anywhere}

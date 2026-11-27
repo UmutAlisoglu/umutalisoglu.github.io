@@ -69,7 +69,7 @@ export function siteTemplates() {
           if (facts) result = result.replace(/(<div class="page-intro">[\s\S]*?<\/h1>\s*<p>)[\s\S]*?(<\/p>)/, (_, start, end) => start + facts[0] + ' ' + facts[1] + end);
           result = result.replace(/(<div class="page-intro">[\s\S]*?<\/div>)/, `$1${renderToolUsage(currentTool)}`);
         }
-        result = result.replace(/<meta name="theme-color" content="[^"]*">/, '<meta name="theme-color" content="#f5f5f7">');
+        result = result.replace(/<meta name="theme-color" content="[^"]*">/, '<meta name="theme-color" content="#fbfcfe">');
         // Every public page gets its own link preview card (scripts/render-og-images.mjs).
         const card = socialCard(path);
         if (card) {
