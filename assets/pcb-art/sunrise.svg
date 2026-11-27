@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <title>Sunrise over mountains, PCB Art Studio example (CC0, alisoglu.com)</title>
+  <rect width="1000" height="1000" fill="#0f2350"/>
+  <!-- stars -->
+  <g fill="#ffffff">
+    <circle cx="180" cy="210" r="7"/><circle cx="270" cy="130" r="5"/><circle cx="760" cy="170" r="7"/>
+    <circle cx="840" cy="290" r="5"/><circle cx="120" cy="360" r="5"/><circle cx="660" cy="105" r="5"/>
+    <circle cx="350" cy="250" r="5"/><circle cx="900" cy="420" r="6"/><circle cx="420" cy="90" r="6"/>
+  </g>
+  <!-- sun with rings -->
+  <g fill="none" stroke="#d9a73c" stroke-width="12">
+    <circle cx="560" cy="430" r="215"/><circle cx="560" cy="430" r="250" stroke-width="8"/>
+  </g>
+  <circle cx="560" cy="430" r="170" fill="#d9a73c"/>
+  <!-- back mountains -->
+  <path d="M0 640 L170 470 L280 560 L430 380 L560 520 L640 450 L790 590 L880 520 L1000 610 L1000 1000 L0 1000Z" fill="#3f6fc4"/>
+  <!-- snow caps -->
+  <path d="M430 380 L486 444 L462 436 L440 462 L418 432 L392 452 L380 438Z" fill="#ffffff"/>
+  <path d="M170 470 L214 505 L196 500 L178 520 L160 498 L140 510 L128 512Z" fill="#ffffff"/>
+  <path d="M640 450 L680 488 L662 484 L648 500 L630 484 L612 476Z" fill="#ffffff"/>
+  <!-- front hills -->
+  <path d="M0 760 C150 690 300 700 430 740 C560 780 700 700 830 690 C910 684 960 700 1000 712 L1000 1000 L0 1000Z" fill="#0f2350"/>
+  <!-- contour traces on the hills -->
+  <g fill="none" stroke="#d9a73c" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M60 800 L220 800 L270 850 L470 850"/>
+    <path d="M540 820 L700 820 L740 780 L900 780"/>
+    <path d="M140 900 L360 900 L400 940 L640 940 L680 900 L860 900"/>
+  </g>
+  <g fill="#d9a73c">
+    <circle cx="60" cy="800" r="18"/><circle cx="470" cy="850" r="18"/><circle cx="540" cy="820" r="18"/>
+    <circle cx="900" cy="780" r="18"/><circle cx="140" cy="900" r="18"/><circle cx="860" cy="900" r="18"/>
+  </g>
+  <g fill="#0f2350"><circle cx="60" cy="800" r="7"/><circle cx="470" cy="850" r="7"/><circle cx="540" cy="820" r="7"/><circle cx="900" cy="780" r="7"/><circle cx="140" cy="900" r="7"/><circle cx="860" cy="900" r="7"/></g>
+</svg>
