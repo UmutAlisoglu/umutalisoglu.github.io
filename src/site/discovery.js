@@ -17,12 +17,12 @@ export function discoveryTags(path, metadata = {}) {
     graph.push({ '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://alisoglu.com/' }, { '@type': 'ListItem', position: 2, name: 'Tools', item: 'https://alisoglu.com/tools/' }, { '@type': 'ListItem', position: 3, name: tool.name, item: url }] });
   }
   const desktop = {
-    '/projects/fileforge/': { name: 'FileForge for Windows', repo: 'fileforge', asset: 'FileForge-Windows.zip', description: 'Local file tools with a bundled connected workspace and native converters for larger files.' },
-    '/projects/repodock/': { name: 'Repodock', repo: 'repodock', asset: 'repodock-setup.exe', description: 'Manage local GitHub projects, review run commands, start and stop processes, and inspect logs.' },
+    '/projects/fileforge/': { name: 'FileForge for Windows', repo: 'fileforge', version: '0.3.1', asset: 'FileForge-Windows.zip', description: 'Local file tools with a bundled connected workspace and native converters for larger files.' },
+    '/projects/repodock/': { name: 'Repodock', repo: 'repodock', version: '0.3.0', asset: 'repodock-setup.exe', description: 'Manage local GitHub projects, review run commands, start and stop processes, and inspect logs.' },
   }[path];
   if (desktop) {
     const appID = `${url}#windows-app`, release = `https://github.com/UmutAlisoglu/${desktop.repo}/releases`;
-    graph.push({ '@type': 'SoftwareApplication', '@id': appID, name: desktop.name, url, description: desktop.description, operatingSystem: 'Windows (x64)', applicationCategory: desktop.repo === 'repodock' ? 'DeveloperApplication' : 'UtilitiesApplication', softwareVersion: '0.3.0', downloadUrl: `${release}/download/v0.3.0/${desktop.asset}`, releaseNotes: `${release}/tag/v0.3.0`, isAccessibleForFree: true, offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, author: { '@id': person['@id'] } });
+    graph.push({ '@type': 'SoftwareApplication', '@id': appID, name: desktop.name, url, description: desktop.description, operatingSystem: 'Windows (x64)', applicationCategory: desktop.repo === 'repodock' ? 'DeveloperApplication' : 'UtilitiesApplication', softwareVersion: desktop.version, downloadUrl: `${release}/download/v${desktop.version}/${desktop.asset}`, releaseNotes: `${release}/tag/v${desktop.version}`, isAccessibleForFree: true, offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, author: { '@id': person['@id'] } });
     webpage.mainEntity = { '@id': appID }; webpage.about = { '@id': appID };
     graph.push({ '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: site.url }, { '@type': 'ListItem', position: 2, name: 'Projects', item: 'https://alisoglu.com/projects/' }, { '@type': 'ListItem', position: 3, name: desktop.repo === 'fileforge' ? 'FileForge' : 'Repodock', item: url }] });
     if (desktop.repo === 'fileforge') {

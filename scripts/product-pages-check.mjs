@@ -32,7 +32,7 @@ try {
   }
   assert.match(await page.locator('[data-product-tour]').textContent(), /screenshot walkthrough/);
   await page.goto(base + '/downloads/');
-  assert.match(await page.locator('.release-footnote').textContent(), /27 October 2026/);
+  assert.match(await page.locator('.release-footnote').textContent(), /27 November 2026/);
   for (const disclosure of await page.locator('.release-changes').all()) { await disclosure.locator('summary').click(); assert.equal(await disclosure.locator('a').isVisible(), true); }
   const manifest = await (await page.request.get(base + '/offline-manifest.json')).json();
   assert.doesNotMatch(JSON.stringify(manifest), /fileforge-attachment|attachment-poster/);
