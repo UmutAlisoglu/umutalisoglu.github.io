@@ -24,20 +24,26 @@
         <p class="eyebrow"><span class="intro-dot" aria-hidden="true"></span> UMUT ALISOGLU · SOFTWARE &amp; IDEAS</p>
         <h1 id="intro-title">I build small tools<br><em>for everyday hassles.</em></h1>
         <p class="premium-hero-copy">Hi, I’m Umut. When something annoys me twice, I try to make software for it. Here you’ll find what I’ve built, what I’m working on, and a few experiments along the way.</p>
-        <div class="personal-actions"><a class="button primary" href="/projects/pcb-art-studio/?template=badge">Make a PCB badge <span aria-hidden="true">↗</span></a><a class="text-link" href="#projects">Explore my work <span aria-hidden="true">↓</span></a></div>
+        <div class="personal-actions"><a class="button primary" href="/projects/pcb-art-studio/">Turn a picture into a PCB <span aria-hidden="true">↗</span></a><a class="text-link" href="#projects">Explore my work <span aria-hidden="true">↓</span></a></div>
       </div>
       <aside class="home-try" aria-labelledby="try-title">
-        <!-- Photo slot: once a real board exists, add
-             <img class="home-try-photo" src="/assets/screenshots/pcb-badge-photo.webp" width="720" height="720" alt="…">
-             inside .home-try-media next to the render and add the class "has-photo" to .home-try-media. -->
-        <a class="home-try-media" href="/projects/pcb-art-studio/?template=badge" aria-label="Open the round badge template in PCB Art Studio">
-          <img class="home-try-render" src="/assets/screenshots/pcb-badge-render.webp" width="720" height="720" alt="Round PCB badge render: blue solder mask, gold rim and centre plate with the letters AB, white text YOUR NAME and MAKER 2026 around the edge" decoding="async" fetchpriority="high">
-        </a>
+        <!-- Picture-to-board comparison: the drawing on the left, the studio's render of the same file on the right.
+             Both come from /assets/pcb-art/sunrise.svg run through PCB Art Studio (square tile, blue mask, ENIG). -->
+        <div class="home-try-media pcb-compare" data-compare>
+          <div class="pcb-compare-frame">
+            <img class="pcb-compare-board" src="/assets/screenshots/pcb-sunrise-board.webp" width="800" height="800" alt="The same picture as a finished circuit board: blue solder mask, gold sun and traces, white snow and stars" decoding="async" fetchpriority="high">
+            <img class="pcb-compare-art" src="/assets/pcb-art/sunrise.svg" width="800" height="800" alt="Original drawing: a gold sun behind blue mountains under a night sky, with circuit traces in the foreground" decoding="async">
+            <span class="pcb-compare-line" aria-hidden="true"><span class="pcb-compare-knob">‹ ›</span></span>
+            <span class="pcb-compare-tag is-art" aria-hidden="true">Your picture</span>
+            <span class="pcb-compare-tag is-board" aria-hidden="true">Real PCB</span>
+          </div>
+          <input class="pcb-compare-range" type="range" min="0" max="100" value="50" step="1" aria-label="Slide between the picture and the finished board">
+        </div>
         <div class="home-try-copy">
           <p class="eyebrow">TRY IT NOW · 2 MINUTES</p>
-          <h2 id="try-title">Your name on a real circuit board.</h2>
-          <p>Change the text, pick the colours and download Gerber files a board maker can produce. It all runs in your browser.</p>
-          <a class="text-link" href="/projects/pcb-art-studio/?template=badge">Start with this badge <span aria-hidden="true">↗</span></a>
+          <h2 id="try-title">From a drawing to a real circuit board.</h2>
+          <p>Drag the slider: navy stays solder mask, blue turns into copper under the mask, gold into plated metal and white into print. Try it with your own picture and download Gerber files a board maker can produce, right in your browser.</p>
+          <a class="text-link" href="/projects/pcb-art-studio/?example=sunrise">Open this example in PCB Art Studio <span aria-hidden="true">↗</span></a>
         </div>
       </aside>
     </section>

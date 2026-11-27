@@ -140,3 +140,18 @@ test('text overrides win over the image', () => {
   const layers = buildLayers(new Uint8Array(size * size), size, size, ['maskSubstrate'], geometry, pixel, { overrides });
   assert.equal(layers.silk[10 * size + 8], 1); assert.equal(layers.silk[5 * size + 8], 0);
 });
+
+test('every Gerber layer carries the X2 attributes CAM tools use to align and identify it', () => {
+  const geometry = boardGeometry({ width: 30, height: 20, holes: true });
+  const bits = new Uint8Array(4);
+  const layers = { copper: bits, opening: bits, silk: bits, finish: bits, width: 2, height: 2 };
+  const { files } = fabricationFiles(layers, geometry, 0.5, { notes: '' });
+  for (const [name, text] of Object.entries(files)) {
+    if (!/\.G[A-Z]{2}$/.test(name)) continue;
+    assert.match(text, /%TF\.Part,Single\*%/, name);
+    assert.match(text, /%TF\.SameCoordinates,[^*]+\*%/, name);
+    assert.match(text, /%TF\.FileFunction,[^*]+\*%/, name);
+    assert.match(text, /M02\*\n$/, name);
+  }
+  assert.match(files['pcb-art-NPTH.DRL'], /TF\.FileFunction,NonPlated,1,2,NPTH/);
+});

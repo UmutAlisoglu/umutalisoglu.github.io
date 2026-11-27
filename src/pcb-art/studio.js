@@ -54,6 +54,10 @@ const looks = {
   raw: { label: 'Raw board', hint: 'Mask, bare board, metal', levels: 3, finishes: ['maskSubstrate', 'bare', 'gold'] },
   photo: { label: 'Photo', hint: 'Dotted for photos', levels: 2, finishes: ['maskSubstrate', 'silk'], dither: true },
 };
+/** Picture examples: a real image run through the studio, next to the text templates. */
+const examples = {
+  sunrise: { label: 'Picture example', name: 'Sunrise tile', hint: 'See a drawing become blue mask, copper, gold and white print', url: '/assets/pcb-art/sunrise.svg', preset: 'square', mask: 'blue', surface: 'enig' },
+};
 const presetIcons = { card: 'M2 5h20v14H2z', badge: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', coaster: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z', bookmark: 'M8 1h8v22H8z', square: 'M3 3h18v18H3z', custom: 'M3 3h18v18H3zM3 9h18M9 3v18' };
 
 // Icons for the sample card, drawn in a 24 × 24 box. The GitHub mark is GitHub's own logo
@@ -315,6 +319,14 @@ function start(root) {
     const button = control('button', { type: 'button', className: 'pcb-template' }); button.dataset.template = id;
     button.append(svgIcon(presetIcons[template.preset]), textSpan(template.label, 'strong'), textSpan(template.hint, 'small'));
     button.addEventListener('click', () => applyTemplate(id));
+    $('.pcb-templates').append(button);
+  }
+
+  for (const [id, example] of Object.entries(examples)) {
+    const button = control('button', { type: 'button', className: 'pcb-template pcb-example' }); button.dataset.example = id;
+    const thumb = Object.assign(document.createElement('img'), { src: example.url, alt: '', width: 40, height: 40, loading: 'lazy', decoding: 'async' });
+    button.append(thumb, textSpan(example.label, 'strong'), textSpan(example.hint, 'small'));
+    button.addEventListener('click', () => loadExample(id));
     $('.pcb-templates').append(button);
   }
 
@@ -688,10 +700,9 @@ function start(root) {
     return `pcb-art-${safe}-${geometryNow.width}x${geometryNow.height}mm`;
   }
 
-  async function loadFile(file) {
-    if (!file) return;
-    if (!/^image\/(png|jpeg|webp|gif|svg\+xml|bmp)$/.test(file.type)) { status.textContent = 'Please choose a PNG, JPG, WebP, GIF or SVG image.'; return; }
-    const url = URL.createObjectURL(file), image = new Image();
+  /** Decodes an image file into a canvas of at most 3000 px per side. */
+  async function readImage(blob) {
+    const url = URL.createObjectURL(blob), image = new Image();
     image.decoding = 'async'; image.src = url;
     try {
       await image.decode();
@@ -699,17 +710,34 @@ function start(root) {
       const copy = document.createElement('canvas'), fit = Math.min(1, 3000 / Math.max(naturalW, naturalH));
       copy.width = Math.max(1, Math.round(naturalW * fit)); copy.height = Math.max(1, Math.round(naturalH * fit));
       copy.getContext('2d').drawImage(image, 0, 0, copy.width, copy.height);
-      // A new picture starts centred and filling the board; tone choices of this side are kept.
-      Object.assign(current(), { source: copy, name: file.name, sample: false, template: null, autoLevels: true, autoCheck: true, autoSwapped: false, invert: false, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0 });
-      // A first own image usually needs less fine detail than the sample card.
-      if (!detailTouched) form.detail.value = '0.15';
-      if (editing === 'front' && sides.back.sample) Object.assign(sides.back, { source: null, name: 'Plain, no artwork', sample: false, version: ++version });
-      writeForm();
-      if (show !== 'both') setShow(editing);
-      setMode('crop');
-      schedule();
-    } catch { status.textContent = 'This image could not be opened. Try another file.'; }
-    finally { URL.revokeObjectURL(url); }
+      return copy;
+    } finally { URL.revokeObjectURL(url); }
+  }
+  async function loadFile(file) {
+    if (!file) return;
+    if (!/^image\/(png|jpeg|webp|gif|svg\+xml|bmp)$/.test(file.type)) { status.textContent = 'Please choose a PNG, JPG, WebP, GIF or SVG image.'; return; }
+    let copy;
+    try { copy = await readImage(file); } catch { status.textContent = 'This image could not be opened. Try another file.'; return; }
+    // A new picture starts centred and filling the board; tone choices of this side are kept.
+    Object.assign(current(), { source: copy, name: file.name, sample: false, template: null, autoLevels: true, autoCheck: true, autoSwapped: false, invert: false, version: ++version, fit: 'cover', zoom: 1, offsetX: 0, offsetY: 0 });
+    // A first own image usually needs less fine detail than the sample card.
+    if (!detailTouched) form.detail.value = '0.15';
+    if (editing === 'front' && sides.back.sample) Object.assign(sides.back, { source: null, name: 'Plain, no artwork', sample: false, version: ++version });
+    writeForm();
+    if (show !== 'both') setShow(editing);
+    setMode('crop');
+    schedule();
+  }
+  /** Opens a picture example: a real image run through the default look, ready to download. */
+  async function loadExample(id) {
+    const example = examples[id]; if (!example) return;
+    status.textContent = `Loading the ${example.name.toLowerCase()} example…`;
+    let copy;
+    try { copy = await readImage(await (await fetch(example.url)).blob()); } catch { status.textContent = 'The example could not be loaded. Try your own image instead.'; return; }
+    applyPreset(example.preset); form.mask.value = example.mask; form.surface.value = example.surface; form.detail.value = '0.15'; detailTouched = false;
+    sides = { front: makeSide(copy, `${example.name} example`, { sample: true, example: id }), back: makeSide(null, 'Plain, no artwork') };
+    syncBoardFields(); editing = 'front'; writeForm(); setShow('front'); setMode('preview');
+    schedule();
   }
   function rotateSource() {
     const side = current(); if (!side.source) return;
@@ -921,8 +949,10 @@ function start(root) {
   new ResizeObserver(() => { clearTimeout(resizeTimer); resizeTimer = setTimeout(draw, 80); }).observe(stage);
   // A link like /projects/pcb-art-studio/?template=badge opens straight on that template.
   const linked = new URLSearchParams(location.search).get('template');
+  const linkedExample = new URLSearchParams(location.search).get('example');
   if (linked && Object.hasOwn(templates, linked)) applyTemplate(linked, { focus: false });
   else { syncBoardFields(); writeForm(); }
+  if (linkedExample && Object.hasOwn(examples, linkedExample)) loadExample(linkedExample);
   root.classList.add('is-ready');
   process();
 }

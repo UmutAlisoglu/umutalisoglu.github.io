@@ -35,3 +35,33 @@ if (toolNav && matchMedia('(max-width: 650px)').matches) {
     toolNav.append(more);
   }
 }
+
+// Home hero: picture-to-board slider. The range input drives the split; a single sweep on first view
+// hints that it can be dragged (skipped with reduced motion or once someone touches it).
+for (const compare of document.querySelectorAll('[data-compare]')) {
+  const range = compare.querySelector('.pcb-compare-range');
+  if (!range) continue;
+  const set = value => {
+    compare.style.setProperty('--split', `${value}%`);
+    compare.dataset.edge = value < 12 ? 'board' : value > 88 ? 'art' : '';
+  };
+  let touched = false;
+  range.addEventListener('input', () => { touched = true; set(Number(range.value)); });
+  set(Number(range.value));
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) continue;
+  const sweep = () => {
+    const keys = [[0, 50], [900, 82], [2000, 18], [2900, 50]], start = performance.now();
+    const ease = t => t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+    const frame = now => {
+      if (touched) return;
+      const t = now - start, i = keys.findIndex(([at]) => at > t);
+      if (i < 0) { range.value = 50; set(50); return; }
+      const [t0, v0] = keys[i - 1], [t1, v1] = keys[i], v = v0 + (v1 - v0) * ease((t - t0) / (t1 - t0));
+      range.value = Math.round(v); set(v);
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  };
+  const io = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) { io.disconnect(); setTimeout(sweep, 700); } }, { threshold: .6 });
+  io.observe(compare);
+}

@@ -357,6 +357,8 @@ function gerberHeader(fileFunction, polarity = 'Positive') {
   return [
     'G04 Made with PCB Art Studio - https://alisoglu.com/projects/pcb-art-studio/*',
     '%TF.GenerationSoftware,alisoglu.com,PCB Art Studio,1.0*%',
+    '%TF.Part,Single*%',
+    '%TF.SameCoordinates,PCBArtStudio*%',
     `%TF.FileFunction,${fileFunction}*%`,
     `%TF.FilePolarity,${polarity}*%`,
     '%FSLAX46Y46*%',
@@ -414,7 +416,8 @@ export function outlineGerber(geometry) {
 /** Excellon drill file for non-plated mounting holes. */
 export function drillFile(holes) {
   if (!holes.length) return null;
-  const lines = ['M48', '; Made with PCB Art Studio - non-plated mounting holes', 'FMAT,2', 'METRIC', `T1C${HOLE_DIAMETER.toFixed(3)}`, '%', 'G90', 'G05', 'T1'];
+  // The X2-style comments let CAM tools that read them (KiCad, many fab viewers) tell NPTH from PTH.
+  const lines = ['M48', '; Made with PCB Art Studio - non-plated mounting holes', '; #@! TF.GenerationSoftware,alisoglu.com,PCB Art Studio,1.0', '; #@! TF.FileFunction,NonPlated,1,2,NPTH', 'FMAT,2', 'METRIC', `T1C${HOLE_DIAMETER.toFixed(3)}`, '%', 'G90', 'G05', 'T1'];
   for (const hole of holes) lines.push(`X${hole.x.toFixed(3)}Y${hole.y.toFixed(3)}`);
   lines.push('T0', 'M30', '');
   return lines.join('\n');

@@ -11,3 +11,5 @@ The Repodock dashboard image at `../repodock-dashboard.png` comes from that proj
 `pcb-art-studio.jpg` is a crop of PCB Art Studio's live board preview, rendered at high resolution (Save preview) from the tool's own built-in sample artwork, the blue alisoglu.com business card, on 6 November 2026. It shows the tool's preview, not a photograph of a manufactured board.
 
 The pages show `.webp` copies of these screenshots (and of `repodock-dashboard.png`), made with quality 82 at the same size. They are 30–60% smaller. The originals stay for link preview cards and full-size links. After replacing a screenshot, regenerate its `.webp` copy.
+
+`pcb-sunrise-board.webp` is PCB Art Studio's own high-resolution preview (Save preview) of `../pcb-art/sunrise.svg`, a drawing made for the site, on an 80 × 80 mm square tile with blue solder mask and ENIG, rendered on 27 November 2026. The homepage slider compares it with the drawing itself. It shows the tool's preview, not a photograph of a manufactured board.
